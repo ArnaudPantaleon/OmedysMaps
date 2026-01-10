@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Réseau Omedys</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        :root {
+            --primary: #009597;
+            --dark: #2d3748;
+            --glass: rgba(255, 255, 255, 0.95);
+        }
+
+        body { margin: 0; padding: 0; height: 100vh; font-family: 'Segoe UI', Roboto, sans-serif; overflow: hidden; }
+        #map { height: 100vh; width: 100%; z-index: 1; }
+
+        /* RECHERCHE CENTRÉE ET ARRONDIE */
+        #search-container { 
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%); 
+            width: 90%; max-width: 500px; height: 54px;
+            background: var(--glass); backdrop-filter: blur(10px);
+            border-radius: 50px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            display: flex; align-items: center; padding: 0 6px 0 22px;
+            z-index: 1000; border: 1px solid rgba(0,0,0,0.05);
+            box-sizing: border-box;
+        }
+        #search-container input { 
+            flex: 1; border: none; background: transparent; outline: none; 
+            font-size: 16px; color: var(--dark);
+        }
+        
+        #search-button { 
+            background: var(--primary); min-width: 42px; width: 42px; height: 42px; 
+            border-radius: 50%; border: none; cursor: pointer;
+            display: grid; place-items: center; transition: all 0.2s; padding: 0;
+        }
+        #search-button svg { width: 20px; height: 20px; fill: white; }
+
+        /* BOUTON FILTRE (FAB) CORRIGÉ */
+        #filter-toggle {
+            position: absolute; bottom: 30px; right: 20px;
+            background: var(--primary); min-width: 60px; width: 60px; height: 60px; 
+            border-radius: 50%; border: none; cursor: pointer;
+            display: grid; place-items: center; 
+            box-shadow: 0 6px 20px rgba(0,149,151,0.4); z-index: 1100;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            padding: 0;
+        }
+        /* Icône réglage simplifiée et propre */
+        #filter-toggle svg { width: 28px; height: 28px; fill: white; }
+
+        /* PANNEAU LATÉRAL */
+        #side-menu {
+            position: absolute; top: 0; right: -320px; width: 280px; height: 100vh;
+            background: white; z-index: 1050; box-shadow: -5px 0 25px rgba(0,0,0,0.1);
+            transition: right 0.3s ease-in-out; display: flex; flex-direction: column;
+            padding: 40px 25px; box-sizing: border-box;
+        }
+        #side-menu.open { right: 0; }
+        #side-menu h2 { font-size: 22px; color: var(--dark); margin-top: 0; margin-bottom: 30px; border-bottom: 2px solid var(--primary); padding-bottom: 10px; }
+
+        .filter-group { display: flex; flex-direction: column; gap: 18px; }
+        .filter-item { display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 600; color: var(--dark); cursor: pointer; }
+        .filter-item input { width: 18px; height: 18px; accent-color: var(--primary); }
+        .dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+
+        #menu-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.2); z-index: 1040; display: none; backdrop-filter: blur(2px); }
+        #menu-overlay.open { display: block; }
+
+        .cabinet-pin { width: 24px !important; height: 24px !important; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .card-title { color: var(--primary); font-weight: bold; font-size: 1.1em; display: block; margin-bottom: 5px; }
+        .popup-tel { display: block; margin-top: 10px; padding: 8px; background: #f0fdfa; color: var(--primary); text-decoration: none; font-weight: bold; border-radius: 8px; text-align: center; }
+
+        @media (max-width: 600px) {
+            #search-container { width: 92%; top: 15px; height: 50px; }
+            #filter-toggle { bottom: 20px; right: 15px; width: 56px; height: 56px; min-width: 56px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="search-container">
+        <input type="text" id="query" placeholder="Ville ou Code Postal..." onkeypress="if(event.key === 'Enter') rechercheEtZoom()">
+        <button id="search-button" onclick="rechercheEtZoom()">
+            <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        </button>
+    </div>
+
+    <button id="filter-toggle" onclick="toggleMenu()" aria-label="Filtres">
+        <svg viewBox="0 0 24 24">
+            <path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/>
+        </svg>
+    </button>
+
+    <div id="menu-overlay" onclick="toggleMenu()"></div>
+
+    <div id="side-menu">
+        <h2>Filtres</h2>
+        <div id="filter-list" class="filter-group"></div>
+        <hr style="width:100%; margin: 30px 0; border: 0; border-top: 1px solid #eee;">
+        <div class="filter-group">
+            <label class="filter-item">
+                <input type="checkbox" checked onclick="toggleEhpad(this.checked)"> 
+                <span class="dot" style="background:#4a5568"></span> EHPAD
+            </label>
+        </div>
+    </div>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const map = L.map('map', { zoomControl: false, tap: false }).setView([46.6033, 1.8883], 6);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+        const statusSettings = {
+            "Salles ouvertes": { color: "#2ed573", active: true },
+            "Salles ouvertes télésecrétariat OMEDYS": { color: "#1dd1a1", active: true },
+            "Ouverture en cours": { color: "#1e90ff", active: true },
+            "Salles en sourcing": { color: "#ffa502", active: true },
+            "Salles fermées ou refus OTT": { color: "#ff4757", active: true },
+            "Salles Inactives": { color: "#a4b0be", active: true }
+        };
+
+        let allMarkers = [];
+        let showEhpad = true;
+
+        const urlSalles = "https://files.support-omedys.fr/seafhttp/f/642574d0a0f64f849d46/?op=view";
+        const urlCabinets = "https://files.support-omedys.fr/seafhttp/f/82dc73ecccaa4687a31b/?op=view";
+
+        function toggleMenu() {
+            document.getElementById('side-menu').classList.toggle('open');
+            document.getElementById('menu-overlay').classList.toggle('open');
+        }
+
+        function formaterTel(tel) {
+            if (!tel) return "";
+            let clean = tel.toString().replace(/\D/g, '');
+            if (clean.startsWith('33')) clean = '0' + clean.slice(2);
+            if (clean.length === 9 && !clean.startsWith('0')) clean = '0' + clean;
+            return clean.match(/.{1,2}/g)?.join(' ') || clean;
+        }
+
+        async function fetchJSON(url) {
+            const response = await fetch(url);
+            let text = await response.text();
+            if (!text.trim().startsWith('[')) text = '[' + text.trim().replace(/,$/, '') + ']';
+            return JSON.parse(text);
+        }
+
+        async function chargerDonnees() {
+            try {
+                const [salles, cabinets] = await Promise.all([fetchJSON(urlSalles), fetchJSON(urlCabinets)]);
+                creerMarqueurs([...salles, ...cabinets]);
+            } catch (err) { console.error(err); }
+        }
+
+        function creerMarqueurs(data) {
+            data.forEach(item => {
+                const lat = parseFloat(item.Latitude);
+                const lng = parseFloat(item.Longitude);
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    const statusKey = item.Statut || "";
+                    const isCabinet = (item.Type === "CABINET");
+                    const tel = formaterTel(item.Phone);
+
+                    let marker;
+                    if (isCabinet) {
+                        const colorCab = (statusKey === "Ouvert") ? "#009597" : "#1e90ff";
+                        marker = L.marker([lat, lng], { 
+                            icon: L.divIcon({ className: 'cabinet-pin', html: `<div style="background:${colorCab}; width:100%; height:100%; border-radius:50%;"></div>` }),
+                            zIndexOffset: 1000 
+                        });
+                    } else {
+                        const col = statusSettings[statusKey]?.color || "#333";
+                        marker = L.marker([lat, lng], { icon: L.divIcon({ html: `<div style="background:${col}; width:12px; height:12px; border-radius:50%; border:2px solid white;"></div>`, className: "" }) });
+                    }
+
+                    let popup = `<b class="card-title">${item.Name}</b><small>${item.Adresse}</small>`;
+                    if (tel) popup += `<a href="tel:${tel.replace(/ /g,'')}" class="popup-tel">📞 ${tel}</a>`;
+                    
+                    marker.bindPopup(popup);
+                    allMarkers.push({ marker, status: statusKey, isEhpad: (item.Name||"").toLowerCase().includes("ehpad"), isCabinet });
+                }
+            });
+            refreshDisplay();
+        }
+
+        function refreshDisplay() {
+            allMarkers.forEach(m => {
+                const active = statusSettings[m.status]?.active ?? true;
+                if (m.isCabinet || (active && (showEhpad || !m.isEhpad))) {
+                    if (!map.hasLayer(m.marker)) m.marker.addTo(map);
+                } else if (map.hasLayer(m.marker)) map.removeLayer(m.marker);
+            });
+        }
+
+        function initMenu() {
+            const list = document.getElementById('filter-list');
+            list.innerHTML = Object.keys(statusSettings).map(s => `
+                <label class="filter-item">
+                    <input type="checkbox" checked onclick="toggleStatus('${s}', this.checked)">
+                    <span class="dot" style="background:${statusSettings[s].color}"></span> ${s.replace("Salles ", "")}
+                </label>
+            `).join('');
+        }
+
+        window.toggleStatus = (s, v) => { statusSettings[s].active = v; refreshDisplay(); };
+        window.toggleEhpad = (v) => { showEhpad = v; refreshDisplay(); };
+
+        function rechercheEtZoom() {
+            const v = document.getElementById('query').value;
+            if(!v) return;
+            fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(v)}&limit=1`)
+                .then(r => r.json()).then(res => {
+                    if (res.features.length > 0) {
+                        const [lon, lat] = res.features[0].geometry.coordinates;
+                        map.flyTo([lat, lon], 13);
+                    }
+                });
+        }
+
+        initMenu();
+        chargerDonnees();
+    </script>
+</body>
+</html>

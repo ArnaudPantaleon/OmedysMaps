@@ -115,6 +115,14 @@
     <div id="side-menu">
         <h2 style="color:var(--primary); margin-top:0;">Filtres</h2>
         <div id="filter-list"></div>
+        <div id="stats-container" style="margin-top: 20px; padding-top: 15px; border-top: 2px solid #f0f2f5;">
+            <div style="font-size: 14px; font-weight: bold; color: #009597; margin-bottom: 5px;">
+                📊 <span id="site-count">0</span> sites affichés
+            </div>
+            <p style="font-size: 11px; color: #718096; line-height: 1.4;">
+                <i>Le décompte s'ajuste automatiquement selon vos filtres.</i>
+            </p>
+        </div>
     </div>
 
     <div id="map"></div>
@@ -229,6 +237,7 @@
             allMarkers.push({ marker, status, isESMS });
         });
         renderFilters();
+        updateStats();
     }
 
     // 5. Gestion des filtres
@@ -264,17 +273,23 @@
             if (visible) m.marker.addTo(map);
             else map.removeLayer(m.marker);
         });
+        updateStats();
     };
 
     function toggleMenu() {
         document.getElementById('side-menu').classList.toggle('open');
         document.getElementById('menu-overlay').classList.toggle('open');
     }
-
+    function updateStats() {
+        const count = allMarkers.filter(m => map.hasLayer(m.marker)).length;
+        const countElem = document.getElementById('site-count');
+        if (countElem) countElem.innerText = count;
+    }
     chargerDonnees();
 </script>
 </body>
 </html>
+
 
 
 

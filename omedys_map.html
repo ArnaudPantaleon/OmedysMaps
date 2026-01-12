@@ -56,8 +56,46 @@
             display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 12px; padding: 10px;
             background: #f0fdfa; color: var(--primary); text-decoration: none; font-weight: bold;
             border-radius: 8px; font-size: 14px; border: 1px solid #ccfbf1;
-        }
-    </style>
+        }#side-menu h2 { 
+        font-size: 1.2rem; 
+        margin-bottom: 20px; 
+        border-bottom: 2px solid #f0f2f5; 
+        padding-bottom: 10px; 
+    }
+
+    .filter-list-container { display: flex; flex-direction: column; gap: 8px; }
+
+    .filter-item {
+        display: flex;
+        align-items: center;
+        padding: 10px 12px;
+        border-radius: 8px;
+        transition: background 0.2s;
+        cursor: pointer;
+        border: 1px solid transparent;
+    }
+
+    .filter-item:hover { background: #f8fafc; border-color: #e2e8f0; }
+
+    /* Style spécial pour le Cabinet Omedys */
+    .filter-item.special-case {
+        background: #f0fdfa;
+        border: 1px solid #ccfbf1;
+        margin-bottom: 10px;
+    }
+
+    .filter-item input { margin-right: 12px; cursor: pointer; accent-color: var(--primary); }
+
+    .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-right: 10px;
+        flex-shrink: 0;
+    }
+
+    .filter-label { font-size: 13px; color: #4a5568; font-weight: 500; flex: 1; }
+</style>
 </head>
 <body>
 
@@ -91,13 +129,13 @@
     let allMarkers = [];
 
     const statusSettings = {
-        "Ouvert": { color: "#009597", label: "Cabinet Omedys" },
-        "Ouvertes": { color: "#2ecc71", label: "Ouvertes" },
-        "Telesecretariat OMEDYS": { color: "#8956FB", label: "Télésecrétariat OMEDYS" },
-        "Ouverture en cours": { color: "#3498db", label: "En cours" },
-        "En sourcing": { color: "#f1c40f", label: "En sourcing" },
-        "Inactives": { color: "#95a5a6", label: "Inactives" },
-        "Fermees ou refus OTT": { color: "#e74c3c", label: "Fermé / Refus" }
+        "Ouvert": { color: "#009597", label: "Cabinet Omedys", checked: true, special: true },
+        "Ouvertes": { color: "#2ecc71", label: "Salles Ouvertes", checked: true },
+        "Telesecretariat OMEDYS": { color: "#8956FB", label: "Télésecrétariat OMEDYS", checked: true },
+        "Ouverture en cours": { color: "#3498db", label: "En cours", checked: false },// Désactivé par défaut
+        "En sourcing": { color: "#f1c40f", label: "En sourcing", checked: false },// Désactivé par défaut
+        "Inactives": { color: "#95a5a6", label: "Inactives", checked: false }, // Désactivé par défaut
+        "Fermees ou refus OTT": { color: "#e74c3c", label: "Fermé / Refus", checked: false } // Désactivé par défaut
     };
 
     // 2. Fonction de Recherche (Celle qui manquait)
@@ -139,20 +177,25 @@
     function creerMarqueurs(data) {
         allMarkers.forEach(m => map.removeLayer(m.marker));
         allMarkers = [];
-
+    
         data.forEach(item => {
             const lat = parseFloat(item.Latitude);
             const lng = parseFloat(item.Longitude);
             if (isNaN(lat) || isNaN(lng)) return;
-
+    
             const status = (item.Statut || "Inconnu").trim();
             const type = (item.Type || "Salle").trim();
-            const color = statusSettings[status]?.color || "#7f8c8d";
-
+            const config = statusSettings[status] || { color: "#7f8c8d", checked: true };
+    
             const marker = L.circleMarker([lat, lng], {
                 radius: type === "CABINET" ? 10 : 7,
-                fillColor: color, color: "#fff", weight: 2, fillOpacity: 0.9
-            }).addTo(map);
+                fillColor: config.color, color: "#fff", weight: 2, fillOpacity: 0.9
+            });
+    
+            // Appliquer l'état initial (on n'ajoute à la carte que si checked est true)
+            if (config.checked) {
+                marker.addTo(map);
+            }
 
             // TMS uniquement pour les salles
             const tmsHtml = type !== "CABINET" ? `
@@ -198,12 +241,21 @@
     function renderFilters() {
         const list = document.getElementById('filter-list');
         if (!list) return;
-        list.innerHTML = Object.keys(statusSettings).map(s => `
-            <label style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px; font-size: 14px; font-weight: 600; cursor: pointer;">
-                <input type="checkbox" checked onclick="toggleStatus('${s}', this.checked)">
-                <span style="width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid white; box-shadow: 0 0 0 1px #ddd; background:${statusSettings[s].color}"></span> ${statusSettings[s].label}
-            </label>
-        `).join('');
+    
+        list.className = "filter-list-container";
+        list.innerHTML = Object.keys(statusSettings).map(key => {
+            const s = statusSettings[key];
+            const isSpecial = s.special ? 'special-case' : '';
+            
+            return `
+                <label class="filter-item ${isSpecial}">
+                    <input type="checkbox" ${s.checked ? 'checked' : ''} 
+                           onclick="toggleStatus('${key}', this.checked)">
+                    <span class="dot" style="background:${s.color}"></span>
+                    <span class="filter-label">${s.label}</span>
+                </label>
+            `;
+        }).join('');
     }
 
     window.toggleStatus = (s, v) => {
@@ -220,6 +272,7 @@
 </script>
 </body>
 </html>
+
 
 
 

@@ -138,6 +138,14 @@ function rechercheEtZoom() {
         });
 }
 
-function toggleMenu() { document.getElementById('side-menu').classList.toggle('open'); }
+function toggleMenu() {
+    const wrapper = document.getElementById('menuWrapper');
+    wrapper.classList.toggle('open');
+    
+    // On rafraîchit la carte car la taille du menu change
+    if (wrapper.classList.contains('open')) {
+        setTimeout(() => map.invalidateSize(), 500);
+    }
+}
 
 chargerDonnees();

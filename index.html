@@ -9,6 +9,11 @@
 </head>
 <body>
     <div id="map"></div>
+
+    <div class="search-floating">
+        <input type="text" id="query" placeholder="Rechercher une ville..." onkeypress="if(event.key === 'Enter') rechercheEtZoom()">
+        <button class="search-btn" onclick="rechercheEtZoom()">🔍</button>
+    </div>
     <div class="menu-wrapper" id="menuWrapper">
         <button class="menu-toggle" onclick="toggleMenu()">
             <div class="burger-icon"><span></span><span></span><span></span></div>
@@ -29,9 +34,6 @@
                 </div>
             </div>
         </div>
-    </div>
-    <div class="search-container">
-        <input type="text" id="query" placeholder="Ville..." onkeypress="if(event.key === 'Enter') rechercheEtZoom()">
     </div>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="script.js"></script>

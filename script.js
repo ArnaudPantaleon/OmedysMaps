@@ -20,6 +20,23 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 setTimeout(() => { map.invalidateSize(); }, 400);
 
 let allMarkers = [];
+function rechercheEtZoom() {
+    const query = document.getElementById('query').value;
+    if (!query) return;
+
+    fetch(`https://api-adresse.data.gouv.fr/search/?q=${query}&limit=1`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.features.length > 0) {
+                const [lon, lat] = data.features[0].geometry.coordinates;
+                map.flyTo([lat, lon], 12);
+            }
+        });
+}
+
+function toggleMenu() {
+    document.getElementById('side-menu').classList.toggle('open');
+}
 
 async function chargerDonnees() {
     try {
@@ -100,6 +117,5 @@ function updateStats() {
     document.getElementById('site-count').innerText = allMarkers.filter(m => map.hasLayer(m.marker)).length;
 }
 
-function toggleMenu() { document.getElementById('side-menu').classList.toggle('open'); }
 
 chargerDonnees();

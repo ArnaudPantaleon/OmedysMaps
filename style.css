@@ -1,68 +1,74 @@
-/* Header du menu */
-.panel-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #f1f5f9;
+:root {
+    --primary: #009597;
+    --text: #334155;
+    --shadow: 0 10px 25px rgba(0,0,0,0.1);
 }
 
-.panel-header h3 {
-    margin: 0;
-    font-size: 18px;
-    color: #009597;
+body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', system-ui, sans-serif; overflow: hidden; }
+#map { height: 100vh; width: 100vw; z-index: 1; background: #f8fafc; }
+
+/* Positionnement Haut Gauche */
+.top-controls {
+    position: fixed; top: 20px; left: 20px;
+    z-index: 2000; display: flex; gap: 12px;
 }
 
-/* Bouton Close modernisé */
+.menu-trigger {
+    background: white; border: none; width: 48px; height: 48px;
+    border-radius: 12px; box-shadow: var(--shadow);
+    cursor: pointer; font-size: 20px; color: var(--primary);
+    display: flex; align-items: center; justify-content: center;
+}
+
+.search-container {
+    background: white; height: 48px; border-radius: 12px;
+    box-shadow: var(--shadow); display: flex; align-items: center;
+    padding: 0 12px; width: 250px;
+}
+
+.search-container input { border: none; flex: 1; outline: none; font-size: 14px; color: var(--text); }
+.search-icon { background: none; border: none; cursor: pointer; display: flex; }
+
+/* Panneau de filtres animé */
+.filter-panel {
+    position: fixed; top: 85px; left: 20px;
+    z-index: 1900; background: white; width: 280px;
+    border-radius: 16px; padding: 20px;
+    box-shadow: var(--shadow);
+    
+    /* Animation */
+    display: flex; flex-direction: column;
+    opacity: 0; visibility: hidden;
+    transform: translateY(-20px);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.filter-panel.open { opacity: 1; visibility: visible; transform: translateY(0); }
+
+.panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.panel-header h3 { margin: 0; color: var(--primary); font-size: 18px; }
+
 .close-btn {
-    background: #f1f5f9;
-    border: none;
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #64748b;
-    cursor: pointer;
-    transition: all 0.2s;
+    background: #f1f5f9; border: none; width: 32px; height: 32px;
+    border-radius: 8px; cursor: pointer; color: #64748b;
+    display: flex; align-items: center; justify-content: center;
 }
 
-.close-btn:hover {
-    background: #fee2e2;
-    color: #ef4444;
+/* Cartes des filtres */
+.filter-card {
+    display: flex; align-items: center; padding: 12px;
+    background: white; border: 1px solid #e2e8f0; border-radius: 10px;
+    margin-bottom: 8px; cursor: pointer; transition: 0.2s;
 }
+.filter-card:hover { border-color: var(--primary); background: #f0fdfa; }
+.filter-card input { margin-right: 12px; accent-color: var(--primary); }
 
-/* Barre de recherche et Loupe */
-.search-floating {
-    background: white;
-    height: 48px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    display: flex;
-    align-items: center;
-    padding: 0 12px;
-    width: 260px;
-    border: 1px solid transparent;
-    transition: border-color 0.2s;
-}
+.dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 12px; }
+.label { font-size: 13px; font-weight: 600; color: var(--text); }
 
-.search-floating:focus-within {
-    border-color: #009597;
+.stats-card {
+    margin-top: 15px; padding: 15px; background: #f8fafc;
+    border-radius: 12px; text-align: center; border: 1px solid #e2e8f0;
 }
-
-.search-icon {
-    background: none;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    padding: 5px;
-    transition: transform 0.2s;
-}
-
-.search-icon:hover {
-    transform: scale(1.1);
-}
+#site-count { font-size: 24px; font-weight: 800; color: var(--primary); display: block; }
+.stats-card small { font-size: 9px; color: #94a3b8; font-weight: 800; letter-spacing: 0.5px; }

@@ -39,3 +39,34 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', sans-
     border-radius: 8px; text-align: center; border: 1px solid #e2e8f0;
 }
 #site-count { font-size: 20px; font-weight: 800; color: #009597; }
+/* Panneau Flottant avec Animation */
+#side-menu {
+    display: flex; /* On utilise flex pour l'organisation interne */
+    background: white; 
+    width: 280px; 
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15); 
+    margin-top: 15px; 
+    padding: 18px;
+    flex-direction: column;
+
+    /* États pour l'animation */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-20px); 
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); /* Courbe de vitesse type Apple */
+}
+
+/* État quand le menu est ouvert */
+#side-menu.open {
+    display: flex;
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* On peaufine le bouton burger au clic */
+.menu-trigger:active {
+    transform: scale(0.92);
+    transition: transform 0.1s;
+}

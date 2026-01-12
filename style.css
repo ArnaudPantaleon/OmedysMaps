@@ -132,3 +132,106 @@ body, html {
     .search-floating { width: 160px; }
     .menu-wrapper.open { width: 85vw; }
 }
+
+/* --- TITRE ET FILTRES --- */
+.menu-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 20px 0;
+}
+
+#filter-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Carte de filtre individuelle */
+.filter-card {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    background: #ffffff;
+    border: 2px solid #f1f5f9;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    opacity: 0.4;
+}
+
+.filter-card input { display: none; }
+
+/* État coché : Allumage de la bordure et opacité pleine */
+.filter-card:has(input:checked) {
+    opacity: 1;
+    border-color: var(--status-color);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 12px;
+    background: var(--status-color);
+}
+
+.label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+/* --- TUILE DE STATISTIQUE BENTO --- */
+.stat-bento-tile {
+    margin-top: 25px;
+    padding: 18px;
+    background: #f8fafc; /* Gris très léger pour le fond de la tuile */
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.stat-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.stat-dot {
+    width: 6px;
+    height: 6px;
+    background: #009597; /* Ta couleur principale */
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(0, 149, 151, 0.4);
+}
+
+.stat-title {
+    font-size: 10px;
+    font-weight: 800;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.stat-body {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+#site-count {
+    font-size: 32px;
+    font-weight: 900;
+    color: #0f172a;
+    line-height: 1;
+}
+
+.stat-unit {
+    font-size: 11px;
+    font-weight: 800;
+    color: #009597;
+}

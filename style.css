@@ -1,23 +1,24 @@
 body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
 #map { height: 100vh; width: 100vw; z-index: 1; }
 
-/* Wrapper Fixe */
+/* --- MENU MORPHING --- */
 .menu-wrapper {
     position: fixed; top: 20px; left: 20px; z-index: 3000;
     background: white; width: 50px; height: 50px;
-    border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.15);
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     overflow: hidden;
 }
 
-.menu-wrapper.open { width: 300px; height: 500px; border-radius: 20px; }
+/* Taille du menu une fois déplié */
+.menu-wrapper.open { width: 300px; height: 520px; border-radius: 20px; }
 
-/* Bouton Burger */
 .menu-toggle {
     width: 50px; height: 50px; background: none; border: none;
     cursor: pointer; position: absolute; top: 0; left: 0; z-index: 10;
 }
 
+/* Animation de l'icône Burger vers Croix */
 .burger-icon { width: 20px; height: 14px; position: relative; margin: 18px auto; }
 .burger-icon span {
     display: block; position: absolute; height: 2.5px; width: 100%;
@@ -27,78 +28,49 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', sans-
 .burger-icon span:nth-child(2) { top: 6px; }
 .burger-icon span:nth-child(3) { top: 12px; }
 
-/* Morphing Burger -> Croix */
 .menu-wrapper.open .burger-icon span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
 .menu-wrapper.open .burger-icon span:nth-child(2) { opacity: 0; transform: translateX(-10px); }
 .menu-wrapper.open .burger-icon span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 
-/* Contenu interne */
 .menu-content {
     opacity: 0; padding: 60px 20px 20px;
     transition: opacity 0.3s; pointer-events: none;
 }
-.menu-wrapper.open .menu-content { opacity: 1; pointer-events: auto; }
+.menu-wrapper.open .menu-content { opacity: 1; pointer-events: auto; transition-delay: 0.2s; }
 
 .panel-header h3 { color: #009597; margin: 0 0 20px 0; font-size: 20px; }
 
-/* Barre de recherche (Positionnée par rapport à l'écran, pas au menu) */
+/* --- BARRE DE RECHERCHE --- */
 .search-floating {
-    position: fixed; 
-    top: 20px; 
-    left: 85px; /* Position initiale à côté du bouton burger */
-    z-index: 2000;
-    background: white; 
-    height: 50px; 
-    width: 240px;
-    border-radius: 12px; 
-    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-    display: flex; 
-    align-items: center; 
-    padding: 0 15px;
-    
-    /* Animation de déplacement fluide */
+    position: fixed; top: 20px; left: 85px; z-index: 2000;
+    background: white; height: 50px; width: 240px;
+    border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    display: flex; align-items: center; padding: 0 15px;
+    /* Transition synchronisée avec le menu */
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Quand le menu est ouvert, on décale la recherche à droite du panneau */
+/* Décalage dynamique quand le menu est ouvert */
 .menu-wrapper.open ~ .search-floating {
-    left: 335px; /* 300px (largeur menu) + 20px (marge) + 15px d'écart */
-    opacity: 1; /* On s'assure qu'elle reste visible */
+    left: 335px; /* Largeur menu (300) + Marge (20) + Écart (15) */
 }
 
-.search-floating input { 
-    border: none; 
-    flex: 1; 
-    outline: none; 
-    font-size: 14px; 
-    background: transparent;
-}
+.search-floating input { border: none; flex: 1; outline: none; font-size: 14px; background: transparent; }
+.search-btn { background: none; border: none; cursor: pointer; display: flex; padding: 5px; }
 
-.search-btn { 
-    background: none; 
-    border: none; 
-    cursor: pointer; 
-    display: flex; 
-    padding: 5px;
-}
-
-/* On décale légèrement la recherche quand le menu s'ouvre pour le style */
-.menu-wrapper.open ~ .search-floating { transform: translateX(250px); opacity: 0; pointer-events: none; }
-
-.search-floating input { border: none; flex: 1; outline: none; font-size: 14px; }
-.search-btn { background: none; border: none; cursor: pointer; display: flex; }
-
-/* Style des cartes de filtres (Ton design) */
+/* --- FILTRES & STATS --- */
 .filter-card {
-    display: flex; align-items: center; padding: 10px;
+    display: flex; align-items: center; padding: 12px;
     border: 1px solid #f1f5f9; border-radius: 10px; margin-bottom: 8px;
-    cursor: pointer; font-size: 13px; font-weight: 600; color: #334155;
+    cursor: pointer; font-size: 13px; font-weight: 600; color: #334155; transition: 0.2s;
 }
+.filter-card:hover { border-color: #009597; background: #f0fdfa; }
 .filter-card input { margin-right: 12px; accent-color: #009597; }
-.dot { width: 8px; height: 8px; border-radius: 50%; margin-right: 10px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 12px; }
 
 .stats-card {
     margin-top: 15px; padding: 15px; background: #f8fafc;
-    border-radius: 12px; text-align: center;
+    border-radius: 12px; text-align: center; border: 1px solid #e2e8f0;
 }
 #site-count { font-size: 24px; font-weight: 800; color: #009597; display: block; }
+.stats-card small { font-size: 9px; color: #94a3b8; font-weight: 800; }

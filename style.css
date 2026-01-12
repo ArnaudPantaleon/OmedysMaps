@@ -20,23 +20,25 @@ body, html {
 
 #map { height: 100vh; width: 100vw; z-index: 1; }
 
-/* --- BARRE DE RECHERCHE CENTRÉE --- */
+/* --- BARRE DE RECHERCHE CENTRÉE (FIXE) --- */
 .search-floating { 
     position: fixed; 
     top: 15px; 
-    left: 50%; /* Positionne le début à 50% */
-    transform: translateX(-50%); /* Recule de la moitié de sa propre largeur */
-    z-index: 5000; /* Priorité maximale */
+    left: 50%; 
+    transform: translateX(-50%); 
+    z-index: 5000; /* Priorité maximale absolue */
     background: var(--white); 
     height: 50px; 
-    width: 320px; /* Largeur confortable pour le centre */
+    width: 320px; 
     border-radius: 16px; 
     box-shadow: var(--shadow); 
     display: flex; 
     align-items: center; 
     padding: 0 15px;
     border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
 }
+
 .search-floating input { border: none; flex: 1; outline: none; font-size: 14px; background: transparent; color: var(--text-dark); }
 .search-btn { background: none; border: none; cursor: pointer; font-size: 18px; }
 
@@ -46,14 +48,15 @@ body, html {
     background: var(--white); width: 50px; height: 50px; 
     border-radius: 18px; box-shadow: var(--shadow); 
     transition: 0.5s cubic-bezier(0.16, 1, 0.3, 1); 
-    overflow: hidden; 
+    /* IMPORTANT: On ne met pas overflow hidden ici pour ne pas mordre la recherche */
 }
 
 .menu-wrapper.open { 
-    width: 320px; 
+    width: 340px; 
     height: auto; 
-    max-height: 92vh;
+    max-height: 90vh;
     border-radius: 28px; 
+    overflow-y: auto; /* Le scroll se fait à l'intérieur quand c'est ouvert */
 }
 
 .menu-toggle { width: 50px; height: 50px; background: none; border: none; cursor: pointer; position: absolute; top: 0; left: 0; z-index: 4001; }
@@ -86,54 +89,25 @@ body, html {
 #site-count { font-size: 36px; font-weight: 900; color: var(--text-dark); line-height: 1; }
 .stat-unit { font-size: 11px; font-weight: 800; color: var(--primary); }
 
-/* --- POPUP BENTO --- */
-.leaflet-popup-content-wrapper { border-radius: 28px !important; padding: 0 !important; box-shadow: 0 20px 50px rgba(0,0,0,0.15) !important; }
-.leaflet-popup-content { margin: 0 !important; width: 290px !important; }
-.leaflet-popup-tip-container { display: none; }
-.bento-card { padding: 25px; color: var(--text-slate); }
-.bento-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-.bento-type { font-size: 10px; font-weight: 800; color: var(--text-light); letter-spacing: 0.5px; }
-.bento-status { padding: 5px 12px; border-radius: 50px; font-size: 9px; font-weight: 800; color: var(--white); }
-.bento-title { margin: 0 0 15px 0; font-size: 20px; font-weight: 800; color: var(--primary); line-height: 1.2; }
-.bento-info-row { display: flex; gap: 10px; margin-bottom: 15px; }
-.info-block { flex: 1; background: var(--bg-main); border: 1px solid #f1f5f9; padding: 12px; border-radius: 15px; }
-.info-label { font-size: 9px; font-weight: 800; color: var(--text-light); display: block; margin-bottom: 2px; }
-.info-value { font-size: 12px; font-weight: 700; color: #334155; }
-.bento-address { display: flex; gap: 8px; font-size: 13px; color: #64748b; margin-bottom: 20px; line-height: 1.4; }
-.bento-call-btn { display: flex; align-items: center; justify-content: center; gap: 10px; background: var(--primary-soft); border: 1px solid var(--primary-border); height: 50px; border-radius: 16px; text-decoration: none !important; color: #008080 !important; font-weight: 800; font-size: 16px; transition: 0.2s; }
-
-/* --- RESPONSIVE MOBILE (Correctif Centrage & Chevauchement) --- */
-@media (max-width: 480px) {
-    /* On repositionne la barre pour qu'elle ne soit plus centrée sur mobile */
-    .search-floating {
-        width: calc(100% - 90px); /* Prend toute la largeur moins le bouton burger */
-        left: 75px; /* Aligné après le bouton menu */
-        transform: none; /* On annule le centrage horizontal */
+/* --- RESPONSIVE MOBILE (CORRECTIF FINAL) --- */
+@media (max-width: 480px) { 
+    .search-floating { 
+        width: calc(100% - 100px); 
+        left: auto;
+        right: 15px; 
+        transform: none; 
         top: 15px;
-        height: 50px;
-        z-index: 3000; /* Un peu moins que le menu ouvert */
     }
 
-    /* Quand le menu est OUVERT sur mobile */
-    .menu-wrapper.open {
-        width: 100vw; /* Prend toute la largeur */
-        height: 100vh; /* Prend toute la hauteur */
-        top: 0;
-        left: 0;
-        border-radius: 0;
-        z-index: 6000; /* Passe au-dessus de la barre de recherche */
+    .menu-wrapper.open { 
+        width: calc(100vw - 30px); /* Laisse une petite marge de 15px de chaque côté */
+        left: 15px; 
+        max-height: 85vh;
     }
 
-    /* On cache la barre de recherche quand le menu est ouvert pour éviter le bug visuel */
-    body:has(.menu-wrapper.open) .search-floating {
-        display: none;
-    }
-
-    .menu-content {
-        padding: 80px 20px 40px;
-    }
-
-    .leaflet-popup-content {
-        width: 260px !important;
+    /* Optionnel : cacher la barre de recherche si le menu est ouvert pour la clarté */
+    .menu-wrapper.open ~ .search-floating {
+        opacity: 0;
+        pointer-events: none;
     }
 }

@@ -1,7 +1,4 @@
-// --- CONFIGURATION INITIALE ---
-const map = L.map('map', {
-    zoomControl: false 
-}).setView([46.603354, 1.888334], 6);
+const map = L.map('map', { zoomControl: false }).setView([46.603354, 1.888334], 6);
 
 L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     attribution: '© OpenStreetMap contributors'
@@ -11,38 +8,41 @@ let markersLayer = L.layerGroup().addTo(map);
 let allData = [];
 let activeFilters = new Set();
 
-// --- LOGIQUE DU MENU ---
 function toggleMenu() {
-    const wrapper = document.getElementById('menuWrapper');
-    wrapper.classList.toggle('open');
+    document.getElementById('menuWrapper').classList.toggle('open');
 }
 
-// --- NETTOYAGE DES DONNÉES (Fix Bug TMSTMS) ---
 function formatTMS(val) {
     if (!val) return "N/A";
-    // Supprime "TMS" s'il est déjà écrit pour éviter les doublons
     let clean = val.toString().toUpperCase().replace("TMS", "").trim();
     return "TMS " + clean;
 }
 
-// --- RÉCUPÉRATION DES DONNÉES (Structure { data: [] }) ---
+// --- CHARGEMENT ET FUSION ---
 async function loadData() {
     try {
-        // Remplace par ton URL Google Apps Script
-        const response = await fetch('TON_URL_APPS_SCRIPT');
-        const json = await response.json();
-        
-        // CORRECTION ICI : On accède à json.data
-        allData = json.data || []; 
+        const [resSalle, resCabinet] = await Promise.all([
+            fetch('salle.json'),
+            fetch('cabinet.json')
+        ]);
+
+        const jsonSalle = await resSalle.json();
+        const jsonCabinet = await resCabinet.json();
+
+        // On extrait les tableaux "data" de chaque objet de la liste
+        // Structure: [{data:[]}] -> on prend le premier élément [0].data
+        const listSalle = jsonSalle[0].data || [];
+        const listCabinet = jsonCabinet[0].data || [];
+
+        allData = [...listSalle, ...listCabinet];
         
         createFilters(allData);
         updateDisplay();
     } catch (error) {
-        console.error("Erreur de chargement:", error);
+        console.error("Erreur de lecture des fichiers JSON :", error);
     }
 }
 
-// --- CRÉATION DES FILTRES ---
 function createFilters(data) {
     const statuses = [...new Set(data.map(item => item.Statut))].filter(s => s);
     const filterList = document.getElementById('filter-list');
@@ -53,7 +53,6 @@ function createFilters(data) {
         const card = document.createElement('label');
         card.className = 'filter-card';
         card.style.setProperty('--status-color', color);
-        
         card.innerHTML = `
             <input type="checkbox" value="${status}" onchange="toggleFilter('${status}')">
             <span class="dot"></span>
@@ -64,21 +63,13 @@ function createFilters(data) {
 }
 
 function toggleFilter(status) {
-    if (activeFilters.has(status)) {
-        activeFilters.delete(status);
-    } else {
-        activeFilters.add(status);
-    }
+    activeFilters.has(status) ? activeFilters.delete(status) : activeFilters.add(status);
     updateDisplay();
 }
 
-// --- MISE À JOUR DE LA CARTE ---
 function updateDisplay() {
     markersLayer.clearLayers();
-    
-    const filteredData = allData.filter(item => 
-        activeFilters.size === 0 || activeFilters.has(item.Statut)
-    );
+    const filteredData = allData.filter(item => activeFilters.size === 0 || activeFilters.has(item.Statut));
 
     filteredData.forEach(item => {
         if (!item.Lat || !item.Lng) return;
@@ -91,68 +82,47 @@ function updateDisplay() {
             fillOpacity: 0.9
         });
 
-        // Structure Bento pour la Popup (ATT et TMS côte à côte)
         const popupContent = `
-            <div class="bento-card">
+            <div class="bento-popup">
                 <h2 class="bento-title">${item.Nom || 'Site Omedys'}</h2>
                 <div class="bento-grid">
-                    <div class="info-block">
-                        <span class="info-label">ATT</span>
-                        <span class="info-value">${item.ATT || 'N/A'}</span>
+                    <div class="info-tile">
+                        <span class="tile-label">Référent</span>
+                        <span class="tile-value">${item.ATT || 'N/A'}</span>
                     </div>
-                    <div class="info-block">
-                        <span class="info-label">CODE</span>
-                        <span class="info-value">${formatTMS(item.TMS || item.Tms)}</span>
+                    <div class="info-tile">
+                        <span class="tile-label">Code</span>
+                        <span class="tile-value">${formatTMS(item.TMS || item.Tms)}</span>
                     </div>
                 </div>
-                <div class="info-block" style="margin-bottom: 15px;">
-                    <span class="info-label">ADRESSE</span>
-                    <span class="info-value">${item.Adresse || 'N/A'}</span>
+                <div class="info-tile" style="margin-bottom:12px;">
+                    <span class="tile-label">Adresse</span>
+                    <span class="tile-value">${item.Adresse || 'N/A'}</span>
                 </div>
-                <a href="tel:${item.Tel}" class="bento-call-btn">📞 Appeler le site</a>
+                <a href="tel:${item.Tel}" class="call-btn">📞 Appeler le site</a>
             </div>
         `;
-
         marker.bindPopup(popupContent);
         markersLayer.addLayer(marker);
     });
-
     document.getElementById('site-count').innerText = filteredData.length;
 }
 
-// --- RECHERCHE ET ZOOM ---
 async function rechercheEtZoom() {
     const query = document.getElementById('query').value;
     if (!query) return;
-
     try {
-        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}`);
-        const data = await response.json();
-        
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}`);
+        const data = await res.json();
         if (data.length > 0) {
-            const { lat, lon } = data[0];
-            map.flyTo([lat, lon], 12, { duration: 1.5 });
-            
-            // Ferme le menu sur mobile après recherche
-            if(window.innerWidth < 480) {
-                document.getElementById('menuWrapper').classList.remove('open');
-            }
+            map.flyTo([data[0].lat, data[0].lon], 12);
         }
-    } catch (error) {
-        console.error("Erreur recherche:", error);
-    }
+    } catch(e) {}
 }
 
-// --- UTILITAIRES ---
 function getStatusColor(status) {
-    const colors = {
-        'Actif': '#009597',
-        'En attente': '#f59e0b',
-        'Projet': '#6366f1',
-        'Maintenance': '#ef4444'
-    };
+    const colors = { 'Actif': '#009597', 'En attente': '#f59e0b', 'Projet': '#6366f1', 'Maintenance': '#ef4444' };
     return colors[status] || '#94a3b8';
 }
 
-// Lancement
 loadData();

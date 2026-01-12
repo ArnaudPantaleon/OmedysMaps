@@ -51,31 +51,41 @@ function creerMarqueurs(data) {
 
         if (config.checked && (!isESMS || statusSettings["TYPE_ESMS"].checked)) marker.addTo(map);
 
-        // --- TON DESIGN DE POPUP CONSERVÉ ---
         const tmsHtml = typeUpper !== "CABINET" ? `
             <div style="flex: 1;">
                 <span style="font-size: 10px; color: #a0aec0; text-transform: uppercase; font-weight: bold; display: block;">TMS</span>
                 <span style="font-size: 11px; color: #2d3748; font-weight: 600;">${item.TMS || "—"}</span>
             </div>` : '';
 
+        // On vérifie si un numéro existe dans tes données (ex: item.Phone ou item.Telephone)
+        const phoneRaw = item.Phone || item.Telephone || ""; 
+        const phoneHtml = phoneRaw ? `
+            <div style="margin-top: 12px; padding: 8px; background: #f0fdfa; border-radius: 8px; text-align: center;">
+                <a href="tel:${phoneRaw.replace(/\s/g, '')}" style="text-decoration: none; color: #009597; font-weight: bold; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                    ${phoneRaw}
+                </a>
+            </div>` : '';
+
         marker.bindPopup(`
-                <div style="min-width:250px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <span style="background: #edf2f7; color: #4a5568; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 800;">${typeRaw}</span>
-                        <span style="color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; background:${color}">${status}</span>
-                    </div>
-                    <b style="color:#009597; font-size:15px; display:block; margin-bottom:4px;">${item.Name}</b>
-                    <div style="color: #718096; font-size: 11px; margin: 8px 0;">📍 ${item.Address || "—"}</div>
-                    <div style="display: flex; gap: 15px; border-top: 1px dashed #e2e8f0; padding-top: 10px; margin-top: 10px;">
-                        <div style="flex: 1;">
-                            <span style="font-size: 10px; color: #a0aec0; font-weight: bold; display: block;">ATT</span>
-                            <span style="font-size: 11px; color: #2d3748; font-weight: 600;">${item.ATT || "—"}</span>
-                        </div>
-                        ${tmsHtml}
-                    </div>
+            <div style="min-width:250px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="background: #edf2f7; color: #4a5568; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 800;">${typeRaw}</span>
+                    <span style="color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; background:${color}">${status}</span>
                 </div>
-            `);
-        // --- FIN DE TON DESIGN ---
+                <b style="color:#009597; font-size:15px; display:block; margin-bottom:4px;">${item.Name}</b>
+                <div style="color: #718096; font-size: 11px; margin: 8px 0;">📍 ${item.Address || "—"}</div>
+                
+                <div style="display: flex; gap: 15px; border-top: 1px dashed #e2e8f0; padding-top: 10px; margin-top: 10px;">
+                    <div style="flex: 1;">
+                        <span style="font-size: 10px; color: #a0aec0; font-weight: bold; display: block;">ATT</span>
+                        <span style="font-size: 11px; color: #2d3748; font-weight: 600;">${item.ATT || "—"}</span>
+                    </div>
+                    ${tmsHtml}
+                </div>
+                ${phoneHtml}
+            </div>
+        `);
 
         allMarkers.push({ marker, status, isESMS });
     });

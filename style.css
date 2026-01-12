@@ -1,4 +1,4 @@
-/* --- CONFIGURATION GÉNÉRALE --- */
+/* --- VARIABLES --- */
 :root {
     --primary: #009597;
     --bg-main: #f8fafc;
@@ -7,18 +7,58 @@
     --shadow: 0 10px 40px rgba(0,0,0,0.1);
 }
 
-body, html { margin: 0; padding: 0; height: 100%; font-family: sans-serif; overflow: hidden; background: #eee; }
+body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
 #map { height: 100vh; width: 100vw; z-index: 1; }
 
-/* --- BARRE DE RECHERCHE (Fixe en haut à droite) --- */
+/* --- BARRE SUPÉRIEURE (L'astuce pour éviter les chevauchements) --- */
+.top-interface {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    right: 15px;
+    display: flex;
+    gap: 12px;
+    z-index: 5000;
+    pointer-events: none; /* Pour pouvoir cliquer sur la carte entre les éléments */
+}
+
+/* --- BOUTON MENU BURGER --- */
+.menu-wrapper { 
+    pointer-events: auto;
+    background: var(--white); 
+    width: 50px; 
+    height: 50px; 
+    border-radius: 16px; 
+    box-shadow: var(--shadow); 
+    transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.menu-wrapper.open { 
+    width: 320px; 
+    height: auto; 
+    max-height: 85vh; 
+    border-radius: 24px;
+}
+
+.menu-toggle { width: 50px; height: 50px; background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.burger-icon span { display: block; position: absolute; height: 2px; width: 20px; background: var(--primary); transition: .3s; }
+.burger-icon span:nth-child(1) { transform: translateY(-6px); }
+.burger-icon span:nth-child(3) { transform: translateY(6px); }
+
+.menu-wrapper.open .burger-icon span:nth-child(1) { transform: translateY(0) rotate(45deg); }
+.menu-wrapper.open .burger-icon span:nth-child(2) { opacity: 0; }
+.menu-wrapper.open .burger-icon span:nth-child(3) { transform: translateY(0) rotate(-45deg); }
+
+/* --- BARRE DE RECHERCHE (Enfin alignée) --- */
 .search-floating { 
-    position: fixed; 
-    top: 15px; 
-    right: 15px; /* On la cale à droite */
-    z-index: 5000; 
+    pointer-events: auto;
     background: var(--white); 
     height: 50px; 
-    width: 250px; /* Taille fixe sur PC */
+    flex: 1; /* Elle prend toute la place restante */
+    max-width: 400px; 
     border-radius: 16px; 
     box-shadow: var(--shadow); 
     display: flex; 
@@ -27,61 +67,39 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: sans-serif; overf
     border: 1px solid #e2e8f0;
 }
 
-/* Centrage uniquement sur très grand écran si tu préfères */
-@media (min-width: 1024px) {
-    .search-floating { left: 50%; right: auto; transform: translateX(-50%); width: 400px; }
-}
+.search-floating input { border: none; flex: 1; outline: none; font-size: 14px; background: transparent; width: 100%; }
+.search-btn { background: none; border: none; cursor: pointer; color: var(--primary); font-size: 18px; }
 
-.search-floating input { border: none; flex: 1; outline: none; font-size: 14px; background: transparent; }
-.search-btn { background: none; border: none; cursor: pointer; }
-
-/* --- MENU BENTO (Fixe en haut à gauche) --- */
-.menu-wrapper { 
-    position: fixed; top: 15px; left: 15px; z-index: 4000; 
-    background: var(--white); width: 50px; height: 50px; 
-    border-radius: 18px; box-shadow: var(--shadow); 
-    transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.menu-wrapper.open { 
-    width: 320px; height: auto; max-height: 90vh; border-radius: 28px; overflow-y: auto;
-}
-
-.menu-toggle { width: 50px; height: 50px; background: none; border: none; cursor: pointer; position: absolute; top: 0; left: 0; z-index: 4001; }
-.burger-icon span { display: block; position: absolute; height: 2px; width: 20px; left: 15px; background: var(--primary); transition: .3s; }
-.burger-icon span:nth-child(1) { top: 18px; }
-.burger-icon span:nth-child(2) { top: 24px; }
-.burger-icon span:nth-child(3) { top: 30px; }
-
-.menu-wrapper.open .burger-icon span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
-.menu-wrapper.open .burger-icon span:nth-child(2) { opacity: 0; }
-.menu-wrapper.open .burger-icon span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
-
-.menu-content { opacity: 0; padding: 25px; transition: 0.3s; pointer-events: none; margin-top: 50px; }
+/* --- CONTENU DU MENU (Bento Look) --- */
+.menu-content { opacity: 0; padding: 20px; transition: 0.3s; pointer-events: none; margin-top: 50px; }
 .menu-wrapper.open .menu-content { opacity: 1; pointer-events: all; }
+.menu-title { font-size: 20px; font-weight: 800; color: var(--text-dark); margin-bottom: 20px; }
 
-/* --- STATS BENTO --- */
-.stat-bento-tile { margin-top: 20px; padding: 20px; background: #f8fafc; border-radius: 24px; border: 1px solid #e2e8f0; }
-#site-count { font-size: 38px; font-weight: 900; color: var(--text-dark); display: block; line-height: 1; }
-.stat-unit { font-size: 11px; font-weight: 800; color: var(--primary); text-transform: uppercase; }
+/* FILTRES */
+#filter-list { display: flex; flex-direction: column; gap: 10px; }
+.filter-card { 
+    display: flex; align-items: center; padding: 12px 16px; 
+    background: #fff; border: 2px solid #f1f5f9; border-radius: 16px; 
+    cursor: pointer; opacity: 0.5; transition: 0.2s; 
+}
+.filter-card:has(input:checked) { opacity: 1; border-color: var(--status-color); background: var(--bg-main); }
+.filter-card input { display: none; }
+.dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 12px; background: var(--status-color); }
+.label { font-size: 14px; font-weight: 700; color: var(--text-dark); }
 
-/* --- RESPONSIVE MOBILE (SAUVETAGE) --- */
+/* STAT TILE BENTO */
+.stat-bento-tile { 
+    margin-top: 25px; padding: 20px; background: #f8fafc; 
+    border-radius: 24px; border: 1px solid #e2e8f0; 
+    display: flex; flex-direction: column; gap: 4px;
+}
+#site-count { font-size: 42px; font-weight: 900; color: var(--text-dark); line-height: 1; }
+.stat-unit { font-size: 11px; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
+
+/* --- MOBILE --- */
 @media (max-width: 480px) {
-    /* Sur mobile, la recherche prend la place qu'il reste à côté du burger */
-    .search-floating {
-        left: 75px; 
-        right: 15px;
-        width: auto;
-        height: 50px;
-    }
-
-    /* Quand le menu s'ouvre, on cache la barre de recherche pour libérer l'espace */
-    .menu-wrapper.open ~ .search-floating {
-        display: none;
-    }
-
-    .menu-wrapper.open {
-        width: calc(100vw - 30px);
-        left: 15px;
-    }
+    .search-floating { max-width: none; }
+    /* Cache la recherche quand le menu est ouvert pour ne pas surcharger */
+    body:has(.menu-wrapper.open) .search-floating { display: none; }
+    .menu-wrapper.open { width: calc(100vw - 30px); }
 }

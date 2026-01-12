@@ -11,24 +11,21 @@
 
     <div id="map"></div>
 
-    <div class="top-controls">
+    <div class="top-left-controls">
         <button class="menu-trigger" onclick="toggleMenu()">☰</button>
-        
-        <div class="search-floating">
+        <div class="search-bar-floating">
             <input type="text" id="query" placeholder="Chercher une ville..." onkeypress="if(event.key === 'Enter') rechercheEtZoom()">
-            <button onclick="rechercheEtZoom()" class="search-icon">🔍</button>
+            <button onclick="rechercheEtZoom()" class="search-btn">🔍</button>
         </div>
     </div>
 
-    <div id="side-menu" class="floating-panel">
+    <div id="side-menu" class="filter-panel">
         <div class="panel-header">
             <h3 style="margin:0; color:#009597;">Filtres</h3>
-            <button onclick="toggleMenu()" class="close-btn">✕</button>
+            <button onclick="toggleMenu()" class="close-x">✕</button>
         </div>
-
         <div id="filter-list"></div>
-
-        <div class="stats-card">
+        <div class="stats-footer">
             <span id="site-count">0</span>
             <small>SITES AFFICHÉS</small>
         </div>

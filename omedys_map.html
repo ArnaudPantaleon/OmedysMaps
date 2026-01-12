@@ -160,12 +160,20 @@
                     if (isNaN(lat) || isNaN(lng)) return;
 
                     const status = (item.Statut || "Inconnu").trim();
+                    const type = (item.Type || "Salle").trim();
                     const color = statusSettings[status]?.color || "#7f8c8d";
 
                     const marker = L.circleMarker([lat, lng], {
-                        radius: item.Type === "CABINET" ? 10 : 7,
+                        radius: type === "CABINET" ? 10 : 7,
                         fillColor: color, color: "#fff", weight: 2, fillOpacity: 0.9
                     }).addTo(map);
+
+                    // Bloc TMS conditionnel (uniquement si ce n'est pas un Cabinet)
+                    const tmsHtml = type !== "CABINET" ? `
+                        <div>
+                            <span class="info-label">TMS</span>
+                            <span class="info-value">${item.TMS || "Non spécifié"}</span>
+                        </div>` : '';
 
                     let telBtn = "";
                     if (item.Phone) {
@@ -177,7 +185,7 @@
                     marker.bindPopup(`
                         <div style="min-width:220px">
                             <div class="popup-header">
-                                <span class="type-badge">${item.Type || 'Salle'}</span>
+                                <span class="type-badge">${type}</span>
                                 <span class="status-badge" style="background:${color}">${status}</span>
                             </div>
                             
@@ -193,10 +201,7 @@
                                     <span class="info-label">ATT</span>
                                     <span class="info-value">${item.ATT || "Non spécifié"}</span>
                                 </div>
-                                <div>
-                                    <span class="info-label">TMS</span>
-                                    <span class="info-value">${item.TMS || "Non spécifié"}</span>
-                                </div>
+                                ${tmsHtml}
                             </div>
                             
                             ${telBtn}
@@ -229,4 +234,3 @@
     </script>
 </body>
 </html>
-

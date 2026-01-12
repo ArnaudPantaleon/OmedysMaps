@@ -19,7 +19,10 @@ async function chargerDonnees() {
             fetch('salles.json').then(r => r.json()),
             fetch('cabinet.json').then(r => r.json())
         ]);
-        creerMarqueurs([...(resS.data || resS[0]?.data || []), ...(resC.data || resC[0]?.data || [])]);
+        // Fusion des données
+        const dataSalles = resS.data || (Array.isArray(resS) ? (resS[0].data || resS) : []);
+        const dataCabinets = resC.data || (Array.isArray(resC) ? (resC[0].data || resC) : []);
+        creerMarqueurs([...dataSalles, ...dataCabinets]);
     } catch (e) { console.error("Erreur chargement", e); }
 }
 
@@ -29,53 +32,65 @@ function creerMarqueurs(data) {
 
     data.forEach(item => {
         const lat = parseFloat(item.Latitude), lng = parseFloat(item.Longitude);
-        if (isNaN(lat)) return;
+        if (isNaN(lat) || isNaN(lng)) return;
 
+        // --- Définition des variables ---
         const status = (item.Statut || "").trim();
-        const type = (item.Type || "").trim();
-        const isCab = type.toUpperCase() === "CABINET";
-        const conf = statusSettings[status] || { color: "#7f8c8d", checked: true };
+        const typeRaw = (item.Type || "SITE").trim(); // Correction ici : typeRaw est maintenant défini
+        const isCabinet = typeRaw.toUpperCase() === "CABINET";
+        const isESMS = typeRaw.toUpperCase().includes("ESMS") || typeRaw.toUpperCase().includes("EHPAD");
+        const config = statusSettings[status] || { color: "#7f8c8d", checked: true };
+        
+        const phone = item.Phone || item.Telephone || "";
         const att = item.ATT || item.Att || "";
         const tms = item.TMS || item.Tms || "";
-        const tel = item.Phone || item.Telephone || "";
 
+        // --- Template HTML (conforme au nouveau CSS) ---
         let popupContent = `
             <div class="custom-card">
                 <div class="card-header">
-                    <div class="type-text">${typeRaw.replace(' ', '<br>')}</div>
+                    <div class="type-text">${typeRaw}</div>
                     <div class="status-pill" style="background:${config.color}">${status}</div>
                 </div>
-        
+
                 <div class="title-group">
                     <h4 class="site-name">${item.Name}</h4>
                     ${att ? `<div class="att-line">• ATT : ${att}</div>` : ''}
                 </div>
-        
+
                 <div class="address-line">
                     <span class="pin-icon">📍</span>
-                    <span>${item.Address || ""}</span>
+                    <span>${item.Address || "Adresse non renseignée"}</span>
                 </div>
-        
+
                 ${!isCabinet && tms ? `
                     <div class="tms-container">
                         <span class="tms-label">TMS</span>
                         <span class="tms-val">${tms}</span>
                     </div>
                 ` : ''}
-        
+
                 ${phone ? `
                     <a href="tel:${phone.replace(/\s/g, '')}" class="call-link">
                         <span>📞</span> Appeler le site
                     </a>
                 ` : ''}
             </div>`;
-        
-        marker.bindPopup(popupContent, { 
-            maxWidth: 320,
-            minWidth: 280,
-            closeButton: true 
+
+        const marker = L.circleMarker([lat, lng], {
+            radius: isCabinet ? 10 : 7,
+            fillColor: config.color,
+            color: "#fff",
+            weight: 2,
+            fillOpacity: 0.9
         });
-        allMarkers.push({ marker: m, status, isESMS: type.toUpperCase().includes("ESMS") });
+
+        // Logique d'affichage initiale
+        const shouldShow = isESMS ? (config.checked && statusSettings["TYPE_ESMS"].checked) : config.checked;
+        if (shouldShow) marker.addTo(map);
+
+        marker.bindPopup(popupContent);
+        allMarkers.push({ marker, status, isESMS });
     });
     renderFilters();
 }
@@ -90,28 +105,36 @@ function renderFilters() {
     updateStats();
 }
 
-window.toggleStatus = (n, c) => {
-    statusSettings[n].checked = c;
+window.toggleStatus = (name, checked) => {
+    statusSettings[name].checked = checked;
     allMarkers.forEach(m => {
-        const show = m.isESMS ? (statusSettings[m.status].checked && statusSettings["TYPE_ESMS"].checked) : statusSettings[m.status].checked;
+        const config = statusSettings[m.status] || { checked: true };
+        const show = m.isESMS ? (config.checked && statusSettings["TYPE_ESMS"].checked) : config.checked;
         if (show) m.marker.addTo(map); else map.removeLayer(m.marker);
     });
     updateStats();
 };
 
-function updateStats() { document.getElementById('site-count').innerText = allMarkers.filter(m => map.hasLayer(m.marker)).length; }
+function updateStats() {
+    const count = allMarkers.filter(m => map.hasLayer(m.marker)).length;
+    document.getElementById('site-count').innerText = count;
+}
 
 function rechercheEtZoom() {
     const q = document.getElementById('query').value;
     if(!q) return;
     fetch(`https://api-adresse.data.gouv.fr/search/?q=${q}&limit=1`)
         .then(r => r.json()).then(res => {
-            if (res.features.length) {
+            if (res.features && res.features.length) {
                 const [lon, lat] = res.features[0].geometry.coordinates;
                 map.flyTo([lat, lon], 12);
             }
         });
 }
 
-function toggleMenu() { document.getElementById('menuWrapper').classList.toggle('open'); }
+function toggleMenu() {
+    document.getElementById('menuWrapper').classList.toggle('open');
+}
+
+// Lancement
 chargerDonnees();

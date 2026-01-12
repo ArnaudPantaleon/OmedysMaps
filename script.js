@@ -10,7 +10,14 @@ const statusSettings = {
 };
 
 let map = L.map('map', { zoomControl: false }).setView([46.6033, 1.8883], 6);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap'
+}).addTo(map);
+
+// Correction pour les tuiles blanches : Force le rendu
+setTimeout(() => { map.invalidateSize(); }, 400);
 
 let allMarkers = [];
 
@@ -22,7 +29,7 @@ async function chargerDonnees() {
         ]);
         const data = [...(resSalles[0]?.data || []), ...(resCabinets[0]?.data || [])];
         creerMarqueurs(data);
-    } catch (err) { console.error("Erreur chargement:", err); }
+    } catch (err) { console.error("Erreur chargement JSON:", err); }
 }
 
 function creerMarqueurs(data) {
@@ -30,10 +37,12 @@ function creerMarqueurs(data) {
     allMarkers = [];
 
     data.forEach(item => {
+        // Nettoyage et validation des coordonnées
         const lat = parseFloat(item.Latitude || item.latitude);
         const lng = parseFloat(item.Longitude || item.longitude);
 
-        if (isNaN(lat) || isNaN(lng)) return; // Sécurité anti-crash
+        // Si pas de coordonnées, on ignore silencieusement (plus d'erreurs en console)
+        if (!lat || !lng || isNaN(lat) || isNaN(lng)) return;
 
         const status = (item.Statut || "Inconnu").trim();
         const type = (item.Type || "").trim().toUpperCase();
@@ -49,24 +58,7 @@ function creerMarqueurs(data) {
             marker.addTo(map);
         }
 
-        // --- POPUP ---
-        const tmsHtml = type !== "CABINET" ? `<div style="flex:1;"><span style="font-size:10px;color:#a0aec0;font-weight:bold;display:block;">TMS</span><span style="font-size:11px;color:#2d3748;font-weight:600;white-space:nowrap;">${item.TMS || "—"}</span></div>` : '';
-        
-        marker.bindPopup(`
-            <div style="min-width:230px;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                    <span style="background:#edf2f7;color:#4a5568;padding:2px 6px;border-radius:4px;font-size:9px;font-weight:800;">${type}</span>
-                    <span style="color:white;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:bold;background:${config.color}">${status}</span>
-                </div>
-                <b style="color:#009597;font-size:14px;display:block;">${item.Name}</b>
-                <div style="margin:8px 0;font-size:11px;color:#718096;">📍 ${item.Address || "—"}</div>
-                <div style="display:flex;gap:15px;border-top:1px dashed #e2e8f0;padding-top:10px;">
-                    <div style="flex:1;"><span style="font-size:10px;color:#a0aec0;font-weight:bold;display:block;">ATT</span><span style="font-size:11px;color:#2d3748;font-weight:600;white-space:nowrap;">${item.ATT || "—"}</span></div>
-                    ${tmsHtml}
-                </div>
-            </div>
-        `);
-
+        marker.bindPopup(`<b>${item.Name}</b><br>${item.Address || ''}`);
         allMarkers.push({ marker, status, isESMS });
     });
     renderFilters();
@@ -74,14 +66,14 @@ function creerMarqueurs(data) {
 
 function renderFilters() {
     const list = document.getElementById('filter-list');
-    list.className = "filter-list-container";
     list.innerHTML = Object.keys(statusSettings).map(key => {
         const s = statusSettings[key];
-        return `<label class="filter-item ${s.special ? 'special-case' : ''}">
-            <input type="checkbox" ${s.checked ? 'checked' : ''} onclick="toggleStatus('${key}', this.checked)">
-            <span class="dot" style="background:${s.color}"></span>
-            <span class="filter-label">${s.label}</span>
-        </label>`;
+        return `
+            <label class="filter-item ${s.special ? 'special-case' : ''}">
+                <input type="checkbox" ${s.checked ? 'checked' : ''} onclick="toggleStatus('${key}', this.checked)">
+                <span style="width:12px; height:12px; border-radius:50%; background:${s.color}; margin-right:10px;"></span>
+                <span style="font-size:14px; font-weight:600;">${s.label}</span>
+            </label>`;
     }).join('');
 
     if (!document.getElementById('stats-block')) {
@@ -89,7 +81,7 @@ function renderFilters() {
         const statsDiv = document.createElement('div');
         statsDiv.id = 'stats-block';
         statsDiv.className = 'stats-block';
-        statsDiv.innerHTML = `<div class="stats-header">📊 <span id="site-count">0</span> sites affichés</div><div class="stats-hint">Le décompte s'ajuste automatiquement selon vos filtres.</div>`;
+        statsDiv.innerHTML = `<span id="site-count">0</span><span style="font-size:12px; color:#64748b;">SITES AFFICHÉS</span>`;
         sideMenu.appendChild(statsDiv);
     }
     updateStats();
@@ -98,9 +90,7 @@ function renderFilters() {
 window.toggleStatus = (name, isChecked) => {
     statusSettings[name].checked = isChecked;
     allMarkers.forEach(m => {
-        const isStatusOn = statusSettings[m.status].checked;
-        const isEsmsOn = statusSettings["TYPE_ESMS"].checked;
-        const visible = m.isESMS ? (isStatusOn && isEsmsOn) : isStatusOn;
+        const visible = m.isESMS ? (statusSettings[m.status].checked && statusSettings["TYPE_ESMS"].checked) : statusSettings[m.status].checked;
         if (visible) m.marker.addTo(map); else map.removeLayer(m.marker);
     });
     updateStats();
@@ -110,20 +100,6 @@ function updateStats() {
     document.getElementById('site-count').innerText = allMarkers.filter(m => map.hasLayer(m.marker)).length;
 }
 
-function rechercheEtZoom() {
-    const q = document.getElementById('query').value;
-    fetch(`https://api-adresse.data.gouv.fr/search/?q=${q}&limit=1`)
-        .then(r => r.json()).then(res => {
-            if (res.features.length) {
-                const [lon, lat] = res.features[0].geometry.coordinates;
-                map.flyTo([lat, lon], 12);
-            }
-        });
-}
-
-function toggleMenu() {
-    const menu = document.getElementById('side-menu');
-    menu.classList.toggle('open');
-}
+function toggleMenu() { document.getElementById('side-menu').classList.toggle('open'); }
 
 chargerDonnees();

@@ -51,20 +51,24 @@ function creerMarqueurs(data) {
 
         if (config.checked && (!isESMS || statusSettings["TYPE_ESMS"].checked)) marker.addTo(map);
 
+        // LOGIQUE TÉLÉPHONE (S'adapte aux deux types)
+        // Remplacez 'Phone' par le nom exact de votre colonne dans le JSON
+        const phoneRaw = item.Phone || item.Telephone || ""; 
+        const phoneHtml = phoneRaw ? `
+            <div style="margin-top: 12px; border-top: 1px solid #f1f5f9; padding-top: 10px;">
+                <a href="tel:${phoneRaw.replace(/\s/g, '')}" 
+                   style="text-decoration: none; background: #f0fdfa; color: #009597; border: 1px solid #ccfbf1; 
+                          padding: 8px; border-radius: 8px; display: flex; align-items: center; justify-content: center; 
+                          gap: 10px; font-weight: 700; font-size: 13px;">
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                    ${phoneRaw}
+                </a>
+            </div>` : '';
+
         const tmsHtml = typeUpper !== "CABINET" ? `
             <div style="flex: 1;">
                 <span style="font-size: 10px; color: #a0aec0; text-transform: uppercase; font-weight: bold; display: block;">TMS</span>
                 <span style="font-size: 11px; color: #2d3748; font-weight: 600;">${item.TMS || "—"}</span>
-            </div>` : '';
-
-        // On vérifie si un numéro existe dans tes données (ex: item.Phone ou item.Telephone)
-        const phoneRaw = item.Phone || item.Telephone || ""; 
-        const phoneHtml = phoneRaw ? `
-            <div style="margin-top: 12px; padding: 8px; background: #f0fdfa; border-radius: 8px; text-align: center;">
-                <a href="tel:${phoneRaw.replace(/\s/g, '')}" style="text-decoration: none; color: #009597; font-weight: bold; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-                    ${phoneRaw}
-                </a>
             </div>` : '';
 
         marker.bindPopup(`

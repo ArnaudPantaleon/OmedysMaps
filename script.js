@@ -32,6 +32,7 @@ function creerMarqueurs(data) {
     data.forEach(item => {
         const lat = parseFloat(item.Latitude), lng = parseFloat(item.Longitude);
         if (isNaN(lat) || isNaN(lng)) return;
+
         const status = (item.Statut || "").trim();
         const typeRaw = (item.Type || "").trim().toUpperCase();
         const isESMS = typeRaw.includes("ESMS") || typeRaw.includes("EHPAD");
@@ -43,9 +44,24 @@ function creerMarqueurs(data) {
         });
 
         if (config.checked && (!isESMS || statusSettings["TYPE_ESMS"].checked)) marker.addTo(map);
-        
-        const phone = item.Phone || item.Telephone || "";
-        marker.bindPopup(`<b>${item.Name}</b><br>${item.Address || ""}${phone ? `<br><a href="tel:${phone}">${phone}</a>` : ""}`);
+
+        // --- RESTAURATION DU CONTENU DES POPUPS (ADRESSE + TEL) ---
+        const phoneRaw = item.Phone || item.Telephone || "";
+        const phoneHtml = phoneRaw ? `
+            <div style="margin-top:12px; border-top:1px solid #f1f5f9; padding-top:10px;">
+                <a href="tel:${phoneRaw.replace(/\s/g, '')}" style="text-decoration:none; background:#f0fdfa; color:#009597; border:1px solid #ccfbf1; padding:8px; border-radius:8px; display:flex; align-items:center; justify-content:center; gap:10px; font-weight:700; font-size:13px;">
+                    📞 ${phoneRaw}
+                </a>
+            </div>` : '';
+
+        marker.bindPopup(`
+            <div style="min-width:200px;">
+                <b style="color:#009597; font-size:14px;">${item.Name}</b><br>
+                <small style="color:#64748b;">${item.Address || ""}</small>
+                ${phoneHtml}
+            </div>
+        `);
+
         allMarkers.push({ marker, status, isESMS });
     });
     renderFilters();

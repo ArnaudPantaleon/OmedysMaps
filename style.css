@@ -1,15 +1,21 @@
 body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', system-ui, sans-serif; overflow: hidden; }
 #map { height: 100vh; width: 100vw; z-index: 1; }
 
-/* --- MENU --- */
 .menu-wrapper {
     position: fixed; top: 20px; left: 20px; z-index: 4000;
     background: white; width: 50px; height: 50px;
     border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    /* Ancrage en haut à gauche pour expansion vers bas-droite */
+    transform-origin: top left;
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     overflow: hidden;
 }
-.menu-wrapper.open { width: 320px; height: auto; max-height: calc(100vh - 40px); border-radius: 24px; }
+
+.menu-wrapper.open { 
+    width: 320px; 
+    height: 580px; 
+    border-radius: 24px; 
+}
 
 .menu-toggle { width: 50px; height: 50px; background: none; border: none; cursor: pointer; position: absolute; top: 0; left: 0; z-index: 10; }
 .burger-icon { width: 20px; height: 14px; position: relative; margin: 18px auto; }
@@ -22,11 +28,11 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', syste
 .menu-wrapper.open .burger-icon span:nth-child(2) { opacity: 0; transform: translateX(-10px); }
 .menu-wrapper.open .burger-icon span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 
-.menu-content { opacity: 0; padding: 60px 20px 20px; transition: opacity 0.3s; pointer-events: none; overflow-y: auto; max-height: calc(100vh - 80px); }
+.menu-content { opacity: 0; padding: 65px 20px 20px; transition: opacity 0.3s; pointer-events: none; }
 .menu-wrapper.open .menu-content { opacity: 1; pointer-events: auto; transition-delay: 0.2s; }
 .panel-header h3 { color: #009597; margin: 0 0 15px 0; font-size: 22px; font-weight: 800; }
 
-/* --- PASTILLES (SANS COCHE) --- */
+/* PASTILLES */
 #filter-list { display: flex; flex-direction: column; gap: 10px; }
 .filter-card {
     display: flex; align-items: center; padding: 12px 18px;
@@ -36,14 +42,13 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', syste
 }
 .filter-card input { display: none; }
 .filter-card:has(input:checked) {
-    filter: grayscale(0); opacity: 1;
-    background: white; border-color: var(--status-color);
+    filter: grayscale(0); opacity: 1; background: white; border-color: var(--status-color);
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 .dot { width: 12px; height: 12px; border-radius: 50%; margin-right: 15px; flex-shrink: 0; box-shadow: 0 0 0 2px white, 0 0 0 4px var(--status-color); }
 .label { font-size: 14px; font-weight: 700; color: #334155; flex: 1; }
 
-/* --- BARRE DE RECHERCHE CORRIGÉE --- */
+/* RECHERCHE APPLE STYLE */
 .search-floating {
     position: fixed; top: 20px; left: 85px; z-index: 3000;
     background: white; height: 50px; width: 280px;
@@ -51,17 +56,15 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', syste
     display: flex; align-items: center; padding: 0 18px;
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.search-floating input { border: none; flex: 1; outline: none; font-size: 15px; font-weight: 500; background: transparent; color: #334155; height: 100%; }
-.search-btn { background: none; border: none; cursor: pointer; display: flex; align-items: center; color: #64748b; padding: 0; margin-left: 10px; }
+.search-floating input { border: none; flex: 1; outline: none; font-size: 15px; font-weight: 500; background: transparent; color: #334155; }
+.search-btn { background: none; border: none; cursor: pointer; display: flex; align-items: center; color: #64748b; margin-left: 10px; }
 
-/* Dynamisme */
 .menu-wrapper.open ~ .search-floating { left: 355px; }
 
 @media (max-width: 600px) {
-    .menu-wrapper.open { width: calc(100% - 40px); height: 85vh; }
+    .menu-wrapper.open { width: calc(100% - 40px); height: 80vh; }
     .menu-wrapper.open ~ .search-floating { left: 20px; top: 85px; width: calc(100% - 75px); }
 }
 
 .stats-card { margin-top: 25px; padding: 18px; background: #f0fdfa; border-radius: 20px; text-align: center; border: 1px solid #ccfbf1; }
 #site-count { font-size: 28px; font-weight: 900; color: #009597; display: block; }
-.stats-card small { font-size: 11px; color: #5eead4; font-weight: 800; letter-spacing: 1px; }

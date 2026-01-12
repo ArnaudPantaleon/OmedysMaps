@@ -9,8 +9,14 @@ const statusSettings = {
     "TYPE_ESMS": { color: "#334155", label: "Afficher les ESMS", checked: false }
 };
 
-let map = L.map('map', { zoomControl: false }).setView([46.6, 2.0], 6);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+let map = L.map('map', { zoomControl: false }).setView([46.6033, 1.8883], 6);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
+// Réparation du bug d'affichage partiel de la carte
+setTimeout(() => { map.invalidateSize(); }, 400);
 
 let allMarkers = [];
 
@@ -22,7 +28,7 @@ async function chargerDonnees() {
         ]);
         const data = [...(resSalles[0]?.data || []), ...(resCabinets[0]?.data || [])];
         creerMarqueurs(data);
-    } catch (err) { console.error("Erreur de chargement", err); }
+    } catch (err) { console.error("Erreur chargement:", err); }
 }
 
 function creerMarqueurs(data) {
@@ -35,14 +41,45 @@ function creerMarqueurs(data) {
         if (isNaN(lat) || isNaN(lng)) return;
 
         const status = (item.Statut || "Inconnu").trim();
-        const config = statusSettings[status] || { color: "#94a3b8", checked: true };
+        const typeRaw = (item.Type || "").trim();
+        const typeUpper = typeRaw.toUpperCase();
+        const isESMS = typeUpper.includes("ESMS") || typeUpper.includes("EHPAD");
+
+        const config = statusSettings[status] || { color: "#7f8c8d", checked: true };
         
         const marker = L.circleMarker([lat, lng], {
-            radius: 7, fillColor: config.color, color: "#fff", weight: 2, fillOpacity: 0.9
-        }).bindPopup(`<b>${item.Name}</b><br>${status}`);
+            radius: typeUpper === "CABINET" ? 10 : 7,
+            fillColor: config.color, color: "#fff", weight: 2, fillOpacity: 0.9
+        });
 
-        if (config.checked) marker.addTo(map);
-        allMarkers.push({ marker, status, isESMS: (item.Type || "").includes("ESMS") });
+        if (config.checked && (!isESMS || statusSettings["TYPE_ESMS"].checked)) marker.addTo(map);
+
+        // VOTRE POPUP (DESIGN FINAL)
+        const tmsHtml = typeUpper !== "CABINET" ? `
+            <div style="flex: 1;">
+                <span style="font-size: 10px; color: #a0aec0; text-transform: uppercase; font-weight: bold; display: block;">TMS</span>
+                <span style="font-size: 11px; color: #2d3748; font-weight: 600;">${item.TMS || "—"}</span>
+            </div>` : '';
+
+        marker.bindPopup(`
+            <div style="min-width:250px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="background: #edf2f7; color: #4a5568; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 800;">${typeRaw}</span>
+                    <span style="color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; background:${config.color}">${status}</span>
+                </div>
+                <b style="color:#009597; font-size:15px; display:block; margin-bottom:4px;">${item.Name}</b>
+                <div style="color: #718096; font-size: 11px; margin: 8px 0;">📍 ${item.Address || "—"}</div>
+                <div style="display: flex; gap: 15px; border-top: 1px dashed #e2e8f0; padding-top: 10px; margin-top: 10px;">
+                    <div style="flex: 1;">
+                        <span style="font-size: 10px; color: #a0aec0; font-weight: bold; display: block;">ATT</span>
+                        <span style="font-size: 11px; color: #2d3748; font-weight: 600;">${item.ATT || "—"}</span>
+                    </div>
+                    ${tmsHtml}
+                </div>
+            </div>
+        `);
+
+        allMarkers.push({ marker, status, isESMS });
     });
     renderFilters();
 }
@@ -51,12 +88,11 @@ function renderFilters() {
     const list = document.getElementById('filter-list');
     list.innerHTML = Object.keys(statusSettings).map(key => {
         const s = statusSettings[key];
-        return `
-            <label class="filter-card">
-                <input type="checkbox" ${s.checked ? 'checked' : ''} onclick="toggleStatus('${key}', this.checked)">
-                <span class="dot" style="background:${s.color}"></span>
-                <span class="label">${s.label}</span>
-            </label>`;
+        return `<label class="filter-card">
+            <input type="checkbox" ${s.checked ? 'checked' : ''} onclick="toggleStatus('${key}', this.checked)">
+            <span class="dot" style="background:${s.color}"></span>
+            <span class="label">${s.label}</span>
+        </label>`;
     }).join('');
     updateStats();
 }
@@ -80,10 +116,11 @@ function rechercheEtZoom() {
         .then(r => r.json()).then(res => {
             if (res.features.length) {
                 const [lon, lat] = res.features[0].geometry.coordinates;
-                map.flyTo([lat, lon], 12);
+                map.flyTo([lat, lon], 13);
             }
         });
 }
 
 function toggleMenu() { document.getElementById('side-menu').classList.toggle('open'); }
+
 chargerDonnees();

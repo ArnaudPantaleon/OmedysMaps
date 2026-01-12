@@ -67,12 +67,37 @@ body, html {
 
 /* --- BARRE DE RECHERCHE --- */
 .search-floating { 
-    position: fixed; top: 15px; left: 75px; z-index: 3000; 
-    background: var(--white); height: 50px; width: 230px; 
-    border-radius: 16px; box-shadow: 0 8px 25px rgba(0,0,0,0.05); 
-    display: flex; align-items: center; padding: 0 15px; 
+    position: fixed; 
+    top: 15px; 
+    left: 75px; 
+    z-index: 5000; /* Plus haut que le menu */
+    background: var(--white); 
+    height: 50px; 
+    width: 230px; 
+    border-radius: 16px; 
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1); 
+    display: flex; 
+    align-items: center; 
+    padding: 0 15px;
+    border: 1px solid #e2e8f0;
 }
-.search-floating input { border: none; flex: 1; outline: none; font-size: 14px; background: transparent; }
+
+.search-floating input { 
+    border: none; 
+    flex: 1; 
+    outline: none; 
+    font-size: 14px; 
+    background: transparent;
+    color: var(--text-dark);
+}
+
+.search-btn { 
+    background: none; 
+    border: none; 
+    cursor: pointer; 
+    font-size: 18px; 
+    padding-left: 10px;
+}
 
 /* --- FILTRES : CARTES BENTO --- */
 #filter-list { display: flex; flex-direction: column; gap: 10px; }

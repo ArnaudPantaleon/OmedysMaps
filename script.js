@@ -28,7 +28,7 @@ async function chargerDonnees() {
 function formatPhone(num) {
     if (!num) return "";
     let clean = num.replace(/\D/g, "");
-    return clean.replace(/(\d{2})(?=\d)/g, "$1 ");
+    return clean.replace(/(\d{2})(?=\d)/g, "$1 ").trim();
 }
 function creerMarqueurs(data) {
     allMarkers.forEach(m => map.removeLayer(m.marker));
@@ -51,37 +51,39 @@ function creerMarqueurs(data) {
 
         const displayPhone = formatPhone(phone);
         
-        let popupContent = `
-            <div class="custom-card">
-                <div class="card-header">
-                    <div class="type-text">${typeRaw}</div>
-                    <div class="status-pill" style="background:${config.color}">${status}</div>
+       let popupContent = `
+            <div class="bento-card">
+                <div class="bento-header">
+                    <span class="bento-type">${typeRaw.toUpperCase()}</span>
+                    <span class="bento-status" style="background-color: ${config.color}">${status}</span>
                 </div>
         
-                <div class="title-group">
-                    <h4 class="site-name">${item.Name}</h4>
-                    ${att ? `<div class="att-line">• ATT : ${att}</div>` : ''}
-                </div>
-        
-                <div class="address-line">
-                    <span class="pin-icon">📍</span>
-                    <span>${item.Address || ""}</span>
-                </div>
-        
-                ${!isCabinet && tms ? `
-                    <div class="tms-container">
-                        <span class="tms-label">TMS</span>
-                        <span class="tms-val">${tms}</span>
+                <h3 class="bento-title">${item.Name}</h3>
+                
+                <div class="bento-info-row">
+                    <div class="info-block">
+                        <span class="info-label">ATT</span>
+                        <span class="info-value">${att || "—"}</span>
                     </div>
-                ` : ''}
+                    ${tms ? `
+                    <div class="info-block">
+                        <span class="info-label">TMS</span>
+                        <span class="info-value">${tms}</span>
+                    </div>` : ''}
+                </div>
+        
+                <div class="bento-address">
+                    <span class="pin-icon">📍</span>
+                    <span class="address-text">${item.Address || ""}</span>
+                </div>
         
                 ${phone ? `
-                    <a href="tel:${phone.replace(/\s/g, '')}" class="call-link">
-                        <span class="phone-icon">📞</span>
-                        <span>${displayPhone}</span>
-                    </a>
-                ` : ''}
+                <a href="tel:${phone.replace(/\s/g, '')}" class="bento-call-btn">
+                    <span class="phone-icon">📞</span>
+                    <span class="phone-number">${displayPhone}</span>
+                </a>` : ''}
             </div>`;
+
 
         const marker = L.circleMarker([lat, lng], {
             radius: isCabinet ? 10 : 7,
@@ -95,7 +97,7 @@ function creerMarqueurs(data) {
         const shouldShow = isESMS ? (config.checked && statusSettings["TYPE_ESMS"].checked) : config.checked;
         if (shouldShow) marker.addTo(map);
 
-        marker.bindPopup(popupContent);
+        marker.bindPopup(popupContent, { maxWidth: 300 });
         allMarkers.push({ marker, status, isESMS });
     });
     renderFilters();

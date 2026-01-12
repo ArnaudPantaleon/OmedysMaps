@@ -39,38 +39,42 @@ function creerMarqueurs(data) {
         const tms = item.TMS || item.Tms || "";
         const tel = item.Phone || item.Telephone || "";
 
-        let popupHtml = `
-            <div class="custom-popup-box">
-                <div class="popup-header">
-                    <span class="type-lbl">${type}</span>
-                    <span class="status-tag" style="background:${conf.color}">${status}</span>
+        let popupContent = `
+            <div class="custom-card">
+                <div class="card-header">
+                    <div class="type-text">${typeRaw.replace(' ', '<br>')}</div>
+                    <div class="status-pill" style="background:${config.color}">${status}</div>
                 </div>
-                <div class="title-section">
+        
+                <div class="title-group">
                     <h4 class="site-name">${item.Name}</h4>
-                    ${att ? `<span class="att-info">• ATT : ${att}</span>` : ''}
+                    ${att ? `<div class="att-line">• ATT : ${att}</div>` : ''}
                 </div>
-                <div class="addr-section">
-                    <span>📍</span><span>${item.Address || ""}</span>
+        
+                <div class="address-line">
+                    <span class="pin-icon">📍</span>
+                    <span>${item.Address || ""}</span>
                 </div>
-                ${!isCab && tms ? `
-                    <div class="tms-pill">
-                        <span class="tms-lit">TMS</span>
+        
+                ${!isCabinet && tms ? `
+                    <div class="tms-container">
+                        <span class="tms-label">TMS</span>
                         <span class="tms-val">${tms}</span>
                     </div>
                 ` : ''}
-                ${tel ? `
-                    <a href="tel:${tel.replace(/\s/g, '')}" class="call-btn">
+        
+                ${phone ? `
+                    <a href="tel:${phone.replace(/\s/g, '')}" class="call-link">
                         <span>📞</span> Appeler le site
                     </a>
                 ` : ''}
             </div>`;
-
-        const m = L.circleMarker([lat, lng], {
-            radius: isCab ? 10 : 7, fillColor: conf.color, color: "#fff", weight: 2, fillOpacity: 0.9
+        
+        marker.bindPopup(popupContent, { 
+            maxWidth: 320,
+            minWidth: 280,
+            closeButton: true 
         });
-
-        if (conf.checked) m.addTo(map);
-        m.bindPopup(popupHtml);
         allMarkers.push({ marker: m, status, isESMS: type.toUpperCase().includes("ESMS") });
     });
     renderFilters();

@@ -78,113 +78,102 @@ body, html {
    3. DESIGN DE LA POPUP (ÉPURÉ & ÉLÉGANT)
    ========================================================================== */
 
-/* Container Leaflet */
+/* Container Leaflet - Plus compact */
 .leaflet-popup-content-wrapper {
-    border-radius: 28px !important; /* Très arrondi */
+    border-radius: 20px !important;
     padding: 0 !important;
-    overflow: hidden;
-    box-shadow: 0 15px 45px rgba(0,0,0,0.15) !important;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
 }
 
 .leaflet-popup-content {
     margin: 0 !important;
-    width: 310px !important; /* Largeur équilibrée */
+    width: 260px !important; /* Largeur réduite */
 }
 
-.leaflet-popup-tip-container { display: none; } /* Cache la petite flèche */
-
-/* Contenu Interne */
+/* Contenu interne réduit */
 .custom-card {
-    padding: 24px;
+    padding: 16px; /* Padding réduit de 24px à 16px */
     color: #1e293b;
 }
 
 .card-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 20px;
+    align-items: center;
+    margin-bottom: 12px;
 }
 
 .type-text {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 800;
     color: #94a3b8;
     text-transform: uppercase;
-    letter-spacing: 0.8px;
 }
 
 .status-pill {
-    padding: 6px 14px;
-    border-radius: 50px;
-    font-size: 10px;
+    padding: 3px 10px;
+    border-radius: 8px;
+    font-size: 9px;
     font-weight: 800;
     color: white;
-    text-transform: uppercase;
-}
-
-.title-group {
-    margin-bottom: 16px;
 }
 
 .site-name {
     margin: 0;
-    font-size: 20px;
+    font-size: 16px; /* Taille réduite */
     font-weight: 800;
-    color: #0f172a;
+    color: #008080; /* Couleur teal comme sur tes images */
     line-height: 1.2;
 }
 
 .att-line {
-    font-size: 14px;
+    font-size: 12px;
     color: #64748b;
     font-weight: 600;
-    margin-top: 5px;
+    margin-top: 2px;
 }
 
 .address-line {
     display: flex;
-    gap: 10px;
-    font-size: 13px;
+    gap: 6px;
+    font-size: 12px;
     color: #64748b;
-    margin-bottom: 24px;
-    line-height: 1.5;
+    margin: 12px 0;
 }
 
-/* Zone TMS (Grisée et Propre) */
 .tms-container {
     background: #f8fafc;
     border: 1px solid #f1f5f9;
-    padding: 14px 16px;
-    border-radius: 16px;
+    padding: 8px 12px;
+    border-radius: 10px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 24px;
+    margin-bottom: 15px;
 }
 
-.tms-label { font-size: 10px; font-weight: 800; color: #94a3b8; }
-.tms-val { font-size: 14px; font-weight: 700; color: #334155; }
+.tms-label { font-size: 9px; font-weight: 800; color: #94a3b8; }
+.tms-val { font-size: 12px; font-weight: 700; color: #334155; }
 
-/* Bouton d'Action Principal */
+/* Bouton d'appel style "Badge" (fond clair, texte teal) */
 .call-link {
     text-decoration: none !important;
-    background: #009597;
-    color: white !important;
+    background: #e6fffa; /* Vert très pâle */
+    border: 1px solid #b2f5ea;
+    color: #008080 !important;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 12px;
-    height: 54px;
-    border-radius: 18px;
-    font-weight: 700;
+    gap: 8px;
+    height: 42px; /* Hauteur réduite */
+    border-radius: 12px;
+    font-weight: 800;
     font-size: 15px;
-    box-shadow: 0 8px 20px rgba(0, 149, 151, 0.25);
-    transition: 0.2s ease;
 }
 
-.call-link:active {
-    transform: scale(0.97);
+.phone-icon {
+    font-size: 14px;
+    filter: hue-rotate(280deg); /* Pour teinter l'emoji téléphone vers le rose/mauve si besoin */
 }
 
 /* ==========================================================================

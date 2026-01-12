@@ -9,23 +9,37 @@ const statusSettings = {
     "TYPE_ESMS": { color: "#334155", label: "Afficher les ESMS", checked: false }
 };
 
+// Initialisation de la carte avec correction de taille immédiate
 let map = L.map('map', { zoomControl: false }).setView([46.6033, 1.8883], 6);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-// Force le rendu si la carte est mal calculée au chargement
-setTimeout(() => map.invalidateSize(), 400);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
+// Correction bug tuiles grises
+setTimeout(() => { map.invalidateSize(); }, 500);
 
 let allMarkers = [];
 
 async function chargerDonnees() {
     try {
+        console.log("Tentative de chargement des fichiers JSON...");
         const [resSalles, resCabinets] = await Promise.all([
             fetch('salles.json').then(r => r.json()),
             fetch('cabinet.json').then(r => r.json())
         ]);
-        const data = [...(resSalles[0]?.data || []), ...(resCabinets[0]?.data || [])];
-        creerMarqueurs(data);
-    } catch (err) { console.error("Erreur de chargement JSON:", err); }
+        
+        // Extraction sécurisée pour format GitHub [ { "data": [...] } ]
+        const dataSalles = (resSalles[0] && resSalles[0].data) ? resSalles[0].data : (resSalles.data || []);
+        const dataCabinets = (resCabinets[0] && resCabinets[0].data) ? resCabinets[0].data : (resCabinets.data || []);
+        
+        const combiné = [...dataSalles, ...dataCabinets];
+        console.log("Données chargées avec succès :", combiné.length, "sites trouvés.");
+        
+        creerMarqueurs(combiné);
+    } catch (err) {
+        console.error("ERREUR D'AFFICHAGE (JSON mal formé ou absent) :", err);
+    }
 }
 
 function creerMarqueurs(data) {
@@ -49,11 +63,12 @@ function creerMarqueurs(data) {
             fillColor: color, color: "#fff", weight: 2, fillOpacity: 0.9
         });
 
-        if (config.checked && (!isESMS || statusSettings["TYPE_ESMS"].checked)) marker.addTo(map);
+        if (config.checked && (!isESMS || statusSettings["TYPE_ESMS"].checked)) {
+            marker.addTo(map);
+        }
 
-        // LOGIQUE TÉLÉPHONE (S'adapte aux deux types)
-        // Remplacez 'Phone' par le nom exact de votre colonne dans le JSON
-        const phoneRaw = item.Phone || item.Telephone || ""; 
+        // DESIGN POPUP RÉFÉRENCE + TÉLÉPHONE
+        const phoneRaw = item.Phone || item.Telephone || "";
         const phoneHtml = phoneRaw ? `
             <div style="margin-top: 12px; border-top: 1px solid #f1f5f9; padding-top: 10px;">
                 <a href="tel:${phoneRaw.replace(/\s/g, '')}" 
@@ -79,7 +94,6 @@ function creerMarqueurs(data) {
                 </div>
                 <b style="color:#009597; font-size:15px; display:block; margin-bottom:4px;">${item.Name}</b>
                 <div style="color: #718096; font-size: 11px; margin: 8px 0;">📍 ${item.Address || "—"}</div>
-                
                 <div style="display: flex; gap: 15px; border-top: 1px dashed #e2e8f0; padding-top: 10px; margin-top: 10px;">
                     <div style="flex: 1;">
                         <span style="font-size: 10px; color: #a0aec0; font-weight: bold; display: block;">ATT</span>
@@ -119,7 +133,8 @@ window.toggleStatus = (name, isChecked) => {
 };
 
 function updateStats() {
-    document.getElementById('site-count').innerText = allMarkers.filter(m => map.hasLayer(m.marker)).length;
+    const active = allMarkers.filter(m => map.hasLayer(m.marker)).length;
+    document.getElementById('site-count').innerText = active;
 }
 
 function rechercheEtZoom() {
@@ -133,9 +148,6 @@ function rechercheEtZoom() {
         });
 }
 
-function toggleMenu() {
-    const menu = document.getElementById('side-menu');
-    menu.classList.toggle('open');
-}
+function toggleMenu() { document.getElementById('side-menu').classList.toggle('open'); }
 
 chargerDonnees();

@@ -1,19 +1,44 @@
-body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', system-ui, sans-serif; overflow: hidden; background: #f8fafc; }
-#map { height: 100vh; width: 100vw; z-index: 1; }
+/* ==========================================================================
+   1. STRUCTURE GÉNÉRALE
+   ========================================================================== */
+body, html { 
+    margin: 0; 
+    padding: 0; 
+    height: 100%; 
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+    overflow: hidden; 
+    background: #f8fafc; 
+}
 
-/* MENU & RECHERCHE */
+#map { 
+    height: 100vh; 
+    width: 100vw; 
+    z-index: 1; 
+}
+
+/* ==========================================================================
+   2. INTERFACE (MENU & RECHERCHE)
+   ========================================================================== */
 .menu-wrapper {
     position: fixed; top: 15px; left: 15px; z-index: 4000;
     background: white; width: 50px; height: 50px;
-    border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.12);
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     overflow: hidden;
 }
 .menu-wrapper.open { width: 300px; height: 580px; border-radius: 24px; }
 
-.menu-toggle { width: 50px; height: 50px; background: none; border: none; cursor: pointer; position: absolute; top: 0; left: 0; }
+.menu-toggle { 
+    width: 50px; height: 50px; background: none; border: none; 
+    cursor: pointer; position: absolute; top: 0; left: 0; 
+}
+
+/* Icone Burger */
 .burger-icon { width: 20px; height: 14px; position: relative; margin: 18px auto; }
-.burger-icon span { display: block; position: absolute; height: 2.5px; width: 100%; background: #009597; border-radius: 10px; transition: .3s; }
+.burger-icon span { 
+    display: block; position: absolute; height: 2.5px; width: 100%; 
+    background: #009597; border-radius: 10px; transition: .3s; 
+}
 .burger-icon span:nth-child(1) { top: 0; }
 .burger-icon span:nth-child(2) { top: 6px; }
 .burger-icon span:nth-child(3) { top: 12px; }
@@ -25,60 +50,152 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', syste
 .menu-content { opacity: 0; padding: 65px 20px 20px; transition: 0.3s; pointer-events: none; }
 .menu-wrapper.open .menu-content { opacity: 1; pointer-events: auto; }
 
+/* Barre de recherche flottante */
 .search-floating {
     position: fixed; top: 15px; left: 75px; z-index: 3000;
     background: white; height: 50px; width: 250px;
-    border-radius: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.08);
     display: flex; align-items: center; padding: 0 15px;
-    transition: 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: 0.4s ease;
 }
 .menu-wrapper.open ~ .search-floating { left: 325px; }
-.search-floating input { border: none; flex: 1; outline: none; font-size: 14px; font-weight: 500; }
+.search-floating input { border: none; flex: 1; outline: none; font-size: 14px; color: #1e293b; }
+.search-btn { background: none; border: none; cursor: pointer; color: #009597; display: flex; align-items: center; }
 
-/* FILTRES */
-#filter-list { display: flex; flex-direction: column; gap: 8px; }
+/* Filtres dans le menu */
+#filter-list { display: flex; flex-direction: column; gap: 10px; }
 .filter-card {
-    display: flex; align-items: center; padding: 10px 15px;
-    border-radius: 12px; border: 2px solid #f1f5f9; cursor: pointer;
-    transition: 0.2s; opacity: 0.6;
+    display: flex; align-items: center; padding: 12px 15px;
+    border-radius: 14px; border: 2px solid #f1f5f9; cursor: pointer;
+    transition: 0.2s ease; opacity: 0.6;
 }
 .filter-card input { display: none; }
-.filter-card:has(input:checked) { opacity: 1; border-color: var(--status-color); background: #fff; }
+.filter-card:has(input:checked) { opacity: 1; border-color: var(--status-color); background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
 .dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 12px; background: var(--status-color); }
 .label { font-size: 13px; font-weight: 700; color: #334155; }
 
-/* POPUP DESIGN (AÉRÉ & MOBILE) */
-.leaflet-popup-content-wrapper { border-radius: 20px !important; padding: 0 !important; overflow: hidden; }
-.leaflet-popup-content { margin: 0 !important; width: 300px !important; }
+/* ==========================================================================
+   3. DESIGN DE LA POPUP (ÉPURÉ & ÉLÉGANT)
+   ========================================================================== */
 
-.custom-popup-box { padding: 18px; color: #1e293b; }
-.popup-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-.type-lbl { font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; }
-.status-tag { padding: 4px 10px; border-radius: 50px; font-size: 10px; font-weight: 800; color: white; }
-
-.title-section { margin-bottom: 12px; }
-.site-name { margin: 0; font-size: 18px; font-weight: 900; line-height: 1.2; }
-.att-info { font-size: 13px; color: #64748b; font-weight: 600; margin-top: 4px; display: block; }
-
-.addr-section { display: flex; gap: 8px; font-size: 13px; color: #64748b; margin-bottom: 20px; }
-
-.tms-pill {
-    background: #f8fafc; border: 1px solid #f1f5f9; padding: 10px 15px;
-    border-radius: 12px; display: flex; justify-content: space-between; margin-bottom: 20px;
-}
-.tms-lit { font-size: 10px; font-weight: 800; color: #94a3b8; }
-.tms-val { font-size: 13px; font-weight: 700; color: #334155; }
-
-.call-btn {
-    text-decoration: none !important; background: #009597; color: white !important;
-    display: flex; align-items: center; justify-content: center; gap: 10px;
-    height: 50px; border-radius: 15px; font-weight: 800; font-size: 15px;
-    box-shadow: 0 6px 20px rgba(0, 149, 151, 0.2);
+/* Container Leaflet */
+.leaflet-popup-content-wrapper {
+    border-radius: 28px !important; /* Très arrondi */
+    padding: 0 !important;
+    overflow: hidden;
+    box-shadow: 0 15px 45px rgba(0,0,0,0.15) !important;
 }
 
+.leaflet-popup-content {
+    margin: 0 !important;
+    width: 310px !important; /* Largeur équilibrée */
+}
+
+.leaflet-popup-tip-container { display: none; } /* Cache la petite flèche */
+
+/* Contenu Interne */
+.custom-card {
+    padding: 24px;
+    color: #1e293b;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.type-text {
+    font-size: 11px;
+    font-weight: 800;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.status-pill {
+    padding: 6px 14px;
+    border-radius: 50px;
+    font-size: 10px;
+    font-weight: 800;
+    color: white;
+    text-transform: uppercase;
+}
+
+.title-group {
+    margin-bottom: 16px;
+}
+
+.site-name {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.2;
+}
+
+.att-line {
+    font-size: 14px;
+    color: #64748b;
+    font-weight: 600;
+    margin-top: 5px;
+}
+
+.address-line {
+    display: flex;
+    gap: 10px;
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 24px;
+    line-height: 1.5;
+}
+
+/* Zone TMS (Grisée et Propre) */
+.tms-container {
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
+    padding: 14px 16px;
+    border-radius: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.tms-label { font-size: 10px; font-weight: 800; color: #94a3b8; }
+.tms-val { font-size: 14px; font-weight: 700; color: #334155; }
+
+/* Bouton d'Action Principal */
+.call-link {
+    text-decoration: none !important;
+    background: #009597;
+    color: white !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    height: 54px;
+    border-radius: 18px;
+    font-weight: 700;
+    font-size: 15px;
+    box-shadow: 0 8px 20px rgba(0, 149, 151, 0.25);
+    transition: 0.2s ease;
+}
+
+.call-link:active {
+    transform: scale(0.97);
+}
+
+/* ==========================================================================
+   4. ADAPTATION MOBILE
+   ========================================================================== */
 @media (max-width: 600px) {
     .menu-wrapper.open { width: calc(100% - 30px); }
     .search-floating { width: calc(100% - 100px); }
-    .menu-wrapper.open ~ .search-floating { opacity: 0; }
-    .leaflet-popup-content { width: 260px !important; }
+    .menu-wrapper.open ~ .search-floating { opacity: 0; pointer-events: none; }
+    
+    .leaflet-popup-content { width: 270px !important; }
+    .custom-card { padding: 20px; }
+    .site-name { font-size: 18px; }
 }

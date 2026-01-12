@@ -1,4 +1,4 @@
-body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', system-ui, sans-serif; overflow: hidden; }
 #map { height: 100vh; width: 100vw; z-index: 1; }
 
 /* --- MENU MORPHING --- */
@@ -11,33 +11,18 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', sans-
 }
 
 .menu-wrapper.open { 
-    width: 300px; 
-    height: auto; /* Permet au menu de s'adapter à la liste des filtres */
-    max-height: calc(100vh - 40px); /* Empêche de dépasser de l'écran */
-    border-radius: 20px; 
-    padding-bottom: 20px; /* Espace esthétique en bas après le compteur */
+    width: 300px; height: auto; 
+    max-height: calc(100vh - 40px); 
+    border-radius: 24px; 
+    padding-bottom: 20px; 
 }
 
-/* On s'assure que si la liste est trop longue, on peut scroller à l'intérieur */
-.menu-content {
-    opacity: 0; 
-    padding: 60px 20px 0px; /* Réduit le padding pour laisser de la place */
-    transition: opacity 0.3s; 
-    pointer-events: none;
-    max-height: 100%;
-    overflow-y: auto; /* Ajoute un scroll interne si besoin */
-}
-
-.menu-wrapper.open .menu-content { 
-    opacity: 1; 
-    pointer-events: auto; 
-    transition-delay: 0.2s; 
-}
 .menu-toggle {
     width: 50px; height: 50px; background: none; border: none;
     cursor: pointer; position: absolute; top: 0; left: 0; z-index: 10;
 }
 
+/* Burger Animation */
 .burger-icon { width: 20px; height: 14px; position: relative; margin: 18px auto; }
 .burger-icon span {
     display: block; position: absolute; height: 2.5px; width: 100%;
@@ -51,9 +36,50 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', sans-
 .menu-wrapper.open .burger-icon span:nth-child(2) { opacity: 0; transform: translateX(-10px); }
 .menu-wrapper.open .burger-icon span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 
-.panel-header h3 { color: #009597; margin: 0 0 20px 0; font-size: 20px; }
+.menu-content {
+    opacity: 0; padding: 60px 20px 0;
+    transition: opacity 0.3s; pointer-events: none;
+    overflow-y: auto; max-height: calc(100vh - 100px);
+}
+.menu-wrapper.open .menu-content { opacity: 1; pointer-events: auto; transition-delay: 0.2s; }
 
-/* --- BARRE DE RECHERCHE --- */
+/* --- DESIGN DES PASTILLES (PILLS) --- */
+#filter-list { display: flex; flex-direction: column; gap: 8px; }
+
+.filter-card {
+    display: flex; align-items: center; padding: 10px 16px;
+    border-radius: 50px; border: 2px solid #f1f5f9;
+    background: #f8fafc; cursor: pointer;
+    transition: all 0.3s ease;
+    filter: grayscale(1); opacity: 0.6;
+}
+
+.filter-card input { display: none; }
+
+/* État coché : On utilise la variable --status-color injectée par JS */
+.filter-card:has(input:checked) {
+    filter: grayscale(0); opacity: 1;
+    background: white; border-color: var(--status-color);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    margin-right: 12px; flex-shrink: 0;
+    box-shadow: 0 0 0 2px white, 0 0 0 4px var(--status-color);
+}
+
+.label { font-size: 13px; font-weight: 700; color: #334155; }
+
+/* Checkmark à droite */
+.filter-card::after {
+    content: '✓'; margin-left: auto; font-weight: 900;
+    color: var(--status-color); opacity: 0; transform: scale(0.5);
+    transition: 0.2s;
+}
+.filter-card:has(input:checked)::after { opacity: 1; transform: scale(1); }
+
+/* --- RECHERCHE --- */
 .search-floating {
     position: fixed; top: 20px; left: 85px; z-index: 2000;
     background: white; height: 50px; width: 240px;
@@ -62,47 +88,19 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', sans-
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Bureau : Décalage à droite */
-.menu-wrapper.open ~ .search-floating {
-    left: 335px;
-}
+.menu-wrapper.open ~ .search-floating { left: 335px; }
 
-.search-floating input { border: none; flex: 1; outline: none; font-size: 14px; background: transparent; }
-.search-btn { background: none; border: none; cursor: pointer; display: flex; padding: 5px; }
-
-/* --- ADAPTATION MOBILE (iPhone, etc.) --- */
 @media (max-width: 600px) {
-    /* Le menu prend plus de place sur mobile */
-    .menu-wrapper.open {
-        width: calc(100% - 40px);
-        height: 80vh;
-    }
-
-    /* La recherche se place AU-DESSUS du menu quand il est ouvert */
+    .menu-wrapper.open { width: calc(100% - 40px); height: 85vh; }
     .menu-wrapper.open ~ .search-floating {
-        left: 20px;
-        top: 20px;
-        width: calc(100% - 70px); /* Laisse la place pour la croix du menu dessous */
-        z-index: 3500; /* Passe au premier plan */
-        transform: translateY(60px); /* Descend juste sous le header du menu */
+        left: 20px; top: 20px; width: calc(100% - 75px);
+        z-index: 3500; transform: translateY(60px);
     }
 }
 
-/* --- FILTRES & STATS (Ton design) --- */
-.filter-card {
-    display: flex; align-items: center; padding: 12px;
-    border: 1px solid #f1f5f9; border-radius: 10px; margin-bottom: 8px;
-    cursor: pointer; font-size: 13px; font-weight: 600; color: #334155;
-}
-.filter-card input { margin-right: 12px; accent-color: #009597; }
-.dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 12px; }
 .stats-card {
-    margin-top: 20px; 
-    padding: 15px; 
-    background: #f8fafc;
-    border-radius: 12px; 
-    text-align: center; 
-    border: 1px solid #e2e8f0;
-    /* On s'assure qu'elle n'est pas collée au dernier filtre */
+    margin-top: 20px; padding: 15px; background: #f0fdfa;
+    border-radius: 16px; text-align: center; border: 1px solid #ccfbf1;
 }
-#site-count { font-size: 24px; font-weight: 800; color: #009597; display: block; }
+#site-count { font-size: 26px; font-weight: 800; color: #009597; display: block; }
+.stats-card small { font-size: 10px; color: #5eead4; font-weight: 800; }

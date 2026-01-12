@@ -1,12 +1,12 @@
 const statusSettings = {
     "Ouvert": { color: "#009597", label: "Cabinet Omedys", checked: true },
     "Ouvertes": { color: "#2ecc71", label: "Salles Ouvertes", checked: true },
-    "Telesecretariat OMEDYS": { color: "#8956FB", label: "Télésecrétariat OMEDYS", checked: true },
-    "Ouverture en cours": { color: "#3498db", label: "En cours", checked: false },
-    "En sourcing": { color: "#f1c40f", label: "En sourcing", checked: false },
-    "Inactives": { color: "#95a5a6", label: "Inactives", checked: false },
-    "Fermees ou refus OTT": { color: "#e74c3c", label: "Fermé / Refus", checked: false },
-    "TYPE_ESMS": { color: "#334155", label: "Afficher les ESMS", checked: false }
+    "Telesecretariat OMEDYS": { color: "#8956FB", label: "Télésecrétariat", checked: true },
+    "Ouverture en cours": { color: "#3498db", label: "Ouverture en cours", checked: false },
+    "En sourcing": { color: "#f1c40f", label: "Sourcing", checked: false },
+    "Inactives": { color: "#95a5a6", label: "Sites Inactifs", checked: false },
+    "Fermees ou refus OTT": { color: "#e74c3c", label: "Fermés / Refus", checked: false },
+    "TYPE_ESMS": { color: "#334155", label: "Afficher ESMS", checked: false }
 };
 
 let map = L.map('map', { zoomControl: false }).setView([46.6033, 1.8883], 6);

@@ -6,11 +6,11 @@
     <title>Réseau Omedys</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        :root { --primary: #009597; --dark: #2d3748; --glass: rgba(255, 255, 255, 0.95); }
-        body { margin: 0; padding: 0; height: 100vh; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+        :root { --primary: #009597; --dark: #2d3748; --glass: rgba(255, 255, 255, 0.95); --gray-text: #718096; }
+        body { margin: 0; padding: 0; height: 100vh; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; overflow: hidden; }
         #map { height: 100vh; width: 100%; z-index: 1; }
         
-        /* Barre de Recherche Hybride */
+        /* Recherche */
         #search-container { 
             position: absolute; top: 20px; left: 50%; transform: translateX(-50%); 
             width: 90%; max-width: 500px; height: 54px;
@@ -19,10 +19,9 @@
             display: flex; align-items: center; padding: 0 6px 0 22px; z-index: 1000;
         }
         #search-container input { flex: 1; border: none; background: transparent; outline: none; font-size: 16px; }
-        #search-button { background: var(--primary); width: 42px; height: 42px; border-radius: 50%; border: none; cursor: pointer; display: grid; place-items: center; transition: 0.3s; }
-        #search-button:hover { background: #007a7c; }
-
-        /* Menu Latéral et Filtres */
+        #search-button { background: var(--primary); width: 42px; height: 42px; border-radius: 50%; border: none; cursor: pointer; display: grid; place-items: center; }
+        
+        /* Menu Filtres */
         #filter-toggle {
             position: absolute; bottom: 30px; right: 20px; background: var(--primary); width: 60px; height: 60px; 
             border-radius: 50%; border: none; cursor: pointer; display: grid; place-items: center; z-index: 1100;
@@ -39,18 +38,26 @@
         #menu-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.3); z-index: 1040; display: none; }
         #menu-overlay.open { display: block; }
 
-        /* Style des Popups (Infobulles) */
-        .leaflet-popup-content-wrapper { border-radius: 12px; padding: 5px; }
-        .type-badge { background: #edf2f7; color: #4a5568; padding: 2px 7px; border-radius: 4px; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+        /* DESIGN DES BULLES (POPUP) */
+        .leaflet-popup-content-wrapper { border-radius: 14px; padding: 6px; box-shadow: 0 12px 24px rgba(0,0,0,0.2); }
+        .popup-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .type-badge { background: #edf2f7; color: #4a5568; padding: 2px 7px; border-radius: 4px; font-size: 9px; font-weight: 800; text-transform: uppercase; }
         .status-badge { color: white; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: bold; }
         
-        /* Numéro de téléphone cliquable */
+        .address-box { color: var(--gray-text); font-size: 12px; line-height: 1.4; margin: 8px 0; display: flex; gap: 5px; }
+        
+        .tech-info { 
+            margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e2e8f0;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+        }
+        .info-label { font-size: 10px; color: #a0aec0; text-transform: uppercase; font-weight: bold; display: block; }
+        .info-value { font-size: 11px; color: var(--dark); font-weight: 600; }
+
         .tel-link {
             display: flex; align-items: center; justify-content: center; gap: 8px; 
             margin-top: 12px; padding: 10px;
             background: #f0fdfa; color: var(--primary); text-decoration: none; font-weight: bold;
-            border-radius: 8px; font-size: 14px; border: 1px solid #ccfbf1;
-            transition: 0.2s;
+            border-radius: 8px; font-size: 14px; border: 1px solid #ccfbf1; transition: 0.2s;
         }
         .tel-link:hover { background: var(--primary); color: white; }
     </style>
@@ -96,7 +103,6 @@
             "Fermees ou refus OTT": { color: "#e74c3c", label: "Fermé / Refus" }
         };
 
-        // --- CHARGEMENT ---
         async function init() {
             try {
                 const res = await fetch('zones.json');
@@ -104,19 +110,16 @@
                 const list = document.getElementById('geo-suggestions');
                 geoData.regions.forEach(r => list.innerHTML += `<option value="${r.nom}">Région</option>`);
                 geoData.departements.forEach(d => list.innerHTML += `<option value="${d.code} - ${d.nom}">Département</option>`);
-            } catch (e) { console.warn("Attention: zones.json non trouvé."); }
+            } catch (e) { console.warn("Fichier zones.json manquant."); }
             chargerDonnees();
         }
-
         init();
 
-        // --- RECHERCHE ET ZOOM ---
         async function rechercheEtZoom() {
             const input = document.getElementById('query').value.trim();
             if (!input) return;
             if (highlightLayer) map.removeLayer(highlightLayer);
 
-            // 1. Priorité Département/Région via zones.json
             const dep = geoData?.departements.find(d => input.startsWith(d.code) || input.toLowerCase().includes(d.nom.toLowerCase()));
             if (dep) {
                 const data = await fetch(`https://geo.api.gouv.fr/departements/${dep.code}?format=geojson&geometry=contour`).then(r => r.json());
@@ -128,7 +131,6 @@
                 return tracerZone(data);
             }
 
-            // 2. Sinon recherche ville classique
             fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(input)}&limit=1`)
                 .then(r => r.json()).then(res => {
                     if (res.features?.length > 0) {
@@ -145,7 +147,6 @@
             map.flyToBounds(highlightLayer.getBounds(), { padding: [30, 30], duration: 1.5 });
         }
 
-        // --- MARQUEURS ---
         async function chargerDonnees() {
             try {
                 const [salles, cabinets] = await Promise.all([
@@ -162,7 +163,7 @@
                     const color = statusSettings[status]?.color || "#7f8c8d";
 
                     const marker = L.circleMarker([lat, lng], {
-                        radius: item.Type === "CABINET" ? 9 : 6,
+                        radius: item.Type === "CABINET" ? 10 : 7,
                         fillColor: color, color: "#fff", weight: 2, fillOpacity: 0.9
                     }).addTo(map);
 
@@ -174,20 +175,37 @@
                     }
 
                     marker.bindPopup(`
-                        <div style="min-width:200px">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <div style="min-width:220px">
+                            <div class="popup-header">
                                 <span class="type-badge">${item.Type || 'Salle'}</span>
                                 <span class="status-badge" style="background:${color}">${status}</span>
                             </div>
+                            
                             <b style="color:var(--primary); font-size:15px; display:block; margin-bottom:4px;">${item.Name}</b>
-                            <div style="font-size:12px; color:#666; line-height:1.4;">${item.Address || ""}</div>
+                            
+                            <div class="address-box">
+                                <span>📍</span>
+                                <span>${item.Address || "Adresse non renseignée"}</span>
+                            </div>
+
+                            <div class="tech-info">
+                                <div>
+                                    <span class="info-label">OTT</span>
+                                    <span class="info-value">${item.OTT || "Non spécifié"}</span>
+                                </div>
+                                <div>
+                                    <span class="info-label">TMS</span>
+                                    <span class="info-value">${item.TMS || "Non spécifié"}</span>
+                                </div>
+                            </div>
+                            
                             ${telBtn}
                         </div>
                     `);
                     allMarkers.push({ marker, status });
                 });
                 renderFilters();
-            } catch (e) { console.error("Erreur chargement données:", e); }
+            } catch (e) { console.error("Erreur chargement marqueurs:", e); }
         }
 
         function renderFilters() {

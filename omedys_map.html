@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root { --primary: #009597; --dark: #2d3748; --glass: rgba(255, 255, 255, 0.95); --gray-text: #718096; }
-        body { margin: 0; padding: 0; height: 100vh; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; overflow: hidden; }
+        body { margin: 0; padding: 0; height: 100vh; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
         #map { height: 100vh; width: 100%; z-index: 1; }
         
         /* Recherche */
@@ -29,55 +29,40 @@
         }
         #side-menu {
             position: absolute; top: 0; right: -320px; width: 280px; height: 100vh;
-            background: white; z-index: 1050; transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-            padding: 40px 25px; box-sizing: border-box; overflow-y: auto;
+            background: white; z-index: 1050; transition: right 0.3s; padding: 40px 25px; box-sizing: border-box; overflow-y: auto;
         }
         #side-menu.open { right: 0; }
-        .filter-item { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; font-size: 13px; font-weight: 600; cursor: pointer; }
+        .filter-item { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; font-size: 14px; font-weight: 600; cursor: pointer; }
         .dot { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid white; box-shadow: 0 0 0 1px #ddd; }
-        #menu-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.3); z-index: 1040; display: none; }
+        #menu-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.2); z-index: 1040; display: none; }
         #menu-overlay.open { display: block; }
 
-        /* DESIGN DES BULLES (POPUP) */
-        .leaflet-popup-content-wrapper { border-radius: 14px; padding: 6px; box-shadow: 0 12px 24px rgba(0,0,0,0.2); }
-        .popup-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .type-badge { background: #edf2f7; color: #4a5568; padding: 2px 7px; border-radius: 4px; font-size: 9px; font-weight: 800; text-transform: uppercase; }
-        .status-badge { color: white; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: bold; }
+        /* Popups */
+        .leaflet-popup-content-wrapper { border-radius: 14px; padding: 6px; }
+        .popup-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .type-badge { background: #edf2f7; color: #4a5568; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 800; text-transform: uppercase; }
+        .status-badge { color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; }
         
-        .address-box { color: var(--gray-text); font-size: 12px; line-height: 1.4; margin: 8px 0; display: flex; gap: 5px; }
-        .tel-link {
-            display: flex; align-items: center; justify-content: center; gap: 8px; 
-            margin-top: 12px; padding: 10px;
-            background: #f0fdfa; color: var(--primary); text-decoration: none; font-weight: bold;
-            border-radius: 8px; font-size: 14px; border: 1px solid #ccfbf1; transition: 0.2s;
-        }
-        .tel-link:hover { background: var(--primary); color: white; }
-
-        /* Style pour forcer l'alignement et éviter les retours à la ligne */
+        .address-box { color: var(--gray-text); font-size: 12px; margin: 8px 0; display: flex; gap: 5px; }
+        
         .tech-info { 
-            margin-top: 10px; 
-            padding-top: 10px; 
-            border-top: 1px dashed #e2e8f0;
-            display: flex; 
-            gap: 15px; 
+            margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e2e8f0;
+            display: flex; gap: 15px;
         }
-        .info-item { flex: 1; min-width: 0; } /* min-width: 0 permet au texte de ne pas déborder */
         .info-label { font-size: 10px; color: #a0aec0; text-transform: uppercase; font-weight: bold; display: block; }
-        .info-value { 
-            font-size: 11px; 
-            color: var(--dark); 
-            font-weight: 600; 
-            white-space: nowrap; /* Force une seule ligne */
-            overflow: hidden; 
-            text-overflow: ellipsis; /* Ajoute "..." si vraiment trop long */
-            display: block;
+        .info-value { font-size: 11px; color: var(--dark); font-weight: 600; white-space: nowrap; }
+
+        .tel-link {
+            display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 12px; padding: 10px;
+            background: #f0fdfa; color: var(--primary); text-decoration: none; font-weight: bold;
+            border-radius: 8px; font-size: 14px; border: 1px solid #ccfbf1;
         }
     </style>
 </head>
 <body>
 
     <div id="search-container">
-        <input type="text" id="query" list="geo-suggestions" placeholder="Ville, Dép (ex: 18) ou Région..." onkeypress="if(event.key === 'Enter') rechercheEtZoom()">
+        <input type="text" id="query" list="geo-suggestions" placeholder="Ville, Département ou Région..." onkeypress="if(event.key === 'Enter') rechercheEtZoom()">
         <datalist id="geo-suggestions"></datalist>
         <button id="search-button" onclick="rechercheEtZoom()">
             <svg width="20" height="20" fill="white" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
@@ -103,152 +88,91 @@
 
         let highlightLayer = null;
         let allMarkers = [];
-        let geoData = null;
 
         const statusSettings = {
             "Ouvert": { color: "#009597", label: "Cabinet Omedys" },
             "Ouvertes": { color: "#2ecc71", label: "Salles Ouvertes" },
-            "Telesecretariat OMEDYS": { color: "#1dd1a1", label: "Télésecrétariat OMEDYS" },
+            "Telesecretariat OMEDYS": { color: "#8956FB", label: "Télésecrétariat OMEDYS" },
             "Ouverture en cours": { color: "#3498db", label: "En cours" },
             "En sourcing": { color: "#f1c40f", label: "Sourcing" },
             "Salles inactives": { color: "#95a5a6", label: "Inactif" },
             "Fermees ou refus OTT": { color: "#e74c3c", label: "Fermé / Refus" }
         };
 
-        async function init() {
-            try {
-                const res = await fetch('zones.json');
-                geoData = await res.json();
-                const list = document.getElementById('geo-suggestions');
-                geoData.regions.forEach(r => list.innerHTML += `<option value="${r.nom}">Région</option>`);
-                geoData.departements.forEach(d => list.innerHTML += `<option value="${d.code} - ${d.nom}">Département</option>`);
-            } catch (e) { console.warn("Fichier zones.json manquant."); }
-            chargerDonnees();
-        }
-        init();
-
-        async function rechercheEtZoom() {
-            const input = document.getElementById('query').value.trim();
-            if (!input) return;
-            if (highlightLayer) map.removeLayer(highlightLayer);
-
-            const dep = geoData?.departements.find(d => input.startsWith(d.code) || input.toLowerCase().includes(d.nom.toLowerCase()));
-            if (dep) {
-                const data = await fetch(`https://geo.api.gouv.fr/departements/${dep.code}?format=geojson&geometry=contour`).then(r => r.json());
-                return tracerZone(data);
-            }
-            const reg = geoData?.regions.find(r => input.toLowerCase().includes(r.nom.toLowerCase()));
-            if (reg) {
-                const data = await fetch(`https://geo.api.gouv.fr/regions/${reg.code}?format=geojson&geometry=contour`).then(r => r.json());
-                return tracerZone(data);
-            }
-
-            fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(input)}&limit=1`)
-                .then(r => r.json()).then(res => {
-                    if (res.features?.length > 0) {
-                        const [lon, lat] = res.features[0].geometry.coordinates;
-                        map.flyTo([lat, lon], 13);
-                    }
-                });
+        function toggleMenu() {
+            document.getElementById('side-menu').classList.toggle('open');
+            document.getElementById('menu-overlay').classList.toggle('open');
         }
 
-        function tracerZone(data) {
-            highlightLayer = L.geoJSON(data, {
-                style: { color: "#009597", weight: 3, fillColor: "#009597", fillOpacity: 0.15 }
-            }).addTo(map);
-            map.flyToBounds(highlightLayer.getBounds(), { padding: [30, 30], duration: 1.5 });
-        }
         async function chargerDonnees() {
             try {
                 const [resSalles, resCabinets] = await Promise.all([
                     fetch('salles.json').then(r => r.json()),
                     fetch('cabinet.json').then(r => r.json())
                 ]);
-        
-                // Correction de l'extraction : on cible spécifiquement la clé .data si elle existe
-                const salles = resSalles.data ? resSalles.data : (Array.isArray(resSalles) ? resSalles : []);
-                const cabinets = resCabinets.data ? resCabinets.data : (Array.isArray(resCabinets) ? resCabinets : []);
-        
+                
+                // Extraction via la clé .data pour les salles
+                const salles = resSalles.data || [];
+                const cabinets = resCabinets.data || resCabinets;
+                
                 creerMarqueurs([...salles, ...cabinets]);
-            } catch (err) { 
-                console.error("Erreur lors du chargement des fichiers JSON:", err); 
-            }
-        }
-        
-async function chargerDonnees() {
-    try {
-        const [resSalles, resCabinets] = await Promise.all([
-            fetch('salles.json').then(r => r.json()),
-            fetch('cabinet.json').then(r => r.json())
-        ]);
-
-        // Extraction sécurisée : on cherche la clé .data car elle est présente dans salles.json
-        const salles = resSalles.data || (Array.isArray(resSalles) ? resSalles : []);
-        const cabinets = resCabinets.data || (Array.isArray(resCabinets) ? resCabinets : []);
-
-        creerMarqueurs([...salles, ...cabinets]);
-    } catch (err) { 
-        console.error("Erreur lors du chargement des JSON :", err); 
-    }
-}
-
-function creerMarqueurs(data) {
-    allMarkers.forEach(m => map.removeLayer(m.marker)); // Nettoyage
-    allMarkers = [];
-
-    data.forEach(item => {
-        const lat = parseFloat(item.Latitude);
-        const lng = parseFloat(item.Longitude);
-        if (isNaN(lat) || isNaN(lng)) return;
-
-        const status = (item.Statut || "Inconnu").trim();
-        const type = (item.Type || "Salle").trim();
-        const color = statusSettings[status]?.color || "#7f8c8d";
-
-        const marker = L.circleMarker([lat, lng], {
-            radius: type === "CABINET" ? 10 : 7,
-            fillColor: color, color: "#fff", weight: 2, fillOpacity: 0.9
-        }).addTo(map);
-
-        // TMS : Uniquement affiché pour les Salles
-        const tmsHtml = type !== "CABINET" ? `
-            <div class="info-item">
-                <span class="info-label">TMS</span>
-                <span class="info-value">${item.TMS || "—"}</span>
-            </div>` : '';
-
-        let telBtn = "";
-        if (item.Phone) {
-            const clean = item.Phone.toString().replace(/\D/g, '');
-            const fmt = clean.match(/.{1,2}/g)?.join(' ') || item.Phone;
-            telBtn = `<a href="tel:${clean}" class="tel-link">📞 ${fmt}</a>`;
+            } catch (err) { console.error("Erreur lors du chargement des JSON :", err); }
         }
 
-        marker.bindPopup(`
-            <div style="min-width:240px">
-                <div class="popup-header">
-                    <span class="type-badge">${type}</span>
-                    <span class="status-badge" style="background:${color}">${status}</span>
-                </div>
-                <b style="color:var(--primary); font-size:15px; display:block; margin-bottom:4px;">${item.Name}</b>
-                <div class="address-box">
-                    <span style="color: #e91e63;">📍</span>
-                    <span>${item.Address || "Adresse non renseignée"}</span>
-                </div>
-                <div class="tech-info">
-                    <div class="info-item">
-                        <span class="info-label">ATT</span>
-                        <span class="info-value">${item.ATT || "—"}</span>
+        function creerMarqueurs(data) {
+            data.forEach(item => {
+                const lat = parseFloat(item.Latitude);
+                const lng = parseFloat(item.Longitude);
+                if (isNaN(lat) || isNaN(lng)) return;
+
+                const status = (item.Statut || "Inconnu").trim();
+                const type = (item.Type || "Salle").trim();
+                const color = statusSettings[status]?.color || "#7f8c8d";
+
+                const marker = L.circleMarker([lat, lng], {
+                    radius: type === "CABINET" ? 10 : 7,
+                    fillColor: color, color: "#fff", weight: 2, fillOpacity: 0.9
+                }).addTo(map);
+
+                // TMS affiché uniquement pour les salles
+                const tmsHtml = type !== "CABINET" ? `
+                    <div style="flex: 1;">
+                        <span class="info-label">TMS</span>
+                        <span class="info-value">${item.TMS || "—"}</span>
+                    </div>` : '';
+
+                let telBtn = "";
+                if (item.Phone) {
+                    const clean = item.Phone.toString().replace(/\D/g, '');
+                    const fmt = clean.match(/.{1,2}/g)?.join(' ') || item.Phone;
+                    telBtn = `<a href="tel:${clean}" class="tel-link">📞 ${fmt}</a>`;
+                }
+
+                marker.bindPopup(`
+                    <div style="min-width:240px">
+                        <div class="popup-header">
+                            <span class="type-badge">${type}</span>
+                            <span class="status-badge" style="background:${color}">${status}</span>
+                        </div>
+                        <b style="color:var(--primary); font-size:15px; display:block; margin-bottom:4px;">${item.Name}</b>
+                        <div class="address-box">
+                            <span style="color: #e91e63;">📍</span>
+                            <span>${item.Address || ""}</span>
+                        </div>
+                        <div class="tech-info">
+                            <div style="flex: 1;">
+                                <span class="info-label">ATT</span>
+                                <span class="info-value">${item.ATT || "—"}</span>
+                            </div>
+                            ${tmsHtml}
+                        </div>
+                        ${telBtn}
                     </div>
-                    ${tmsHtml}
-                </div>
-                ${telBtn}
-            </div>
-        `);
-        allMarkers.push({ marker, status });
-    });
-    initMenu(); // Relance la création des filtres
-}
+                `);
+                allMarkers.push({ marker, status });
+            });
+            renderFilters(); // Remplace initMenu pour éviter la ReferenceError
+        }
 
         function renderFilters() {
             const list = document.getElementById('filter-list');
@@ -264,13 +188,7 @@ function creerMarqueurs(data) {
             allMarkers.forEach(m => { if (m.status === s) v ? m.marker.addTo(map) : map.removeLayer(m.marker); });
         };
 
-        function toggleMenu() {
-            document.getElementById('side-menu').classList.toggle('open');
-            document.getElementById('menu-overlay').classList.toggle('open');
-        }
+        chargerDonnees();
     </script>
 </body>
 </html>
-
-
-

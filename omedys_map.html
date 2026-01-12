@@ -82,121 +82,126 @@
     <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-    const map = L.map('map', { zoomControl: false }).setView([46.6033, 1.8883], 6);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-
-    let allMarkers = [];
-
-    const statusSettings = {
-        "Ouvert": { color: "#009597", label: "Cabinet Omedys" },
-        "Ouvertes": { color: "#2ecc71", label: "Salles Ouvertes" },
-        "Telesecretariat OMEDYS": { color: "#8956FB", label: "Télésecrétariat OMEDYS" },
-        "Ouverture en cours": { color: "#3498db", label: "En cours" },
-        "En sourcing": { color: "#f1c40f", label: "Sourcing" },
-        "Salles inactives": { color: "#95a5a6", label: "Inactif" },
-        "Fermees ou refus OTT": { color: "#e74c3c", label: "Fermé / Refus" }
-    };
-
-    // Fonction de sécurité pour extraire les données peu importe le format du JSON
-    function safeExtract(json) {
-        if (!json) return [];
-        if (json.data && Array.isArray(json.data)) return json.data; // Cas de salles.json
-        if (Array.isArray(json)) return json; // Cas de cabinet.json
-        return [];
-    }
-
-    async function chargerDonnees() {
-        try {
-            const [resSalles, resCabinets] = await Promise.all([
-                fetch('salles.json').then(r => r.json()),
-                fetch('cabinet.json').then(r => r.json())
-            ]);
-            
-            const dataSalles = safeExtract(resSalles);
-            const dataCabinets = safeExtract(resCabinets);
-            
-            creerMarqueurs([...dataSalles, ...dataCabinets]);
-        } catch (err) { 
-            console.error("Erreur de lecture des fichiers JSON. Vérifiez qu'ils sont bien sur le GitHub.", err); 
-        }
-    }
-
-    function creerMarqueurs(data) {
-        allMarkers.forEach(m => map.removeLayer(m.marker));
-        allMarkers = [];
-
-        data.forEach(item => {
-            const lat = parseFloat(item.Latitude);
-            const lng = parseFloat(item.Longitude);
-            if (isNaN(lat) || isNaN(lng)) return;
-
-            const status = (item.Statut || "Inconnu").trim();
-            const type = (item.Type || "Salle").trim();
-            const color = statusSettings[status]?.color || "#7f8c8d";
-
-            const marker = L.circleMarker([lat, lng], {
-                radius: type === "CABINET" ? 10 : 7,
-                fillColor: color, color: "#fff", weight: 2, fillOpacity: 0.9
-            }).addTo(map);
-
-            // TMS : Uniquement pour les salles
-            const tmsHtml = type !== "CABINET" ? `
-                <div style="flex: 1;">
-                    <span style="font-size: 10px; color: #a0aec0; text-transform: uppercase; font-weight: bold; display: block;">TMS</span>
-                    <span style="font-size: 11px; color: #2d3748; font-weight: 600; white-space: nowrap; display: block; overflow: hidden; text-overflow: ellipsis;">${item.TMS || "—"}</span>
-                </div>` : '';
-
-            let telBtn = "";
-            if (item.Phone) {
-                const clean = item.Phone.toString().replace(/\D/g, '');
-                const fmt = clean.match(/.{1,2}/g)?.join(' ') || item.Phone;
-                telBtn = `<a href="tel:${clean}" style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 12px; padding: 10px; background: #f0fdfa; color: #009597; text-decoration: none; font-weight: bold; border-radius: 8px; font-size: 14px; border: 1px solid #ccfbf1;">📞 ${fmt}</a>`;
+    <script>
+        const map = L.map('map', { zoomControl: false }).setView([46.6033, 1.8883], 6);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    
+        let allMarkers = [];
+    
+        const statusSettings = {
+            "Ouvert": { color: "#009597", label: "Cabinet Omedys" },
+            "Ouvertes": { color: "#2ecc71", label: "Salles Ouvertes" },
+            "Telesecretariat OMEDYS": { color: "#1dd1a1", label: "Télésecrétariat OMEDYS" },
+            "Ouverture en cours": { color: "#3498db", label: "En cours" },
+            "En sourcing": { color: "#f1c40f", label: "Sourcing" },
+            "Salles inactives": { color: "#95a5a6", label: "Inactif" },
+            "Fermees ou refus OTT": { color: "#e74c3c", label: "Fermé / Refus" }
+        };
+    
+        async function chargerDonnees() {
+            try {
+                const [resSalles, resCabinets] = await Promise.all([
+                    fetch('salles.json').then(r => r.json()),
+                    fetch('cabinet.json').then(r => r.json())
+                ]);
+                
+                // LOGIQUE DE DÉTECTION DE STRUCTURE
+                // Pour salles.json : on prend le premier élément du tableau puis la clé .data
+                const salles = (resSalles[0] && resSalles[0].data) ? resSalles[0].data : [];
+                
+                // Pour cabinet.json : c'est un tableau direct
+                const cabinets = Array.isArray(resCabinets) ? resCabinets : [];
+                
+                console.log("Salles chargées:", salles.length);
+                console.log("Cabinets chargés:", cabinets.length);
+    
+                creerMarqueurs([...salles, ...cabinets]);
+            } catch (err) { 
+                console.error("Erreur de chargement JSON:", err); 
             }
-
-            marker.bindPopup(`
-                <div style="min-width:250px">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <span style="background: #edf2f7; color: #4a5568; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 800; text-transform: uppercase;">${type}</span>
-                        <span style="color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; background:${color}">${status}</span>
-                    </div>
-                    <b style="color:#009597; font-size:15px; display:block; margin-bottom:4px;">${item.Name}</b>
-                    <div style="color: #718096; font-size: 12px; margin: 8px 0; display: flex; gap: 5px;">
-                        <span style="color: #e91e63;">📍</span>
-                        <span>${item.Address || ""}</span>
-                    </div>
-                    <div style="display: flex; gap: 15px; border-top: 1px dashed #e2e8f0; padding-top: 10px; margin-top: 10px;">
-                        <div style="flex: 1;">
-                            <span style="font-size: 10px; color: #a0aec0; text-transform: uppercase; font-weight: bold; display: block;">ATT</span>
-                            <span style="font-size: 11px; color: #2d3748; font-weight: 600; white-space: nowrap; display: block; overflow: hidden; text-overflow: ellipsis;">${item.ATT || "—"}</span>
+        }
+    
+        function creerMarqueurs(data) {
+            allMarkers.forEach(m => map.removeLayer(m.marker));
+            allMarkers = [];
+    
+            data.forEach(item => {
+                const lat = parseFloat(item.Latitude);
+                const lng = parseFloat(item.Longitude);
+                if (isNaN(lat) || isNaN(lng)) return;
+    
+                const status = (item.Statut || "Inconnu").trim();
+                const type = (item.Type || "Salle").trim();
+                const color = statusSettings[status]?.color || "#7f8c8d";
+    
+                const marker = L.circleMarker([lat, lng], {
+                    radius: type === "CABINET" ? 10 : 7,
+                    fillColor: color, color: "#fff", weight: 2, fillOpacity: 0.9
+                }).addTo(map);
+    
+                // TMS uniquement pour les salles (Pas pour les CABINET)
+                const tmsHtml = type !== "CABINET" ? `
+                    <div style="flex: 1;">
+                        <span style="font-size: 10px; color: #a0aec0; text-transform: uppercase; font-weight: bold; display: block;">TMS</span>
+                        <span style="font-size: 11px; color: #2d3748; font-weight: 600; white-space: nowrap; display: block; overflow: hidden; text-overflow: ellipsis;">${item.TMS || "—"}</span>
+                    </div>` : '';
+    
+                let telBtn = "";
+                if (item.Phone) {
+                    const clean = item.Phone.toString().replace(/\D/g, '');
+                    const fmt = clean.match(/.{1,2}/g)?.join(' ') || item.Phone;
+                    telBtn = `<a href="tel:${clean}" style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 12px; padding: 10px; background: #f0fdfa; color: #009597; text-decoration: none; font-weight: bold; border-radius: 8px; font-size: 14px; border: 1px solid #ccfbf1;">📞 ${fmt}</a>`;
+                }
+    
+                marker.bindPopup(`
+                    <div style="min-width:250px">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span style="background: #edf2f7; color: #4a5568; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 800; text-transform: uppercase;">${type}</span>
+                            <span style="color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; background:${color}">${status}</span>
                         </div>
-                        ${tmsHtml}
+                        <b style="color:#009597; font-size:15px; display:block; margin-bottom:4px;">${item.Name}</b>
+                        <div style="color: #718096; font-size: 12px; margin: 8px 0; display: flex; gap: 5px;">
+                            <span style="color: #e91e63;">📍</span>
+                            <span>${item.Address || "Adresse non renseignée"}</span>
+                        </div>
+                        <div style="display: flex; gap: 15px; border-top: 1px dashed #e2e8f0; padding-top: 10px; margin-top: 10px;">
+                            <div style="flex: 1;">
+                                <span style="font-size: 10px; color: #a0aec0; text-transform: uppercase; font-weight: bold; display: block;">ATT</span>
+                                <span style="font-size: 11px; color: #2d3748; font-weight: 600; white-space: nowrap; display: block; overflow: hidden; text-overflow: ellipsis;">${item.ATT || "—"}</span>
+                            </div>
+                            ${tmsHtml}
+                        </div>
+                        ${telBtn}
                     </div>
-                    ${telBtn}
-                </div>
-            `);
-            allMarkers.push({ marker, status });
-        });
-        renderFilters();
-    }
-
-    function renderFilters() {
-        const list = document.getElementById('filter-list');
-        if (!list) return;
-        list.innerHTML = Object.keys(statusSettings).map(s => `
-            <label style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px; font-size: 14px; font-weight: 600; cursor: pointer;">
-                <input type="checkbox" checked onclick="toggleStatus('${s}', this.checked)">
-                <span style="width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid white; box-shadow: 0 0 0 1px #ddd; background:${statusSettings[s].color}"></span> ${statusSettings[s].label}
-            </label>
-        `).join('');
-    }
-
-    window.toggleStatus = (s, v) => {
-        allMarkers.forEach(m => { if (m.status === s) v ? m.marker.addTo(map) : map.removeLayer(m.marker); });
-    };
-
-    chargerDonnees();
-</script>
+                `);
+                allMarkers.push({ marker, status });
+            });
+            renderFilters();
+        }
+    
+        function renderFilters() {
+            const list = document.getElementById('filter-list');
+            if (!list) return;
+            list.innerHTML = Object.keys(statusSettings).map(s => `
+                <label style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px; font-size: 14px; font-weight: 600; cursor: pointer;">
+                    <input type="checkbox" checked onclick="toggleStatus('${s}', this.checked)">
+                    <span style="width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid white; box-shadow: 0 0 0 1px #ddd; background:${statusSettings[s].color}"></span> ${statusSettings[s].label}
+                </label>
+            `).join('');
+        }
+    
+        window.toggleStatus = (s, v) => {
+            allMarkers.forEach(m => { if (m.status === s) v ? m.marker.addTo(map) : map.removeLayer(m.marker); });
+        };
+    
+        function toggleMenu() {
+            document.getElementById('side-menu').classList.toggle('open');
+            document.getElementById('menu-overlay').classList.toggle('open');
+        }
+    
+        chargerDonnees();
+    </script>
 </body>
 </html>
+
 

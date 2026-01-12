@@ -1,76 +1,72 @@
-/* Conteneur qui morphose */
+body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+#map { height: 100vh; width: 100vw; z-index: 1; }
+
+/* Wrapper Fixe */
 .menu-wrapper {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    z-index: 2500;
-    background: white;
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow: hidden; /* Cache le contenu quand fermé */
+    position: fixed; top: 20px; left: 20px; z-index: 3000;
+    background: white; width: 50px; height: 50px;
+    border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
 }
 
-/* État AGRANDI (Le menu) */
-.menu-wrapper.open {
-    width: 300px;
-    height: 450px; /* Ajuste selon tes besoins */
-    border-radius: 16px;
-}
+.menu-wrapper.open { width: 300px; height: 500px; border-radius: 20px; }
 
-/* Le bouton invisible qui couvre la zone du burger */
+/* Bouton Burger */
 .menu-toggle {
-    position: absolute;
-    top: 0; left: 0;
-    width: 48px; height: 48px;
-    background: transparent;
-    border: none; cursor: pointer;
-    z-index: 10;
+    width: 50px; height: 50px; background: none; border: none;
+    cursor: pointer; position: absolute; top: 0; left: 0; z-index: 10;
 }
 
-/* ANIMATION BURGER -> CROIX */
-.burger-icon {
-    width: 20px; height: 14px;
-    position: relative; margin: 17px auto;
-}
-
+.burger-icon { width: 20px; height: 14px; position: relative; margin: 18px auto; }
 .burger-icon span {
-    display: block; position: absolute;
-    height: 2.5px; width: 100%;
-    background: #009597; border-radius: 9px;
-    transition: .25s ease-in-out;
+    display: block; position: absolute; height: 2.5px; width: 100%;
+    background: #009597; border-radius: 10px; transition: .3s ease-in-out;
 }
-
-.burger-icon span:nth-child(1) { top: 0px; }
+.burger-icon span:nth-child(1) { top: 0; }
 .burger-icon span:nth-child(2) { top: 6px; }
 .burger-icon span:nth-child(3) { top: 12px; }
 
-/* Transformation en croix */
-.menu-wrapper.open .burger-icon span:nth-child(1) { top: 6px; transform: rotate(135deg); }
-.menu-wrapper.open .burger-icon span:nth-child(2) { opacity: 0; left: -20px; }
-.menu-wrapper.open .burger-icon span:nth-child(3) { top: 6px; transform: rotate(-135deg); }
+/* Morphing Burger -> Croix */
+.menu-wrapper.open .burger-icon span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+.menu-wrapper.open .burger-icon span:nth-child(2) { opacity: 0; transform: translateX(-10px); }
+.menu-wrapper.open .burger-icon span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 
-/* CONTENU DU MENU (Apparaît en fondu) */
+/* Contenu interne */
 .menu-content {
-    padding: 60px 20px 20px 20px; /* Espace pour le bouton en haut */
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
+    opacity: 0; padding: 60px 20px 20px;
+    transition: opacity 0.3s; pointer-events: none;
+}
+.menu-wrapper.open .menu-content { opacity: 1; pointer-events: auto; }
+
+.panel-header h3 { color: #009597; margin: 0 0 20px 0; font-size: 20px; }
+
+/* Barre de recherche (Positionnée par rapport à l'écran, pas au menu) */
+.search-floating {
+    position: fixed; top: 20px; left: 85px; z-index: 2000;
+    background: white; height: 50px; width: 240px;
+    border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    display: flex; align-items: center; padding: 0 15px;
+    transition: transform 0.4s;
 }
 
-.menu-wrapper.open .menu-content {
-    opacity: 1;
-    pointer-events: auto;
-    transition-delay: 0.2s;
-}
+/* On décale légèrement la recherche quand le menu s'ouvre pour le style */
+.menu-wrapper.open ~ .search-floating { transform: translateX(250px); opacity: 0; pointer-events: none; }
 
-/* La recherche à côté */
-.search-floating-standalone {
-    position: fixed; top: 20px; left: 80px;
-    z-index: 2000; background: white; height: 48px;
-    border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    display: flex; align-items: center; padding: 0 15px; width: 200px;
+.search-floating input { border: none; flex: 1; outline: none; font-size: 14px; }
+.search-btn { background: none; border: none; cursor: pointer; display: flex; }
+
+/* Style des cartes de filtres (Ton design) */
+.filter-card {
+    display: flex; align-items: center; padding: 10px;
+    border: 1px solid #f1f5f9; border-radius: 10px; margin-bottom: 8px;
+    cursor: pointer; font-size: 13px; font-weight: 600; color: #334155;
 }
-.search-floating-standalone input { border: none; outline: none; width: 100%; }
+.filter-card input { margin-right: 12px; accent-color: #009597; }
+.dot { width: 8px; height: 8px; border-radius: 50%; margin-right: 10px; }
+
+.stats-card {
+    margin-top: 15px; padding: 15px; background: #f8fafc;
+    border-radius: 12px; text-align: center;
+}
+#site-count { font-size: 24px; font-weight: 800; color: #009597; display: block; }

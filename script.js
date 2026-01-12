@@ -13,36 +13,25 @@ let map = L.map('map', { zoomControl: false }).setView([46.6033, 1.8883], 6);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 let allMarkers = [];
 
-// Formatage téléphone
 function formatPhone(num) {
     if (!num) return "";
     let clean = String(num).replace(/\D/g, "");
     return clean.replace(/(\d{2})(?=\d)/g, "$1 ").trim();
 }
 
-// Extraction robuste pour n8n : [ { "data": [...] } ] + Nettoyage "data ="
 async function fetchN8N(url) {
     try {
         const response = await fetch(url);
         let text = await response.text();
-        
-        // Nettoyage si n8n ajoute "data ="
         if (text.includes('=')) text = text.substring(text.indexOf('=') + 1).trim();
         if (text.endsWith(';')) text = text.slice(0, -1);
-        
-        // Réparation virgules traînantes
         text = text.replace(/,\s*([\]}])/g, '$1');
-
         const parsed = JSON.parse(text);
-
-        // Navigation dans la structure [ { "data": [...] } ]
+        
+        // Extraction spécifique pour ta structure [ { "data": [...] } ]
         if (Array.isArray(parsed) && parsed[0] && parsed[0].data) return parsed[0].data;
-        if (Array.isArray(parsed)) return parsed;
-        return parsed.data || [];
-    } catch (e) {
-        console.error("Erreur sur " + url, e);
-        return [];
-    }
+        return Array.isArray(parsed) ? parsed : (parsed.data || []);
+    } catch (e) { return []; }
 }
 
 async function chargerDonnees() {
@@ -65,30 +54,26 @@ function creerMarqueurs(data) {
         const status = (item.Statut || "").trim();
         const typeRaw = (item.Type || "SITE").trim();
         const config = statusSettings[status] || { color: "#7f8c8d", checked: true };
-        
         const isCabinet = typeRaw.toUpperCase() === "CABINET";
         const isESMS = typeRaw.toUpperCase().includes("ESMS");
 
-        const phone = item.Phone || item.Telephone || "";
-        const att = item.ATT || item.Att || "";
-        const tms = item.TMS || item.Tms || "";
-
+        // TA POPUP BENTO (INTOUCHÉE)
         let popupContent = `
             <div class="bento-card">
                 <div class="bento-header">
                     <span class="bento-type">${typeRaw.toUpperCase()}</span>
                     <span class="bento-status" style="background:${config.color}">${status}</span>
                 </div>
-                <h3 class="bento-title">${item.Name || "Site Omedys"}</h3>
+                <h3 class="bento-title">${item.Name || "Site"}</h3>
                 <div class="bento-info-row">
                     <div class="info-block">
                         <span class="info-label">ATT</span>
-                        <span class="info-value">${att || "—"}</span>
+                        <span class="info-value">${item.ATT || item.Att || "—"}</span>
                     </div>
-                    ${tms ? `<div class="info-block"><span class="info-label">TMS</span><span class="info-value">${tms}</span></div>` : ''}
+                    ${(item.TMS || item.Tms) ? `<div class="info-block"><span class="info-label">TMS</span><span class="info-value">${item.TMS || item.Tms}</span></div>` : ''}
                 </div>
                 <div class="bento-address"><span>📍</span><span>${item.Address || ""}</span></div>
-                ${phone ? `<a href="tel:${String(phone).replace(/\s/g, '')}" class="bento-call-btn"><span>📞</span><span>${formatPhone(phone)}</span></a>` : ''}
+                ${(item.Phone || item.Telephone) ? `<a href="tel:${String(item.Phone || item.Telephone).replace(/\s/g, '')}" class="bento-call-btn"><span>📞</span><span>${formatPhone(item.Phone || item.Telephone)}</span></a>` : ''}
             </div>`;
 
         const marker = L.circleMarker([lat, lng], {
@@ -96,17 +81,13 @@ function creerMarqueurs(data) {
             fillColor: config.color,
             color: "#fff",
             weight: 2,
-            fillOpacity: 0.9,
-            className: isCabinet ? 'pulse-marker' : ''
+            fillOpacity: 0.9
         });
 
-        // Appliquer le filtre ESMS et Statut au chargement
-        const shouldShow = isESMS 
-            ? (config.checked && statusSettings["TYPE_ESMS"].checked) 
-            : config.checked;
+        // Logique d'affichage initiale
+        const show = isESMS ? (config.checked && statusSettings["TYPE_ESMS"].checked) : config.checked;
+        if (show) marker.addTo(map);
 
-        if (shouldShow) marker.addTo(map);
-        
         marker.bindPopup(popupContent);
         allMarkers.push({ marker, status, isESMS });
     });
@@ -115,6 +96,7 @@ function creerMarqueurs(data) {
 
 function renderFilters() {
     const list = document.getElementById('filter-list');
+    if (!list) return;
     list.innerHTML = Object.keys(statusSettings).map(k => `
         <label class="filter-card" style="--status-color: ${statusSettings[k].color}">
             <input type="checkbox" ${statusSettings[k].checked ? 'checked' : ''} onchange="toggleStatus('${k}', this.checked)">
@@ -126,32 +108,28 @@ function renderFilters() {
 window.toggleStatus = (n, c) => {
     statusSettings[n].checked = c;
     allMarkers.forEach(m => {
-        const config = statusSettings[m.status] || { checked: true };
-        const show = m.isESMS 
-            ? (config.checked && statusSettings["TYPE_ESMS"].checked) 
-            : config.checked;
-            
+        const conf = statusSettings[m.status] || { checked: true };
+        const show = m.isESMS ? (conf.checked && statusSettings["TYPE_ESMS"].checked) : conf.checked;
         if (show) m.marker.addTo(map); else map.removeLayer(m.marker);
     });
     updateStats();
 };
 
 function updateStats() {
-    const el = document.getElementById('site-count');
-    if (el) el.innerText = allMarkers.filter(m => map.hasLayer(m.marker)).length;
+    const count = allMarkers.filter(m => map.hasLayer(m.marker)).length;
+    if (document.getElementById('site-count')) document.getElementById('site-count').innerText = count;
 }
 
 function toggleMenu() { document.getElementById('menuWrapper').classList.toggle('open'); }
 
 function rechercheEtZoom() {
     const q = document.getElementById('query').value;
-    fetch(`https://api-adresse.data.gouv.fr/search/?q=${q}&limit=1`)
-        .then(r => r.json()).then(res => {
-            if (res.features && res.features.length) {
-                const [lon, lat] = res.features[0].geometry.coordinates;
-                map.flyTo([lat, lon], 12);
-            }
-        });
+    fetch(`https://api-adresse.data.gouv.fr/search/?q=${q}&limit=1`).then(r => r.json()).then(res => {
+        if (res.features && res.features.length) {
+            const [lon, lat] = res.features[0].geometry.coordinates;
+            map.flyTo([lat, lon], 12);
+        }
+    });
 }
 
 chargerDonnees();

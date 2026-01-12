@@ -272,24 +272,34 @@
     }
 
     window.toggleStatus = (name, isChecked) => {
-        if (statusSettings[name]) statusSettings[name].checked = isChecked;
-    
-        allMarkers.forEach(m => {
-            // Un marqueur doit être visible si :
-            // 1. Son filtre de statut est activé
-            // 2. S'il est ESMS, l'interrupteur global ESMS doit être activé
-            const statusActive = statusSettings[m.status].checked;
-            const esmsActive = statusSettings["TYPE_ESMS"].checked;
-    
-            const visible = m.isESMS ? (statusActive && esmsActive) : statusActive;
-    
-            if (visible) {
-                m.marker.addTo(map);
-            } else {
-                map.removeLayer(m.marker);
-            }
-        });
-    };
+    // 1. Mettre à jour l'état dans la config
+    if (statusSettings[name]) {
+        statusSettings[name].checked = isChecked;
+    }
+
+    // 2. Parcourir tous les marqueurs pour décider s'ils doivent être vus
+    allMarkers.forEach(m => {
+        const statusConfig = statusSettings[m.status] || { checked: true };
+        const isStatusOn = statusConfig.checked;
+        const isEsmsGlobalOn = statusSettings["TYPE_ESMS"].checked;
+
+        // Logique : 
+        // Si c'est un ESMS -> visible seulement si (Statut coché ET Filtre ESMS coché)
+        // Si ce n'est pas un ESMS -> visible seulement si (Statut coché)
+        let visible = false;
+        if (m.isESMS) {
+            visible = isStatusOn && isEsmsGlobalOn;
+        } else {
+            visible = isStatusOn;
+        }
+
+        if (visible) {
+            m.marker.addTo(map);
+        } else {
+            map.removeLayer(m.marker);
+        }
+    });
+};
 
     function toggleMenu() {
         document.getElementById('side-menu').classList.toggle('open');
@@ -301,6 +311,7 @@
 </script>
 </body>
 </html>
+
 
 
 

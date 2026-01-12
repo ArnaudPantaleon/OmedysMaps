@@ -1,72 +1,61 @@
 body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', sans-serif; }
 #map { height: 100vh; width: 100vw; z-index: 1; }
 
-/* Menu Flottant Haut Gauche */
-.floating-ui {
-    position: fixed; top: 15px; left: 15px; z-index: 2000;
+/* Conteneur des contrôles en haut à gauche */
+.top-controls {
+    position: fixed; top: 20px; left: 20px;
+    z-index: 2000; display: flex; gap: 12px; align-items: center;
 }
 
 .menu-trigger {
-    background: white; border: none; width: 45px; height: 45px;
-    border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    background: white; border: none; width: 48px; height: 48px;
+    border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.12);
     cursor: pointer; font-size: 20px; color: #009597;
 }
 
-#side-menu {
-    display: none; background: white; width: 280px; border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-top: 10px; padding: 15px;
+.search-floating {
+    background: white; height: 48px; border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    display: flex; align-items: center; padding: 0 15px; width: 250px;
 }
-#side-menu.open { display: block; }
 
-.search-box {
-    display: flex; background: #f1f5f9; border-radius: 8px; margin: 15px 0; overflow: hidden;
+.search-floating input { border: none; flex: 1; outline: none; font-size: 14px; }
+.search-icon { background: none; border: none; cursor: pointer; opacity: 0.6; }
+
+/* Panneau de Filtres Flottant */
+.floating-panel {
+    position: fixed; top: 80px; left: 20px; /* Aligné sous le bouton burger */
+    z-index: 1900; background: white; width: 280px; 
+    border-radius: 15px; padding: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    
+    /* Animation */
+    display: flex; flex-direction: column;
+    opacity: 0; visibility: hidden;
+    transform: translateY(-20px);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.search-box input { border: none; background: transparent; padding: 10px; flex: 1; outline: none; font-size: 14px; }
-.search-box button { border: none; background: none; padding: 0 10px; cursor: pointer; color: #64748b; }
 
-/* Cards de filtres épurées */
+.floating-panel.open {
+    opacity: 1; visibility: visible;
+    transform: translateY(0);
+}
+
+/* Design des cartes de filtres (Épuré comme demandé) */
 .filter-card {
-    display: flex; align-items: center; padding: 10px;
-    background: white; border: 1px solid #e2e8f0; border-radius: 8px;
-    margin-bottom: 6px; cursor: pointer;
+    display: flex; align-items: center; padding: 12px;
+    background: white; border: 1px solid #e2e8f0; border-radius: 10px;
+    margin-bottom: 8px; cursor: pointer; transition: 0.2s;
 }
-.filter-card:hover { border-color: #009597; }
+.filter-card:hover { border-color: #009597; background: #f0fdfa; }
+.filter-card input { margin-right: 12px; accent-color: #009597; }
+
 .dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 12px; }
 .label { font-size: 13px; font-weight: 600; color: #334155; }
 
 .stats-card {
-    margin-top: 15px; padding: 12px; background: #f8fafc;
-    border-radius: 8px; text-align: center; border: 1px solid #e2e8f0;
+    margin-top: 15px; padding: 15px; background: #f8fafc;
+    border-radius: 12px; text-align: center; border: 1px solid #e2e8f0;
 }
-#site-count { font-size: 20px; font-weight: 800; color: #009597; }
-/* Panneau Flottant avec Animation */
-#side-menu {
-    display: flex; /* On utilise flex pour l'organisation interne */
-    background: white; 
-    width: 280px; 
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15); 
-    margin-top: 15px; 
-    padding: 18px;
-    flex-direction: column;
-
-    /* États pour l'animation */
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-20px); 
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); /* Courbe de vitesse type Apple */
-}
-
-/* État quand le menu est ouvert */
-#side-menu.open {
-    display: flex;
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
-
-/* On peaufine le bouton burger au clic */
-.menu-trigger:active {
-    transform: scale(0.92);
-    transition: transform 0.1s;
-}
+#site-count { font-size: 24px; font-weight: 800; color: #009597; display: block; }
+.stats-card small { font-size: 9px; color: #94a3b8; font-weight: 800; }

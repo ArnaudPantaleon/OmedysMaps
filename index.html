@@ -10,9 +10,9 @@
 <body>
     <div id="map"></div>
 
-    <div class="search-floating">
+    <div class="search-floating" id="searchContainer">
         <input type="text" id="query" placeholder="Rechercher une ville..." onkeypress="if(event.key === 'Enter') rechercheEtZoom()">
-        <button class="search-btn" onclick="rechercheEtZoom()">🔍</button>
+        <button class="search-btn" onclick="toggleSearchMobile()">🔍</button>
     </div>
     <div class="menu-wrapper" id="menuWrapper">
         <button class="menu-toggle" onclick="toggleMenu()">

@@ -1,5 +1,5 @@
 const statusSettings = {
-    "Ouvert": { color: "#009597", label: "Cabinet Omedys", checked: true, special: true },
+    "Ouvert": { color: "#009597", label: "Cabinet Omedys", checked: true },
     "Ouvertes": { color: "#2ecc71", label: "Salles Ouvertes", checked: true },
     "Telesecretariat OMEDYS": { color: "#8956FB", label: "Télésecrétariat OMEDYS", checked: true },
     "Ouverture en cours": { color: "#3498db", label: "En cours", checked: false },
@@ -9,74 +9,39 @@ const statusSettings = {
     "TYPE_ESMS": { color: "#334155", label: "Afficher les ESMS", checked: false }
 };
 
-let map = L.map('map', { zoomControl: false }).setView([46.6033, 1.8883], 6);
-
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '© OpenStreetMap'
-}).addTo(map);
-
-// Correction pour les tuiles blanches : Force le rendu
-setTimeout(() => { map.invalidateSize(); }, 400);
+let map = L.map('map', { zoomControl: false }).setView([46.6, 2.0], 6);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
 let allMarkers = [];
-function rechercheEtZoom() {
-    const query = document.getElementById('query').value;
-    if (!query) return;
-
-    fetch(`https://api-adresse.data.gouv.fr/search/?q=${query}&limit=1`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.features.length > 0) {
-                const [lon, lat] = data.features[0].geometry.coordinates;
-                map.flyTo([lat, lon], 12);
-            }
-        });
-}
-
-function toggleMenu() {
-    document.getElementById('side-menu').classList.toggle('open');
-}
 
 async function chargerDonnees() {
     try {
-        const [resSalles, resCabinets] = await Promise.all([
+        const [res1, res2] = await Promise.all([
             fetch('salles.json').then(r => r.json()),
             fetch('cabinet.json').then(r => r.json())
         ]);
-        const data = [...(resSalles[0]?.data || []), ...(resCabinets[0]?.data || [])];
+        const data = [...(res1[0]?.data || []), ...(res2[0]?.data || [])];
         creerMarqueurs(data);
-    } catch (err) { console.error("Erreur chargement JSON:", err); }
+    } catch (e) { console.error(e); }
 }
 
 function creerMarqueurs(data) {
     allMarkers.forEach(m => map.removeLayer(m.marker));
     allMarkers = [];
-
     data.forEach(item => {
-        // Nettoyage et validation des coordonnées
-        const lat = parseFloat(item.Latitude || item.latitude);
-        const lng = parseFloat(item.Longitude || item.longitude);
+        const lat = parseFloat(item.Latitude);
+        const lng = parseFloat(item.Longitude);
+        if (isNaN(lat) || isNaN(lng)) return;
 
-        // Si pas de coordonnées, on ignore silencieusement (plus d'erreurs en console)
-        if (!lat || !lng || isNaN(lat) || isNaN(lng)) return;
-
-        const status = (item.Statut || "Inconnu").trim();
-        const type = (item.Type || "").trim().toUpperCase();
-        const isESMS = type.includes("ESMS") || type.includes("EHPAD");
-        const config = statusSettings[status] || { color: "#7f8c8d", checked: true };
-
+        const status = item.Statut || "Inconnu";
+        const config = statusSettings[status] || { color: "#999", checked: true };
+        
         const marker = L.circleMarker([lat, lng], {
-            radius: type === "CABINET" ? 10 : 7,
-            fillColor: config.color, color: "#fff", weight: 2, fillOpacity: 0.9
-        });
+            radius: 7, fillColor: config.color, color: "#fff", weight: 1, fillOpacity: 0.8
+        }).bindPopup(`<b>${item.Name}</b>`);
 
-        if (config.checked && (!isESMS || statusSettings["TYPE_ESMS"].checked)) {
-            marker.addTo(map);
-        }
-
-        marker.bindPopup(`<b>${item.Name}</b><br>${item.Address || ''}`);
-        allMarkers.push({ marker, status, isESMS });
+        if (config.checked) marker.addTo(map);
+        allMarkers.push({ marker, status, isESMS: (item.Type || "").includes("ESMS") });
     });
     renderFilters();
 }
@@ -86,20 +51,18 @@ function renderFilters() {
     list.innerHTML = Object.keys(statusSettings).map(key => {
         const s = statusSettings[key];
         return `
-            <label class="filter-item ${s.special ? 'special-case' : ''}">
+            <label class="filter-item">
                 <input type="checkbox" ${s.checked ? 'checked' : ''} onclick="toggleStatus('${key}', this.checked)">
-                <span style="width:12px; height:12px; border-radius:50%; background:${s.color}; margin-right:10px;"></span>
-                <span style="font-size:14px; font-weight:600;">${s.label}</span>
+                <span class="dot" style="background:${s.color}"></span>
+                <span>${s.label}</span>
             </label>`;
     }).join('');
-
-    if (!document.getElementById('stats-block')) {
-        const sideMenu = document.getElementById('side-menu');
-        const statsDiv = document.createElement('div');
-        statsDiv.id = 'stats-block';
-        statsDiv.className = 'stats-block';
-        statsDiv.innerHTML = `<span id="site-count">0</span><span style="font-size:12px; color:#64748b;">SITES AFFICHÉS</span>`;
-        sideMenu.appendChild(statsDiv);
+    
+    if(!document.getElementById('stats-block')) {
+        const sb = document.createElement('div');
+        sb.id = 'stats-block'; sb.className = 'stats-block';
+        sb.innerHTML = `<span id="site-count">0</span> sites`;
+        document.getElementById('side-menu').appendChild(sb);
     }
     updateStats();
 }
@@ -117,5 +80,13 @@ function updateStats() {
     document.getElementById('site-count').innerText = allMarkers.filter(m => map.hasLayer(m.marker)).length;
 }
 
+function rechercheEtZoom() {
+    const q = document.getElementById('query').value;
+    fetch(`https://api-adresse.data.gouv.fr/search/?q=${q}&limit=1`)
+        .then(r => r.json()).then(res => {
+            if (res.features.length) map.flyTo([res.features[0].geometry.coordinates[1], res.features[0].geometry.coordinates[0]], 12);
+        });
+}
 
+function toggleMenu() { document.getElementById('side-menu').classList.toggle('open'); }
 chargerDonnees();

@@ -2,33 +2,46 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Omedys Maps</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Omedys Maps - Réseau</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
     <div id="map"></div>
+
     <div class="top-interface">
         <div class="menu-wrapper" id="menuWrapper">
             <button class="menu-toggle" onclick="toggleMenu()">
-                <div class="burger-icon"><span></span><span></span><span></span></div>
+                <div class="burger-icon" id="burgerIcon">
+                    <span></span><span></span><span></span>
+                </div>
             </button>
+            
             <div class="menu-content">
                 <h3 class="menu-title">Filtres</h3>
                 <div id="filter-list"></div>
+                
                 <div class="stat-bento-tile">
-                    <span id="site-count">0</span>
-                    <span class="stat-unit">Sites affichés</span>
+                    <div class="stat-header">
+                        <span class="stat-dot"></span>
+                        <span class="stat-title">Réseau Omedys</span>
+                    </div>
+                    <div class="stat-body">
+                        <span id="site-count">0</span>
+                        <span class="stat-unit">SITES</span>
+                    </div>
                 </div>
             </div>
         </div>
-    
+
         <div class="search-floating">
             <input type="text" id="query" placeholder="Rechercher une ville..." onkeypress="if(event.key === 'Enter') rechercheEtZoom()">
             <button class="search-btn" onclick="rechercheEtZoom()">🔍</button>
         </div>
     </div>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="script.js"></script>
 </body>

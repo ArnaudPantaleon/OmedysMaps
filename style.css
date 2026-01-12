@@ -1,141 +1,87 @@
 /* --- CONFIGURATION GÉNÉRALE --- */
 :root {
     --primary: #009597;
-    --primary-soft: #e6fffa;
-    --primary-border: #b2f5ea;
     --bg-main: #f8fafc;
     --text-dark: #0f172a;
-    --text-slate: #475569;
-    --text-light: #94a3b8;
     --white: #ffffff;
     --shadow: 0 10px 40px rgba(0,0,0,0.1);
 }
 
-body, html { 
-    margin: 0; padding: 0; height: 100%; 
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-    background: var(--bg-main); 
-    overflow: hidden; 
-}
-
+body, html { margin: 0; padding: 0; height: 100%; font-family: sans-serif; overflow: hidden; background: #eee; }
 #map { height: 100vh; width: 100vw; z-index: 1; }
 
-/* --- BARRE DE RECHERCHE CENTRÉE (FIXE) --- */
+/* --- BARRE DE RECHERCHE (Fixe en haut à droite) --- */
 .search-floating { 
     position: fixed; 
     top: 15px; 
-    left: 50%; 
-    transform: translateX(-50%); 
+    right: 15px; /* On la cale à droite */
     z-index: 5000; 
     background: var(--white); 
     height: 50px; 
-    width: 320px; 
+    width: 250px; /* Taille fixe sur PC */
     border-radius: 16px; 
     box-shadow: var(--shadow); 
     display: flex; 
     align-items: center; 
     padding: 0 15px;
     border: 1px solid #e2e8f0;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.search-floating input { border: none; flex: 1; outline: none; font-size: 14px; background: transparent; color: var(--text-dark); }
-.search-btn { background: none; border: none; cursor: pointer; font-size: 18px; display: flex; align-items: center; }
+/* Centrage uniquement sur très grand écran si tu préfères */
+@media (min-width: 1024px) {
+    .search-floating { left: 50%; right: auto; transform: translateX(-50%); width: 400px; }
+}
 
-/* --- MENU LATÉRAL --- */
+.search-floating input { border: none; flex: 1; outline: none; font-size: 14px; background: transparent; }
+.search-btn { background: none; border: none; cursor: pointer; }
+
+/* --- MENU BENTO (Fixe en haut à gauche) --- */
 .menu-wrapper { 
-    position: fixed; top: 15px; left: 15px; z-index: 4500; 
+    position: fixed; top: 15px; left: 15px; z-index: 4000; 
     background: var(--white); width: 50px; height: 50px; 
     border-radius: 18px; box-shadow: var(--shadow); 
-    transition: 0.5s cubic-bezier(0.16, 1, 0.3, 1); 
+    transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .menu-wrapper.open { 
-    width: 340px; height: auto; max-height: 90vh; border-radius: 28px; overflow-y: auto; 
-}
-/* --- RESPONSIVE MOBILE (CORRECTIF FINAL) --- */
-@media (max-width: 480px) {
-    /* On décale la recherche à droite pour laisser la place au burger */
-    .search-floating {
-        left: auto;
-        right: 15px;
-        transform: none;
-        width: 50px; /* On la réduit à un bouton sur mobile par défaut */
-        overflow: hidden;
-        transition: width 0.4s ease;
-    }
-
-    /* Quand on clique sur la loupe sur mobile, elle s'agrandit */
-    .search-floating.active {
-        width: calc(100% - 90px);
-        z-index: 6000; /* Passe au dessus du burger si besoin */
-    }
-
-    .search-floating input {
-        display: none; /* Caché par défaut sur mobile */
-    }
-
-    .search-floating.active input {
-        display: block;
-        padding-left: 10px;
-    }
-
-    /* Le menu ouvert sur mobile laisse de la place sur les bords (Bento effect) */
-    .menu-wrapper.open {
-        width: calc(100vw - 30px);
-        left: 15px;
-    }
+    width: 320px; height: auto; max-height: 90vh; border-radius: 28px; overflow-y: auto;
 }
 
 .menu-toggle { width: 50px; height: 50px; background: none; border: none; cursor: pointer; position: absolute; top: 0; left: 0; z-index: 4001; }
-.burger-icon { width: 20px; height: 14px; position: relative; margin: 18px auto; }
-.burger-icon span { display: block; position: absolute; height: 2px; width: 100%; background: var(--primary); transition: .3s; }
-.burger-icon span:nth-child(1) { top: 0; } .burger-icon span:nth-child(2) { top: 6px; } .burger-icon span:nth-child(3) { top: 12px; }
+.burger-icon span { display: block; position: absolute; height: 2px; width: 20px; left: 15px; background: var(--primary); transition: .3s; }
+.burger-icon span:nth-child(1) { top: 18px; }
+.burger-icon span:nth-child(2) { top: 24px; }
+.burger-icon span:nth-child(3) { top: 30px; }
 
 .menu-wrapper.open .burger-icon span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
 .menu-wrapper.open .burger-icon span:nth-child(2) { opacity: 0; }
 .menu-wrapper.open .burger-icon span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 
-.menu-content { opacity: 0; padding: 80px 25px 30px; transition: 0.3s; pointer-events: none; }
+.menu-content { opacity: 0; padding: 25px; transition: 0.3s; pointer-events: none; margin-top: 50px; }
 .menu-wrapper.open .menu-content { opacity: 1; pointer-events: all; }
-.menu-title { font-size: 20px; font-weight: 800; color: var(--text-dark); margin: 0 0 20px 0; }
 
-/* --- FILTRES --- */
-#filter-list { display: flex; flex-direction: column; gap: 8px; }
-.filter-card { display: flex; align-items: center; padding: 12px 16px; background: var(--white); border: 2px solid #f1f5f9; border-radius: 16px; cursor: pointer; transition: 0.2s; opacity: 0.4; }
-.filter-card input { display: none; }
-.filter-card:has(input:checked) { opacity: 1; border-color: var(--status-color); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-.dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 12px; background: var(--status-color); }
-.label { font-size: 14px; font-weight: 700; color: var(--text-dark); }
+/* --- STATS BENTO --- */
+.stat-bento-tile { margin-top: 20px; padding: 20px; background: #f8fafc; border-radius: 24px; border: 1px solid #e2e8f0; }
+#site-count { font-size: 38px; font-weight: 900; color: var(--text-dark); display: block; line-height: 1; }
+.stat-unit { font-size: 11px; font-weight: 800; color: var(--primary); text-transform: uppercase; }
 
-/* --- STAT TILE BENTO --- */
-.stat-bento-tile { margin-top: 25px; padding: 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 24px; display: flex; flex-direction: column; gap: 8px; }
-.stat-header { display: flex; align-items: center; gap: 8px; }
-.stat-dot { width: 8px; height: 8px; background: var(--primary); border-radius: 50%; }
-.stat-title { font-size: 10px; font-weight: 800; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.08em; }
-.stat-body { display: flex; align-items: baseline; gap: 10px; }
-#site-count { font-size: 36px; font-weight: 900; color: var(--text-dark); line-height: 1; }
-.stat-unit { font-size: 11px; font-weight: 800; color: var(--primary); }
-
-/* --- RESPONSIVE MOBILE (CORRECTIF FINAL) --- */
-@media (max-width: 480px) { 
-    .search-floating { 
-        width: calc(100% - 100px); 
-        left: auto;
-        right: 15px; 
-        transform: none; 
-        top: 15px;
+/* --- RESPONSIVE MOBILE (SAUVETAGE) --- */
+@media (max-width: 480px) {
+    /* Sur mobile, la recherche prend la place qu'il reste à côté du burger */
+    .search-floating {
+        left: 75px; 
+        right: 15px;
+        width: auto;
+        height: 50px;
     }
 
-    .menu-wrapper.open { 
-        width: calc(100vw - 30px); /* Laisse une petite marge de 15px de chaque côté */
-        left: 15px; 
-        max-height: 85vh;
-    }
-
-    /* Optionnel : cacher la barre de recherche si le menu est ouvert pour la clarté */
+    /* Quand le menu s'ouvre, on cache la barre de recherche pour libérer l'espace */
     .menu-wrapper.open ~ .search-floating {
-        opacity: 0;
-        pointer-events: none;
+        display: none;
+    }
+
+    .menu-wrapper.open {
+        width: calc(100vw - 30px);
+        left: 15px;
     }
 }

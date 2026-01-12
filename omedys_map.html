@@ -94,36 +94,48 @@
         async function rechercheEtZoom() {
             const query = document.getElementById('query').value.trim();
             if (!query) return;
-
+        
             // Supprimer l'ancienne surbrillance
-            if (highlightLayer) map.removeLayer(highlightLayer);
-
-            // 1. Test si c'est un numéro de département (2 ou 3 chiffres)
-            if (/^\d{2,3}$/.test(query)) {
-                fetch(`https://geo.api.gouv.fr/departements/${query}?format=geojson&geometry=contour`)
-                    .then(r => r.json()).then(data => showGeoJson(data));
-                return;
+            if (highlightLayer) {
+                map.removeLayer(highlightLayer);
+                highlightLayer = null;
             }
-
-            // 2. Test si c'est une région (Recherche par nom)
-            const resRegion = await fetch(`https://geo.api.gouv.fr/regions?nom=${query}&fields=code&format=json`).then(r => r.json());
-            if (resRegion.length > 0) {
-                fetch(`https://geo.api.gouv.fr/regions/${resRegion[0].code}?format=geojson&geometry=contour`)
-                    .then(r => r.json()).then(data => showGeoJson(data));
-                return;
-            }
-
-            // 3. Sinon, recherche classique de ville/adresse
-            fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=1`)
-                .then(r => r.json()).then(res => {
-                    if (res.features?.length > 0) {
-                        const [lon, lat] = res.features[0].geometry.coordinates;
-                        map.flyTo([lat, lon], 13);
+        
+            try {
+                // 1. Test si c'est un numéro de département (2 ou 3 chiffres)
+                if (/^\d{2,3}$/.test(query)) {
+                    const data = await fetch(`https://geo.api.gouv.fr/departements/${query}?format=geojson&geometry=contour`).then(r => r.json());
+                    if (data && data.type) { // Vérifie que c'est un GeoJSON valide
+                        showGeoJson(data);
+                        return;
                     }
-                });
+                }
+        
+                // 2. Test si c'est une région (Recherche par nom)
+                const resRegion = await fetch(`https://geo.api.gouv.fr/regions?nom=${encodeURIComponent(query)}&fields=code`).then(r => r.json());
+                if (resRegion && resRegion.length > 0) {
+                    const data = await fetch(`https://geo.api.gouv.fr/regions/${resRegion[0].code}?format=geojson&geometry=contour`).then(r => r.json());
+                    if (data && data.type) {
+                        showGeoJson(data);
+                        return;
+                    }
+                }
+        
+                // 3. Sinon, recherche classique de ville/adresse
+                const resAddr = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=1`).then(r => r.json());
+                if (resAddr.features && resAddr.features.length > 0) {
+                    const [lon, lat] = resAddr.features[0].geometry.coordinates;
+                    map.flyTo([lat, lon], 13);
+                }
+            } catch (error) {
+                console.error("Erreur lors de la recherche :", error);
+            }
         }
 
         function showGeoJson(data) {
+            // Sécurité supplémentaire : on vérifie si data est bien un objet GeoJSON
+            if (!data || !data.type) return;
+        
             highlightLayer = L.geoJSON(data, {
                 style: {
                     color: "#009597",
@@ -132,7 +144,8 @@
                     fillOpacity: 0.15
                 }
             }).addTo(map);
-            map.flyToBounds(highlightLayer.getBounds(), { padding: [20, 20] });
+            
+            map.flyToBounds(highlightLayer.getBounds(), { padding: [30, 30] });
         }
 
         // --- Fonctions existantes Omedys (JSON et Marqueurs) ---
@@ -207,3 +220,4 @@
     </script>
 </body>
 </html>
+

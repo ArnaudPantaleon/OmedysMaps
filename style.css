@@ -1,44 +1,74 @@
-:root {
-    --primary: #009597;
-    --bg-light: #f0fdfa;
-    --border: #e2e8f0;
-    --text: #2d3748;
+/* Bouton pour ouvrir le menu */
+.menu-toggle {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 2000; /* Plus haut que la carte */
+    background: #009597;
+    color: white;
+    border: none;
+    padding: 12px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
 }
-
-body, html { margin: 0; padding: 0; height: 100%; font-family: 'Inter', sans-serif; }
-#map { height: 100vh; width: 100vw; }
 
 /* Menu Latéral */
 #side-menu {
-    position: fixed; top: 0; left: -350px; width: 300px; height: 100%;
-    background: white; z-index: 1000; transition: 0.3s; padding: 25px;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.1); overflow-y: auto;
+    position: fixed;
+    top: 0;
+    left: -350px; /* Caché à gauche */
+    width: 320px;
+    height: 100vh;
+    background: white;
+    z-index: 3000; /* Très haut */
+    transition: transform 0.3s ease;
+    padding: 20px;
+    box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
 }
-#side-menu.open { left: 0; }
-#side-menu h2 { color: var(--primary); font-weight: 800; border-bottom: 2px solid #f8fafc; padding-bottom: 10px; }
 
-/* Recherche */
-.search-box { display: flex; gap: 5px; margin-bottom: 20px; }
-.search-box input { flex: 1; padding: 8px; border: 1px solid var(--border); border-radius: 8px; }
-
-/* Design des Cartes (Affordance) */
-.filter-list-container { display: flex; flex-direction: column; gap: 8px; }
-.filter-item {
-    display: flex; align-items: center; padding: 10px 15px;
-    background: white; border: 1px solid var(--border); border-radius: 10px;
-    cursor: pointer; transition: 0.2s;
+/* Quand le menu est ouvert */
+#side-menu.open {
+    transform: translateX(350px);
 }
-.filter-item:hover { border-color: var(--primary); transform: translateX(5px); background: #f8fafc; }
-.filter-item.special-case { background: var(--bg-light); border: 1px solid #ccfbf1; }
 
-.filter-item input { margin-right: 12px; width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; }
-.dot { width: 12px; height: 12px; border-radius: 50%; margin-right: 12px; }
-.filter-label { font-size: 14px; font-weight: 600; color: var(--text); }
+.menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
 
-/* Compteur de sites */
-.stats-block { margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border); }
-.stats-header { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 800; color: var(--primary); }
-.stats-hint { font-size: 12px; color: #718096; font-style: italic; margin-top: 8px; line-height: 1.4; }
+.close-menu {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #718096;
+}
 
-/* Mobile */
-.menu-toggle { position: fixed; top: 20px; left: 20px; z-index: 1001; padding: 10px 15px; background: white; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; font-size: 20px; }
+/* Style de la barre de recherche */
+.search-box {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 25px;
+}
+
+.search-box input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.search-box button {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+}

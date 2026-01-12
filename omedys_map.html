@@ -15,7 +15,7 @@
         body { margin: 0; padding: 0; height: 100vh; font-family: 'Segoe UI', Roboto, sans-serif; overflow: hidden; }
         #map { height: 100vh; width: 100%; z-index: 1; }
 
-        /* RECHERCHE CENTRÉE ET ARRONDIE */
+        /* RECHERCHE */
         #search-container { 
             position: absolute; top: 20px; left: 50%; transform: translateX(-50%); 
             width: 90%; max-width: 500px; height: 54px;
@@ -37,17 +37,15 @@
         }
         #search-button svg { width: 20px; height: 20px; fill: white; }
 
-        /* BOUTON FILTRE (FAB) CORRIGÉ */
+        /* BOUTON FILTRE */
         #filter-toggle {
             position: absolute; bottom: 30px; right: 20px;
             background: var(--primary); min-width: 60px; width: 60px; height: 60px; 
             border-radius: 50%; border: none; cursor: pointer;
             display: grid; place-items: center; 
             box-shadow: 0 6px 20px rgba(0,149,151,0.4); z-index: 1100;
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             padding: 0;
         }
-        /* Icône réglage simplifiée et propre */
         #filter-toggle svg { width: 28px; height: 28px; fill: white; }
 
         /* PANNEAU LATÉRAL */
@@ -68,13 +66,14 @@
         #menu-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.2); z-index: 1040; display: none; backdrop-filter: blur(2px); }
         #menu-overlay.open { display: block; }
 
+        /* MARQUEURS */
         .cabinet-pin { width: 24px !important; height: 24px !important; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
         .card-title { color: var(--primary); font-weight: bold; font-size: 1.1em; display: block; margin-bottom: 5px; }
         .popup-tel { display: block; margin-top: 10px; padding: 8px; background: #f0fdfa; color: var(--primary); text-decoration: none; font-weight: bold; border-radius: 8px; text-align: center; }
 
         @media (max-width: 600px) {
             #search-container { width: 92%; top: 15px; height: 50px; }
-            #filter-toggle { bottom: 20px; right: 15px; width: 56px; height: 56px; min-width: 56px; }
+            #filter-toggle { bottom: 20px; right: 15px; width: 56px; height: 56px; }
         }
     </style>
 </head>
@@ -88,9 +87,7 @@
     </div>
 
     <button id="filter-toggle" onclick="toggleMenu()" aria-label="Filtres">
-        <svg viewBox="0 0 24 24">
-            <path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/>
-        </svg>
+        <svg viewBox="0 0 24 24"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/></svg>
     </button>
 
     <div id="menu-overlay" onclick="toggleMenu()"></div>
@@ -126,6 +123,7 @@
         let allMarkers = [];
         let showEhpad = true;
 
+        // URLs des sources JSON
         const urlSalles = "https://webpage.support-omedys.fr/salles.json";
         const urlCabinets = "https://webpage.support-omedys.fr/cabinet.json";
 
@@ -143,15 +141,26 @@
         }
 
         async function fetchJSON(url) {
-            const response = await fetch(url);
-            let text = await response.text();
-            if (!text.trim().startsWith('[')) text = '[' + text.trim().replace(/,$/, '') + ']';
-            return JSON.parse(text);
+            try {
+                const response = await fetch(url);
+                return await response.json();
+            } catch (e) {
+                console.error("Erreur sur " + url, e);
+                return { data: [] };
+            }
         }
 
         async function chargerDonnees() {
             try {
-                const [salles, cabinets] = await Promise.all([fetchJSON(urlSalles), fetchJSON(urlCabinets)]);
+                const [resSalles, resCabinets] = await Promise.all([
+                    fetchJSON(urlSalles),
+                    fetchJSON(urlCabinets)
+                ]);
+
+                // Extraction des tableaux depuis la clé "data"
+                const salles = resSalles.data || [];
+                const cabinets = resCabinets.data || [];
+
                 creerMarqueurs([...salles, ...cabinets]);
             } catch (err) { console.error(err); }
         }
@@ -160,6 +169,7 @@
             data.forEach(item => {
                 const lat = parseFloat(item.Latitude);
                 const lng = parseFloat(item.Longitude);
+                
                 if (!isNaN(lat) && !isNaN(lng)) {
                     const statusKey = item.Statut || "";
                     const isCabinet = (item.Type === "CABINET");
@@ -169,19 +179,33 @@
                     if (isCabinet) {
                         const colorCab = (statusKey === "Ouvert") ? "#009597" : "#1e90ff";
                         marker = L.marker([lat, lng], { 
-                            icon: L.divIcon({ className: 'cabinet-pin', html: `<div style="background:${colorCab}; width:100%; height:100%; border-radius:50%;"></div>` }),
+                            icon: L.divIcon({ 
+                                className: 'cabinet-pin', 
+                                html: `<div style="background:${colorCab}; width:100%; height:100%; border-radius:50%;"></div>` 
+                            }),
                             zIndexOffset: 1000 
                         });
                     } else {
                         const col = statusSettings[statusKey]?.color || "#333";
-                        marker = L.marker([lat, lng], { icon: L.divIcon({ html: `<div style="background:${col}; width:12px; height:12px; border-radius:50%; border:2px solid white;"></div>`, className: "" }) });
+                        marker = L.marker([lat, lng], { 
+                            icon: L.divIcon({ 
+                                html: `<div style="background:${col}; width:12px; height:12px; border-radius:50%; border:2px solid white;"></div>`, 
+                                className: "" 
+                            }) 
+                        });
                     }
 
-                    let popup = `<b class="card-title">${item.Name}</b><small>${item.Adresse}</small>`;
+                    // Utilisation de item.Address (clé harmonisée)
+                    let popup = `<b class="card-title">${item.Name}</b><small>${item.Address || item.Adresse || ""}</small>`;
                     if (tel) popup += `<a href="tel:${tel.replace(/ /g,'')}" class="popup-tel">📞 ${tel}</a>`;
                     
                     marker.bindPopup(popup);
-                    allMarkers.push({ marker, status: statusKey, isEhpad: (item.Name||"").toLowerCase().includes("ehpad"), isCabinet });
+                    allMarkers.push({ 
+                        marker, 
+                        status: statusKey, 
+                        isEhpad: (item.Name||"").toLowerCase().includes("ehpad"), 
+                        isCabinet 
+                    });
                 }
             });
             refreshDisplay();
@@ -214,7 +238,7 @@
             if(!v) return;
             fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(v)}&limit=1`)
                 .then(r => r.json()).then(res => {
-                    if (res.features.length > 0) {
+                    if (res.features && res.features.length > 0) {
                         const [lon, lat] = res.features[0].geometry.coordinates;
                         map.flyTo([lat, lon], 13);
                     }
@@ -225,5 +249,4 @@
         chargerDonnees();
     </script>
 </body>
-
 </html>

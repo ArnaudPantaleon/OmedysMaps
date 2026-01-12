@@ -87,19 +87,36 @@
         }
 
         async function chargerDonnees() {
-            try {
-                const [resSalles, resCabinets] = await Promise.all([
-                    fetch(urlSalles).then(r => r.json()),
-                    fetch(urlCabinets).then(r => r.json())
-                ]);
-                
-                // Correction structure : salles est dans [0].data, cabinets est dans .data
-                const salles = (resSalles[0] && resSalles[0].data) ? resSalles[0].data : [];
-                const cabinets = resCabinets.data || [];
-                
-                creerMarqueurs([...salles, ...cabinets]);
-            } catch (err) { console.error("Erreur de chargement:", err); }
-        }
+			try {
+				const responseSalles = await fetch(urlSalles);
+				const resSalles = await responseSalles.json();
+				
+				const responseCabinets = await fetch(urlCabinets);
+				const resCabinets = await responseCabinets.json();
+
+				// LOGIQUE D'EXTRACTION ROBUSTE
+				let salles = [];
+				// Cas 1 : [{ "data": [...] }] (Format de votre fichier salles.json)
+				if (Array.isArray(resSalles) && resSalles[0] && resSalles[0].data) {
+					salles = resSalles[0].data;
+				} 
+				// Cas 2 : { "data": [...] } (Format de votre dernier message)
+				else if (resSalles.data) {
+					salles = resSalles.data;
+				}
+				// Cas 3 : [...] (Tableau simple)
+				else if (Array.isArray(resSalles)) {
+					salles = resSalles;
+				}
+
+				let cabinets = resCabinets.data || (Array.isArray(resCabinets) ? resCabinets : []);
+
+				console.log("Salles chargées :", salles.length); // Pour vérifier dans la console F12
+				creerMarqueurs([...salles, ...cabinets]);
+			} catch (err) {
+				console.error("Erreur critique de chargement :", err);
+			}
+		}
 
         function creerMarqueurs(data) {
             allMarkers = [];

@@ -59,22 +59,22 @@ function creerMarqueurs(data) {
             </div>` : '';
 
         marker.bindPopup(`
-            <div style="min-width:250px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <span style="background: #edf2f7; color: #4a5568; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 800;">${typeRaw}</span>
-                    <span style="color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; background:${color}">${status}</span>
-                </div>
-                <b style="color:#009597; font-size:15px; display:block; margin-bottom:4px;">${item.Name}</b>
-                <div style="color: #718096; font-size: 11px; margin: 8px 0;">📍 ${item.Address || "—"}</div>
-                <div style="display: flex; gap: 15px; border-top: 1px dashed #e2e8f0; padding-top: 10px; margin-top: 10px;">
-                    <div style="flex: 1;">
-                        <span style="font-size: 10px; color: #a0aec0; font-weight: bold; display: block;">ATT</span>
-                        <span style="font-size: 11px; color: #2d3748; font-weight: 600;">${item.ATT || "—"}</span>
+                <div style="min-width:250px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="background: #edf2f7; color: #4a5568; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 800;">${typeRaw}</span>
+                        <span style="color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; background:${color}">${status}</span>
                     </div>
-                    ${tmsHtml}
+                    <b style="color:#009597; font-size:15px; display:block; margin-bottom:4px;">${item.Name}</b>
+                    <div style="color: #718096; font-size: 11px; margin: 8px 0;">📍 ${item.Address || "—"}</div>
+                    <div style="display: flex; gap: 15px; border-top: 1px dashed #e2e8f0; padding-top: 10px; margin-top: 10px;">
+                        <div style="flex: 1;">
+                            <span style="font-size: 10px; color: #a0aec0; font-weight: bold; display: block;">ATT</span>
+                            <span style="font-size: 11px; color: #2d3748; font-weight: 600;">${item.ATT || "—"}</span>
+                        </div>
+                        ${tmsHtml}
+                    </div>
                 </div>
-            </div>
-        `);
+            `);
         // --- FIN DE TON DESIGN ---
 
         allMarkers.push({ marker, status, isESMS });

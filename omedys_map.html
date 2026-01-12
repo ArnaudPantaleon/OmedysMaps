@@ -2,307 +2,32 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Réseau Omedys</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Omedys Maps</title>
+    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <style>
-        :root { --primary: #009597; --dark: #2d3748; --glass: rgba(255, 255, 255, 0.95); --gray-text: #718096; }
-        body { margin: 0; padding: 0; height: 100vh; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
-        #map { height: 100vh; width: 100%; z-index: 1; }
-        
-        /* Recherche */
-        #search-container { 
-            position: absolute; top: 20px; left: 50%; transform: translateX(-50%); 
-            width: 90%; max-width: 500px; height: 54px;
-            background: var(--glass); backdrop-filter: blur(10px);
-            border-radius: 50px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            display: flex; align-items: center; padding: 0 6px 0 22px; z-index: 1000;
-        }
-        #search-container input { flex: 1; border: none; background: transparent; outline: none; font-size: 16px; }
-        #search-button { background: var(--primary); width: 42px; height: 42px; border-radius: 50%; border: none; cursor: pointer; display: grid; place-items: center; }
-        
-        /* Menu Filtres */
-        #filter-toggle {
-            position: absolute; bottom: 30px; right: 20px; background: var(--primary); width: 60px; height: 60px; 
-            border-radius: 50%; border: none; cursor: pointer; display: grid; place-items: center; z-index: 1100;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-        #side-menu {
-            position: absolute; top: 0; right: -320px; width: 280px; height: 100vh;
-            background: white; z-index: 1050; transition: right 0.3s; padding: 40px 25px; box-sizing: border-box; overflow-y: auto;
-        }
-        #side-menu.open { right: 0; }
-        .filter-item { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; font-size: 14px; font-weight: 600; cursor: pointer; }
-        .dot { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid white; box-shadow: 0 0 0 1px #ddd; }
-        #menu-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.2); z-index: 1040; display: none; }
-        #menu-overlay.open { display: block; }
-
-        /* Popups */
-        .leaflet-popup-content-wrapper { border-radius: 14px; padding: 6px; }
-        .popup-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .type-badge { background: #edf2f7; color: #4a5568; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 800; text-transform: uppercase; }
-        .status-badge { color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; }
-        
-        .address-box { color: var(--gray-text); font-size: 12px; margin: 8px 0; display: flex; gap: 5px; }
-        
-        .tech-info { 
-            margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e2e8f0;
-            display: flex; gap: 15px;
-        }
-        .info-label { font-size: 10px; color: #a0aec0; text-transform: uppercase; font-weight: bold; display: block; }
-        .info-value { font-size: 11px; color: var(--dark); font-weight: 600; white-space: nowrap; }
-
-        .tel-link {
-            display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 12px; padding: 10px;
-            background: #f0fdfa; color: var(--primary); text-decoration: none; font-weight: bold;
-            border-radius: 8px; font-size: 14px; border: 1px solid #ccfbf1;
-        }#side-menu h2 { 
-        font-size: 1.2rem; 
-        margin-bottom: 20px; 
-        border-bottom: 2px solid #f0f2f5; 
-        padding-bottom: 10px; 
-    }
-
-    .filter-list-container { display: flex; flex-direction: column; gap: 8px; }
-
-    .filter-item {
-        display: flex;
-        align-items: center;
-        padding: 10px 12px;
-        border-radius: 8px;
-        transition: background 0.2s;
-        cursor: pointer;
-        border: 1px solid transparent;
-    }
-
-    .filter-item:hover { background: #f8fafc; border-color: #e2e8f0; }
-
-    /* Style spécial pour le Cabinet Omedys */
-    .filter-item.special-case {
-        background: #f0fdfa;
-        border: 1px solid #ccfbf1;
-        margin-bottom: 10px;
-    }
-
-    .filter-item input { margin-right: 12px; cursor: pointer; accent-color: var(--primary); }
-
-    .dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        margin-right: 10px;
-        flex-shrink: 0;
-    }
-
-    .filter-label { font-size: 13px; color: #4a5568; font-weight: 500; flex: 1; }
-</style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div id="search-container">
-        <input type="text" id="query" list="geo-suggestions" placeholder="Rechercher une ville..." onkeypress="if(event.key === 'Enter') rechercheEtZoom()">
-        <datalist id="geo-suggestions"></datalist>
-        <button id="search-button" onclick="rechercheEtZoom()">
-            <svg width="20" height="20" fill="white" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-        </button>
-    </div>
-
-    <button id="filter-toggle" onclick="toggleMenu()">
-        <svg width="28" height="28" fill="white" viewBox="0 0 24 24"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/></svg>
-    </button>
-
-    <div id="menu-overlay" onclick="toggleMenu()"></div>
-    <div id="side-menu">
-        <h2 style="color:var(--primary); margin-top:0;">Filtres</h2>
-        <div id="filter-list"></div>
-        <div id="stats-container" style="margin-top: 20px; padding-top: 15px; border-top: 2px solid #f0f2f5;">
-            <div style="font-size: 14px; font-weight: bold; color: #009597; margin-bottom: 5px;">
-                📊 <span id="site-count">0</span> sites affichés
-            </div>
-            <p style="font-size: 11px; color: #718096; line-height: 1.4;">
-                <i>Le décompte s'ajuste automatiquement selon vos filtres.</i>
-            </p>
-        </div>
-    </div>
-
     <div id="map"></div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-    // 1. Initialisation de la carte
-    const map = L.map('map', { zoomControl: false }).setView([46.6033, 1.8883], 6);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+    <div class="menu-overlay" id="menu-overlay" onclick="toggleMenu()"></div>
 
-    let allMarkers = [];
-
-    // Configuration des filtres (Ordre et réglages par défaut)
-    const statusSettings = {
-        "Ouvert": { color: "#009597", label: "Cabinet Omedys", checked: true, special: true },
-        "Ouvertes": { color: "#2ecc71", label: "Salles Ouvertes", checked: true },
-        "Telesecretariat OMEDYS": { color: "#8956FB", label: "Télésecrétariat OMEDYS", checked: true },
-        "Ouverture en cours": { color: "#3498db", label: "En cours", checked: false },
-        "En sourcing": { color: "#f1c40f", label: "En sourcing", checked: false },
-        "Inactives": { color: "#95a5a6", label: "Inactives", checked: false },
-        "Fermees ou refus OTT": { color: "#e74c3c", label: "Fermé / Refus", checked: false },
-        "TYPE_ESMS": { color: "#334155", label: "Afficher les ESMS", checked: false, special: false }
-    };
-
-    // 2. Recherche par ville
-    async function rechercheEtZoom() {
-        const input = document.getElementById('query').value.trim();
-        if (!input) return;
-        fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(input)}&type=municipality&limit=1`)
-            .then(r => r.json())
-            .then(res => {
-                if (res.features && res.features.length > 0) {
-                    const [lon, lat] = res.features[0].geometry.coordinates;
-                    map.flyTo([lat, lon], 12);
-                }
-            });
-    }
-
-    // 3. Chargement des données [ { "data": [...] } ]
-    async function chargerDonnees() {
-        try {
-            const [resSalles, resCabinets] = await Promise.all([
-                fetch('salles.json').then(r => r.json()),
-                fetch('cabinet.json').then(r => r.json())
-            ]);
-            const salles = (resSalles[0] && resSalles[0].data) ? resSalles[0].data : [];
-            const cabinets = (resCabinets[0] && resCabinets[0].data) ? resCabinets[0].data : [];
-            creerMarqueurs([...salles, ...cabinets]);
-        } catch (err) { console.error("Erreur de chargement JSON:", err); }
-    }
-
-    // 4. Création des marqueurs avec logique ESMS
-    function creerMarqueurs(data) {
-        allMarkers.forEach(m => map.removeLayer(m.marker));
-        allMarkers = [];
-
-        data.forEach(item => {
-            const lat = parseFloat(item.Latitude);
-            const lng = parseFloat(item.Longitude);
-            if (isNaN(lat) || isNaN(lng)) return;
-
-            const status = (item.Statut || "Inconnu").trim();
-            const typeRaw = (item.Type || "").trim();
-            const typeUpper = typeRaw.toUpperCase();
-            
-            // Détection ESMS
-            const isESMS = typeUpper.includes("ESMS") || typeUpper.includes("EHPAD") || typeUpper.includes("FOYER");
-
-            const config = statusSettings[status] || { color: "#7f8c8d", checked: true };
-            const color = config.color;
-
-            const marker = L.circleMarker([lat, lng], {
-                radius: typeUpper === "CABINET" ? 10 : 7,
-                fillColor: color,
-                color: "#fff",
-                weight: 2,
-                fillOpacity: 0.9
-            });
-
-            // Affichage initial
-            const shouldShow = config.checked && (!isESMS || statusSettings["TYPE_ESMS"].checked);
-            if (shouldShow) marker.addTo(map);
-
-            // Construction Popup
-            const tmsHtml = typeUpper !== "CABINET" ? `
-                <div style="flex: 1; min-width: 0;">
-                    <span style="font-size: 10px; color: #a0aec0; text-transform: uppercase; font-weight: bold; display: block;">TMS</span>
-                    <span style="font-size: 11px; color: #2d3748; font-weight: 600; white-space: nowrap; display: block; overflow: hidden; text-overflow: ellipsis;">${item.TMS || "—"}</span>
-                </div>` : '';
-
-            marker.bindPopup(`
-                <div style="min-width:250px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <span style="background: #edf2f7; color: #4a5568; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 800; text-transform: uppercase;">${typeRaw}</span>
-                        <span style="color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; background:${color}">${status}</span>
-                    </div>
-                    <b style="color:#009597; font-size:15px; display:block; margin-bottom:4px;">${item.Name}</b>
-                    <div style="color: #718096; font-size: 11px; margin: 8px 0; display: flex; gap: 5px;">
-                        <span style="color: #e91e63;">📍</span>
-                        <span>${item.Address || "Adresse non renseignée"}</span>
-                    </div>
-                    <div style="display: flex; gap: 15px; border-top: 1px dashed #e2e8f0; padding-top: 10px; margin-top: 10px;">
-                        <div style="flex: 1; min-width: 0;">
-                            <span style="font-size: 10px; color: #a0aec0; text-transform: uppercase; font-weight: bold; display: block;">ATT</span>
-                            <span style="font-size: 11px; color: #2d3748; font-weight: 600; white-space: nowrap; display: block; overflow: hidden; text-overflow: ellipsis;">${item.ATT || "—"}</span>
-                        </div>
-                        ${tmsHtml}
-                    </div>
-                </div>
-            `);
-
-            allMarkers.push({ marker, status, isESMS });
-        });
-        renderFilters();
-        updateStats();
-    }
-
-    // 5. Gestion des filtres
-    function renderFilters() {
-        const list = document.getElementById('filter-list');
-        if (!list) return;
-        list.innerHTML = Object.keys(statusSettings).map(key => {
-            const s = statusSettings[key];
-            const isSpecial = s.special ? 'style="background:#f0fdfa; border:1px solid #ccfbf1; padding:8px; border-radius:8px; margin-bottom:10px;"' : 'style="padding:6px;"';
-            return `
-                <div ${isSpecial}>
-                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13px; font-weight: 600;">
-                        <input type="checkbox" ${s.checked ? 'checked' : ''} onclick="toggleStatus('${key}', this.checked)">
-                        <span style="width: 10px; height: 10px; border-radius: 50%; background:${s.color}"></span>
-                        ${s.label}
-                    </label>
-                </div>`;
-        }).join('');
-    }
-
-    window.toggleStatus = (name, isChecked) => {
-        if (statusSettings[name]) statusSettings[name].checked = isChecked;
+    <div id="side-menu">
+        <h2>Omedys Maps</h2>
         
-        allMarkers.forEach(m => {
-            const isStatusOn = statusSettings[m.status]?.checked;
-            const isEsmsGlobalOn = statusSettings["TYPE_ESMS"].checked;
-            
-            // Logique croisée : 
-            // - Si c'est un ESMS : visible seulement si (Statut coché ET Bouton ESMS coché)
-            // - Sinon : visible seulement si (Statut coché)
-            const visible = m.isESMS ? (isStatusOn && isEsmsGlobalOn) : isStatusOn;
+        <div class="search-box">
+            <input type="text" id="query" placeholder="Rechercher une ville...">
+            <button onclick="rechercheEtZoom()">🔍</button>
+        </div>
 
-            if (visible) m.marker.addTo(map);
-            else map.removeLayer(m.marker);
-        });
-        updateStats();
-    };
+        <div id="filter-list">
+            </div>
+    </div>
 
-    function toggleMenu() {
-        document.getElementById('side-menu').classList.toggle('open');
-        document.getElementById('menu-overlay').classList.toggle('open');
-    }
-    function updateStats() {
-        const count = allMarkers.filter(m => map.hasLayer(m.marker)).length;
-        const countElem = document.getElementById('site-count');
-        if (countElem) countElem.innerText = count;
-    }
-    chargerDonnees();
-</script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

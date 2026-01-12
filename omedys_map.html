@@ -185,14 +185,19 @@
     
             const status = (item.Statut || "Inconnu").trim();
             const type = (item.Type || "Salle").trim();
+            
+            // On récupère la config du statut
             const config = statusSettings[status] || { color: "#7f8c8d", checked: true };
     
             const marker = L.circleMarker([lat, lng], {
                 radius: type === "CABINET" ? 10 : 7,
-                fillColor: config.color, color: "#fff", weight: 2, fillOpacity: 0.9
+                fillColor: config.color,
+                color: "#fff",
+                weight: 2,
+                fillOpacity: 0.9
             });
     
-            // Appliquer l'état initial (on n'ajoute à la carte que si checked est true)
+            // CONDITION : On n'ajoute à la carte que si checked est true dans statusSettings
             if (config.checked) {
                 marker.addTo(map);
             }
@@ -286,6 +291,7 @@
 </script>
 </body>
 </html>
+
 
 
 

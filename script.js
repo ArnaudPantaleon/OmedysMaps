@@ -25,7 +25,11 @@ async function chargerDonnees() {
         creerMarqueurs([...dataSalles, ...dataCabinets]);
     } catch (e) { console.error("Erreur chargement", e); }
 }
-
+function formatPhone(num) {
+    if (!num) return "";
+    let clean = num.replace(/\D/g, "");
+    return clean.replace(/(\d{2})(?=\d)/g, "$1 ");
+}
 function creerMarqueurs(data) {
     allMarkers.forEach(m => map.removeLayer(m.marker));
     allMarkers = [];
@@ -45,34 +49,36 @@ function creerMarqueurs(data) {
         const att = item.ATT || item.Att || "";
         const tms = item.TMS || item.Tms || "";
 
-        // --- Template HTML (conforme au nouveau CSS) ---
+        const displayPhone = formatPhone(phone);
+        
         let popupContent = `
             <div class="custom-card">
                 <div class="card-header">
                     <div class="type-text">${typeRaw}</div>
                     <div class="status-pill" style="background:${config.color}">${status}</div>
                 </div>
-
+        
                 <div class="title-group">
                     <h4 class="site-name">${item.Name}</h4>
                     ${att ? `<div class="att-line">• ATT : ${att}</div>` : ''}
                 </div>
-
+        
                 <div class="address-line">
                     <span class="pin-icon">📍</span>
-                    <span>${item.Address || "Adresse non renseignée"}</span>
+                    <span>${item.Address || ""}</span>
                 </div>
-
+        
                 ${!isCabinet && tms ? `
                     <div class="tms-container">
                         <span class="tms-label">TMS</span>
                         <span class="tms-val">${tms}</span>
                     </div>
                 ` : ''}
-
+        
                 ${phone ? `
                     <a href="tel:${phone.replace(/\s/g, '')}" class="call-link">
-                        <span>📞</span> Appeler le site
+                        <span class="phone-icon">📞</span>
+                        <span>${displayPhone}</span>
                     </a>
                 ` : ''}
             </div>`;

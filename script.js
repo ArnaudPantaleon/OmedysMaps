@@ -122,11 +122,6 @@ function rechercheEtZoom() {
 function toggleMenu() {
     const menu = document.getElementById('side-menu');
     menu.classList.toggle('open');
-    
-    // Optionnel : Si le menu est ouvert, on peut recentrer légèrement la carte
-    if (menu.classList.contains('open')) {
-        setTimeout(() => map.invalidateSize(), 400);
-    }
 }
 
 chargerDonnees();

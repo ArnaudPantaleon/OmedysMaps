@@ -2,9 +2,9 @@ const statusSettings = {
     "Ouvert": { color: "#009597", label: "Cabinet Omedys", checked: true },
     "Ouvertes": { color: "#2ecc71", label: "Salles Ouvertes", checked: true },
     "Telesecretariat OMEDYS": { color: "#8956FB", label: "Télésecrétariat", checked: true },
-    "Ouverture en cours": { color: "#3498db", label: "Ouverture en cours", checked: false },
+    "Ouverture en cours": { color: "#3498db", label: "En cours", checked: false },
     "En sourcing": { color: "#f1c40f", label: "Sourcing", checked: false },
-    "Inactives": { color: "#95a5a6", label: "Sites Inactifs", checked: false },
+    "Inactives": { color: "#95a5a6", label: "Inactives", checked: false },
     "Fermees ou refus OTT": { color: "#e74c3c", label: "Fermés / Refus", checked: false },
     "TYPE_ESMS": { color: "#334155", label: "Afficher ESMS", checked: false }
 };
@@ -29,40 +29,23 @@ async function chargerDonnees() {
 function creerMarqueurs(data) {
     allMarkers.forEach(m => map.removeLayer(m.marker));
     allMarkers = [];
-
     data.forEach(item => {
         const lat = parseFloat(item.Latitude), lng = parseFloat(item.Longitude);
         if (isNaN(lat) || isNaN(lng)) return;
-
         const status = (item.Statut || "").trim();
-        const typeRaw = (item.Type || "").trim();
-        const typeUpper = typeRaw.toUpperCase();
-        const isESMS = typeUpper.includes("ESMS") || typeUpper.includes("EHPAD");
+        const typeRaw = (item.Type || "").trim().toUpperCase();
+        const isESMS = typeRaw.includes("ESMS") || typeRaw.includes("EHPAD");
         const config = statusSettings[status] || { color: "#7f8c8d", checked: true };
 
         const marker = L.circleMarker([lat, lng], {
-            radius: typeUpper === "CABINET" ? 10 : 7,
+            radius: typeRaw === "CABINET" ? 10 : 7,
             fillColor: config.color, color: "#fff", weight: 2, fillOpacity: 0.9
         });
 
         if (config.checked && (!isESMS || statusSettings["TYPE_ESMS"].checked)) marker.addTo(map);
-
-        const phoneRaw = item.Phone || item.Telephone || "";
-        const phoneHtml = phoneRaw ? `
-            <div style="margin-top:12px; border-top:1px solid #f1f5f9; padding-top:10px;">
-                <a href="tel:${phoneRaw.replace(/\s/g, '')}" style="text-decoration:none; background:#f0fdfa; color:#009597; border:1px solid #ccfbf1; padding:8px; border-radius:8px; display:flex; align-items:center; justify-content:center; gap:10px; font-weight:700; font-size:13px;">
-                    📞 ${phoneRaw}
-                </a>
-            </div>` : '';
-
-        marker.bindPopup(`
-            <div style="min-width:200px;">
-                <b style="color:#009597; font-size:14px;">${item.Name}</b><br>
-                <small style="color:#64748b;">${item.Address || ""}</small>
-                ${phoneHtml}
-            </div>
-        `);
-
+        
+        const phone = item.Phone || item.Telephone || "";
+        marker.bindPopup(`<b>${item.Name}</b><br>${item.Address || ""}${phone ? `<br><a href="tel:${phone}">${phone}</a>` : ""}`);
         allMarkers.push({ marker, status, isESMS });
     });
     renderFilters();
@@ -107,5 +90,4 @@ function rechercheEtZoom() {
 }
 
 function toggleMenu() { document.getElementById('menuWrapper').classList.toggle('open'); }
-
 chargerDonnees();

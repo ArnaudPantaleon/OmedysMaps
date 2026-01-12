@@ -98,86 +98,83 @@
             "Fermees ou refus OTT": { color: "#e74c3c", label: "Fermé / Refus" }
         };
     
-        async function chargerDonnees() {
-            try {
-                const [resSalles, resCabinets] = await Promise.all([
-                    fetch('salles.json').then(r => r.json()),
-                    fetch('cabinet.json').then(r => r.json())
-                ]);
-                
-                // LOGIQUE DE DÉTECTION DE STRUCTURE
-                // Pour salles.json : on prend le premier élément du tableau puis la clé .data
-                const salles = (resSalles[0] && resSalles[0].data) ? resSalles[0].data : [];
-                
-                // Pour cabinet.json : c'est un tableau direct
-                const cabinets = Array.isArray(resCabinets) ? resCabinets : [];
-                
-                console.log("Salles chargées:", salles.length);
-                console.log("Cabinets chargés:", cabinets.length);
-    
-                creerMarqueurs([...salles, ...cabinets]);
-            } catch (err) { 
-                console.error("Erreur de chargement JSON:", err); 
-            }
+async function chargerDonnees() {
+    try {
+        const [resSalles, resCabinets] = await Promise.all([
+            fetch('salles.json').then(r => r.json()),
+            fetch('cabinet.json').then(r => r.json())
+        ]);
+        
+        // On entre dans le premier élément du tableau [0] pour atteindre la clé .data
+        const salles = (resSalles[0] && resSalles[0].data) ? resSalles[0].data : [];
+        const cabinets = (resCabinets[0] && resCabinets[0].data) ? resCabinets[0].data : [];
+        
+        console.log("Salles chargées :", salles.length);
+        console.log("Cabinets chargés :", cabinets.length);
+
+        creerMarqueurs([...salles, ...cabinets]);
+    } catch (err) { 
+        console.error("Erreur : Vérifiez que le format est bien [ { 'data': [...] } ]", err); 
+    }
+}
+
+function creerMarqueurs(data) {
+    allMarkers.forEach(m => map.removeLayer(m.marker));
+    allMarkers = [];
+
+    data.forEach(item => {
+        const lat = parseFloat(item.Latitude);
+        const lng = parseFloat(item.Longitude);
+        if (isNaN(lat) || isNaN(lng)) return;
+
+        const status = (item.Statut || "Inconnu").trim();
+        const type = (item.Type || "Salle").trim();
+        const color = statusSettings[status]?.color || "#7f8c8d";
+
+        const marker = L.circleMarker([lat, lng], {
+            radius: type === "CABINET" ? 10 : 7,
+            fillColor: color, color: "#fff", weight: 2, fillOpacity: 0.9
+        }).addTo(map);
+
+        // TMS uniquement pour les salles (masqué si CABINET)
+        const tmsHtml = type !== "CABINET" ? `
+            <div style="flex: 1; min-width: 0;">
+                <span style="font-size: 10px; color: #a0aec0; text-transform: uppercase; font-weight: bold; display: block;">TMS</span>
+                <span style="font-size: 11px; color: #2d3748; font-weight: 600; white-space: nowrap; display: block; overflow: hidden; text-overflow: ellipsis;">${item.TMS || "—"}</span>
+            </div>` : '';
+
+        let telBtn = "";
+        if (item.Phone) {
+            const clean = item.Phone.toString().replace(/\D/g, '');
+            const fmt = clean.match(/.{1,2}/g)?.join(' ') || item.Phone;
+            telBtn = `<a href="tel:${clean}" style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 12px; padding: 10px; background: #f0fdfa; color: #009597; text-decoration: none; font-weight: bold; border-radius: 8px; font-size: 14px; border: 1px solid #ccfbf1;">📞 ${fmt}</a>`;
         }
-    
-        function creerMarqueurs(data) {
-            allMarkers.forEach(m => map.removeLayer(m.marker));
-            allMarkers = [];
-    
-            data.forEach(item => {
-                const lat = parseFloat(item.Latitude);
-                const lng = parseFloat(item.Longitude);
-                if (isNaN(lat) || isNaN(lng)) return;
-    
-                const status = (item.Statut || "Inconnu").trim();
-                const type = (item.Type || "Salle").trim();
-                const color = statusSettings[status]?.color || "#7f8c8d";
-    
-                const marker = L.circleMarker([lat, lng], {
-                    radius: type === "CABINET" ? 10 : 7,
-                    fillColor: color, color: "#fff", weight: 2, fillOpacity: 0.9
-                }).addTo(map);
-    
-                // TMS uniquement pour les salles (Pas pour les CABINET)
-                const tmsHtml = type !== "CABINET" ? `
-                    <div style="flex: 1;">
-                        <span style="font-size: 10px; color: #a0aec0; text-transform: uppercase; font-weight: bold; display: block;">TMS</span>
-                        <span style="font-size: 11px; color: #2d3748; font-weight: 600; white-space: nowrap; display: block; overflow: hidden; text-overflow: ellipsis;">${item.TMS || "—"}</span>
-                    </div>` : '';
-    
-                let telBtn = "";
-                if (item.Phone) {
-                    const clean = item.Phone.toString().replace(/\D/g, '');
-                    const fmt = clean.match(/.{1,2}/g)?.join(' ') || item.Phone;
-                    telBtn = `<a href="tel:${clean}" style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 12px; padding: 10px; background: #f0fdfa; color: #009597; text-decoration: none; font-weight: bold; border-radius: 8px; font-size: 14px; border: 1px solid #ccfbf1;">📞 ${fmt}</a>`;
-                }
-    
-                marker.bindPopup(`
-                    <div style="min-width:250px">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <span style="background: #edf2f7; color: #4a5568; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 800; text-transform: uppercase;">${type}</span>
-                            <span style="color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; background:${color}">${status}</span>
-                        </div>
-                        <b style="color:#009597; font-size:15px; display:block; margin-bottom:4px;">${item.Name}</b>
-                        <div style="color: #718096; font-size: 12px; margin: 8px 0; display: flex; gap: 5px;">
-                            <span style="color: #e91e63;">📍</span>
-                            <span>${item.Address || "Adresse non renseignée"}</span>
-                        </div>
-                        <div style="display: flex; gap: 15px; border-top: 1px dashed #e2e8f0; padding-top: 10px; margin-top: 10px;">
-                            <div style="flex: 1;">
-                                <span style="font-size: 10px; color: #a0aec0; text-transform: uppercase; font-weight: bold; display: block;">ATT</span>
-                                <span style="font-size: 11px; color: #2d3748; font-weight: 600; white-space: nowrap; display: block; overflow: hidden; text-overflow: ellipsis;">${item.ATT || "—"}</span>
-                            </div>
-                            ${tmsHtml}
-                        </div>
-                        ${telBtn}
+
+        marker.bindPopup(`
+            <div style="min-width:260px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="background: #edf2f7; color: #4a5568; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 800; text-transform: uppercase;">${type}</span>
+                    <span style="color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; background:${color}">${status}</span>
+                </div>
+                <b style="color:#009597; font-size:15px; display:block; margin-bottom:4px;">${item.Name}</b>
+                <div style="color: #718096; font-size: 11px; margin: 8px 0; display: flex; gap: 5px;">
+                    <span style="color: #e91e63;">📍</span>
+                    <span>${item.Address || ""}</span>
+                </div>
+                <div style="display: flex; gap: 15px; border-top: 1px dashed #e2e8f0; padding-top: 10px; margin-top: 10px;">
+                    <div style="flex: 1; min-width: 0;">
+                        <span style="font-size: 10px; color: #a0aec0; text-transform: uppercase; font-weight: bold; display: block;">ATT</span>
+                        <span style="font-size: 11px; color: #2d3748; font-weight: 600; white-space: nowrap; display: block; overflow: hidden; text-overflow: ellipsis;">${item.ATT || "—"}</span>
                     </div>
-                `);
-                allMarkers.push({ marker, status });
-            });
-            renderFilters();
-        }
+                    ${tmsHtml}
+                </div>
+                ${telBtn}
+            </div>
+        `);
+        allMarkers.push({ marker, status });
+    });
+    renderFilters();
+}
     
         function renderFilters() {
             const list = document.getElementById('filter-list');
@@ -203,5 +200,6 @@
     </script>
 </body>
 </html>
+
 
 

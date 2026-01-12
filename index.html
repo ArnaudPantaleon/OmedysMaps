@@ -8,11 +8,13 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="floating-header">
+    <div class="top-bar">
         <button class="menu-btn" onclick="toggleMenu()">☰</button>
-        <div class="search-container">
+        <div class="search-box">
             <input type="text" id="query" placeholder="Rechercher une ville..." onkeypress="if(event.key === 'Enter') rechercheEtZoom()">
-            <button onclick="rechercheEtZoom()">🔍</button>
+            <button onclick="rechercheEtZoom()" class="search-btn">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </button>
         </div>
     </div>
 
@@ -21,7 +23,7 @@
     <div id="side-menu">
         <div class="menu-header">
             <h2>Filtres</h2>
-            <button onclick="toggleMenu()">✕</button>
+            <button onclick="toggleMenu()" class="close-btn">✕</button>
         </div>
         <div id="filter-list"></div>
     </div>

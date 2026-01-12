@@ -131,5 +131,15 @@ function rechercheEtZoom() {
         }
     });
 }
-
+function toggleSearchMobile() {
+    if (window.innerWidth <= 480) {
+        const searchBar = document.getElementById('searchContainer');
+        searchBar.classList.toggle('active');
+        if (searchBar.classList.contains('active')) {
+            document.getElementById('query').focus();
+        }
+    } else {
+        rechercheEtZoom();
+    }
+}
 chargerDonnees();

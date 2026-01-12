@@ -11,19 +11,16 @@ const statusSettings = {
 
 let map = L.map('map', { zoomControl: false }).setView([46.6033, 1.8883], 6);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-
 let allMarkers = [];
 
 async function chargerDonnees() {
     try {
-        const [resSalles, resCabinets] = await Promise.all([
+        const [resS, resC] = await Promise.all([
             fetch('salles.json').then(r => r.json()),
             fetch('cabinet.json').then(r => r.json())
         ]);
-        const sData = resSalles[0]?.data || resSalles.data || [];
-        const cData = resCabinets[0]?.data || resCabinets.data || [];
-        creerMarqueurs([...sData, ...cData]);
-    } catch (err) { console.error("Erreur", err); }
+        creerMarqueurs([...(resS.data || resS[0]?.data || []), ...(resC.data || resC[0]?.data || [])]);
+    } catch (e) { console.error("Erreur chargement", e); }
 }
 
 function creerMarqueurs(data) {
@@ -32,99 +29,73 @@ function creerMarqueurs(data) {
 
     data.forEach(item => {
         const lat = parseFloat(item.Latitude), lng = parseFloat(item.Longitude);
-        if (isNaN(lat) || isNaN(lng)) return;
+        if (isNaN(lat)) return;
 
         const status = (item.Statut || "").trim();
-        const typeRaw = (item.Type || "").trim();
-        const isCabinet = typeRaw.toUpperCase() === "CABINET";
-        const isESMS = typeRaw.toUpperCase().includes("ESMS") || typeRaw.toUpperCase().includes("EHPAD");
-        const config = statusSettings[status] || { color: "#7f8c8d", checked: true };
-
-        const marker = L.circleMarker([lat, lng], {
-            radius: isCabinet ? 10 : 7,
-            fillColor: config.color, color: "#fff", weight: 2, fillOpacity: 0.9
-        });
-
-        if (config.checked && (!isESMS || statusSettings["TYPE_ESMS"].checked)) marker.addTo(map);
-
-        const phone = item.Phone || item.Telephone || "";
+        const type = (item.Type || "").trim();
+        const isCab = type.toUpperCase() === "CABINET";
+        const conf = statusSettings[status] || { color: "#7f8c8d", checked: true };
         const att = item.ATT || item.Att || "";
         const tms = item.TMS || item.Tms || "";
+        const tel = item.Phone || item.Telephone || "";
 
-        // --- DESIGN AÉRÉ ET RÉORGANISÉ ---
-        let popupContent = `
-            <div style="min-width:280px; font-family: 'Segoe UI', sans-serif; padding:12px; color:#1e293b;">
-                
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                    <span style="font-size:10px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:1px;">${typeRaw}</span>
-                    <span style="background:${config.color}; color:white; padding:4px 10px; border-radius:50px; font-size:10px; font-weight:800;">
-                        ${status}
-                    </span>
+        let popupHtml = `
+            <div class="custom-popup-box">
+                <div class="popup-header">
+                    <span class="type-lbl">${type}</span>
+                    <span class="status-tag" style="background:${conf.color}">${status}</span>
                 </div>
-
-                <div style="display:flex; align-items:baseline; gap:10px; margin-bottom:10px;">
-                    <h4 style="margin:0; font-size:18px; font-weight:900; color:#0f172a;">${item.Name}</h4>
-                    ${att ? `<span style="font-size:13px; color:#64748b; font-weight:500;">• ATT : ${att}</span>` : ''}
+                <div class="title-section">
+                    <h4 class="site-name">${item.Name}</h4>
+                    ${att ? `<span class="att-info">• ATT : ${att}</span>` : ''}
                 </div>
-
-                <div style="margin-bottom:20px; color:#64748b; font-size:13px; display:flex; align-items:start; gap:6px;">
-                    <span style="flex-shrink:0;">📍</span>
-                    <span>${item.Address || "Adresse non renseignée"}</span>
+                <div class="addr-section">
+                    <span>📍</span><span>${item.Address || ""}</span>
                 </div>
-
-                ${!isCabinet && tms ? `
-                <div style="background:#f8fafc; padding:12px; border-radius:12px; margin-bottom:20px; border:1px solid #f1f5f9;">
-                    <div style="font-size:10px; color:#94a3b8; font-weight:800; text-transform:uppercase; margin-bottom:4px;">Responsable TMS</div>
-                    <div style="font-size:14px; font-weight:700; color:#334155;">${tms}</div>
-                </div>
+                ${!isCab && tms ? `
+                    <div class="tms-pill">
+                        <span class="tms-lit">TMS</span>
+                        <span class="tms-val">${tms}</span>
+                    </div>
                 ` : ''}
-
-                ${phone ? `
-                <a href="tel:${phone.replace(/\s/g, '')}" 
-                   style="text-decoration:none; background:#009597; color:white; display:flex; align-items:center; justify-content:center; gap:10px; padding:14px; border-radius:14px; font-weight:800; font-size:14px; box-shadow: 0 4px 15px rgba(0,149,151,0.25);">
-                    <span>📞</span> Appeler le site
-                </a>
+                ${tel ? `
+                    <a href="tel:${tel.replace(/\s/g, '')}" class="call-btn">
+                        <span>📞</span> Appeler le site
+                    </a>
                 ` : ''}
             </div>`;
 
-        marker.bindPopup(popupContent, {
-            maxWidth: 320,
-            className: 'custom-popup'
+        const m = L.circleMarker([lat, lng], {
+            radius: isCab ? 10 : 7, fillColor: conf.color, color: "#fff", weight: 2, fillOpacity: 0.9
         });
-        
-        allMarkers.push({ marker, status, isESMS });
+
+        if (conf.checked) m.addTo(map);
+        m.bindPopup(popupHtml);
+        allMarkers.push({ marker: m, status, isESMS: type.toUpperCase().includes("ESMS") });
     });
     renderFilters();
 }
 
-// ... (Le reste des fonctions renderFilters, toggleStatus, updateStats, rechercheEtZoom, toggleMenu reste identique)
-
 function renderFilters() {
     const list = document.getElementById('filter-list');
-    list.innerHTML = Object.keys(statusSettings).map(key => {
-        const s = statusSettings[key];
-        return `
-            <label class="filter-card" style="--status-color: ${s.color}">
-                <input type="checkbox" ${s.checked ? 'checked' : ''} onchange="toggleStatus('${key}', this.checked)">
-                <span class="dot" style="background:${s.color}"></span>
-                <span class="label">${s.label}</span>
-            </label>`;
-    }).join('');
+    list.innerHTML = Object.keys(statusSettings).map(k => `
+        <label class="filter-card" style="--status-color: ${statusSettings[k].color}">
+            <input type="checkbox" ${statusSettings[k].checked ? 'checked' : ''} onchange="toggleStatus('${k}', this.checked)">
+            <span class="dot"></span><span class="label">${statusSettings[k].label}</span>
+        </label>`).join('');
     updateStats();
 }
 
-window.toggleStatus = (name, isChecked) => {
-    statusSettings[name].checked = isChecked;
+window.toggleStatus = (n, c) => {
+    statusSettings[n].checked = c;
     allMarkers.forEach(m => {
-        const visible = m.isESMS ? (statusSettings[m.status].checked && statusSettings["TYPE_ESMS"].checked) : statusSettings[m.status].checked;
-        if (visible) m.marker.addTo(map); else map.removeLayer(m.marker);
+        const show = m.isESMS ? (statusSettings[m.status].checked && statusSettings["TYPE_ESMS"].checked) : statusSettings[m.status].checked;
+        if (show) m.marker.addTo(map); else map.removeLayer(m.marker);
     });
     updateStats();
 };
 
-function updateStats() {
-    document.getElementById('site-count').innerText = allMarkers.filter(m => map.hasLayer(m.marker)).length;
-}
+function updateStats() { document.getElementById('site-count').innerText = allMarkers.filter(m => map.hasLayer(m.marker)).length; }
 
 function rechercheEtZoom() {
     const q = document.getElementById('query').value;

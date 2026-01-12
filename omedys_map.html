@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Omedys Maps</title>
-    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="style.css">
 </head>
@@ -16,16 +15,13 @@
     <div class="menu-overlay" id="menu-overlay" onclick="toggleMenu()"></div>
 
     <div id="side-menu">
-        <h2>Omedys Maps</h2>
-        
+        <h2>Filtres</h2>
         <div class="search-box">
             <input type="text" id="query" placeholder="Rechercher une ville...">
             <button onclick="rechercheEtZoom()">🔍</button>
         </div>
-
-        <div id="filter-list">
-            </div>
-    </div>
+        <div id="filter-list"></div>
+        </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="script.js"></script>

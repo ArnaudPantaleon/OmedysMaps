@@ -7,6 +7,7 @@
       "Latitude": 48.270438,
       "Longitude": 4.077274,
       "Type": "CABINET",
+      "ATT": "Aurelie HUGOT-JEANNARD",
       "Statut": "Ouvert"
     },
     {
@@ -16,6 +17,7 @@
       "Latitude": 43.167855,
       "Longitude": 3.011623,
       "Type": "CABINET",
+      "ATT": "Blandine CHOPIN",
       "Statut": "Ouvert"
     },
     {
@@ -25,6 +27,7 @@
       "Latitude": 49.183578,
       "Longitude": -0.368305,
       "Type": "CABINET",
+      "ATT": "Jean-Baptiste PICHARD",
       "Statut": "Ouvert"
     },
     {
@@ -34,6 +37,7 @@
       "Latitude": 47.070624,
       "Longitude": 2.391262,
       "Type": "CABINET",
+      "ATT": "Cécile ABA'ANE",
       "Statut": "Ouvert"
     },
     {
@@ -43,6 +47,7 @@
       "Latitude": 47.291771,
       "Longitude": 5.013444,
       "Type": "CABINET",
+      "ATT": "Aurelie HUGOT-JEANNARD",
       "Statut": "Ouverture en cours"
     },
     {
@@ -52,6 +57,7 @@
       "Latitude": 44.551815,
       "Longitude": 4.757041,
       "Type": "CABINET",
+      "ATT": "Laurence KEIM",
       "Statut": "Ouvert"
     },
     {
@@ -61,6 +67,7 @@
       "Latitude": 48.441113,
       "Longitude": 1.482705,
       "Type": "CABINET",
+      "ATT": "Mélanie CHEVE",
       "Statut": "Ouvert"
     },
     {
@@ -70,6 +77,7 @@
       "Latitude": 43.567156,
       "Longitude": 1.424367,
       "Type": "CABINET",
+      "ATT": "Blandine CHOPIN",
       "Statut": "Ouvert"
     },
     {
@@ -79,6 +87,7 @@
       "Latitude": 47.593641,
       "Longitude": 1.326261,
       "Type": "CABINET",
+      "ATT": "Cécile ABA'ANE",
       "Statut": "Ouvert"
     },
     {
@@ -88,6 +97,7 @@
       "Latitude": 48.673801,
       "Longitude": 6.134017,
       "Type": "CABINET",
+      "ATT": "Vera BERNARD",
       "Statut": "Ouvert"
     },
     {
@@ -97,6 +107,7 @@
       "Latitude": 49.027962,
       "Longitude": 5.286337,
       "Type": "CABINET",
+      "ATT": "Vera BERNARD",
       "Statut": "Ouvert"
     },
     {
@@ -106,6 +117,7 @@
       "Latitude": 50.662283,
       "Longitude": 3.084196,
       "Type": "CABINET",
+      "ATT": "Virginie PRUVOT",
       "Statut": "Ouvert"
     },
     {
@@ -115,7 +127,9 @@
       "Latitude": 48.016377,
       "Longitude": 0.160167,
       "Type": "CABINET",
+      "ATT": "Mélanie CHEVE",
       "Statut": "Ouvert"
     }
   ]
 }
+

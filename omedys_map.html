@@ -186,11 +186,13 @@
             if (isNaN(lat) || isNaN(lng)) return;
     
             const status = (item.Statut || "Inconnu").trim();
-            const type = (item.Type || "Salle").trim();
+            const type = (item.Type || "").trim().toUpperCase();
+            
+            // Détection : est-ce un ESMS ?
             const isESMS = type.includes("ESMS") || type === "EHPAD" || type === "FOYER D'ACCUEIL";
-            // On récupère la configuration depuis statusSettings
+    
             const config = statusSettings[status] || { color: "#7f8c8d", checked: true };
-            const color = config.color; // On définit explicitement 'color' ici
+            const color = config.color;
     
             const marker = L.circleMarker([lat, lng], {
                 radius: type === "CABINET" ? 10 : 7,
@@ -201,9 +203,11 @@
             });
     
             // Appliquer l'état initial selon vos réglages checked: true/false
-            const shouldShow = config.checked && (!isESMS || statusSettings["TYPE_ESMS"].checked);
-        
-            if (shouldShow) {
+            const statusChecked = config.checked;
+            const esmsFilterActive = statusSettings["TYPE_ESMS"].checked;
+    
+            // On affiche si le statut est OK ET (si c'est un ESMS, le filtre ESMS doit être ON)
+            if (statusChecked && (!isESMS || esmsFilterActive)) {
                 marker.addTo(map);
             }
         
@@ -311,6 +315,7 @@
 </script>
 </body>
 </html>
+
 
 
 

@@ -9,7 +9,7 @@ const statusSettings = {
     "TYPE_ESMS": { color: "#334155", label: "Afficher les ESMS", checked: false }
 };
 
-let map = L.map('map', { zoomControl: false }).setView([46.6033, 1.8883], 6);
+let map = L.map('map', { zoomControl: false }).setView([46.6, 2.0], 6);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
 let allMarkers = [];
@@ -20,15 +20,9 @@ async function chargerDonnees() {
             fetch('salles.json').then(r => r.json()),
             fetch('cabinet.json').then(r => r.json())
         ]);
-        
-        // Extraction précise pour votre format GitHub [ { "data": [...] } ]
-        const dataSalles = (resSalles[0] && resSalles[0].data) ? resSalles[0].data : [];
-        const dataCabinets = (resCabinets[0] && resCabinets[0].data) ? resCabinets[0].data : [];
-        
-        creerMarqueurs([...dataSalles, ...dataCabinets]);
-    } catch (err) {
-        console.error("Erreur critique de chargement :", err);
-    }
+        const data = [...(resSalles[0]?.data || []), ...(resCabinets[0]?.data || [])];
+        creerMarqueurs(data);
+    } catch (err) { console.error("Erreur de chargement", err); }
 }
 
 function creerMarqueurs(data) {
@@ -41,50 +35,14 @@ function creerMarqueurs(data) {
         if (isNaN(lat) || isNaN(lng)) return;
 
         const status = (item.Statut || "Inconnu").trim();
-        const typeRaw = (item.Type || "").trim();
-        const typeUpper = typeRaw.toUpperCase();
-        const isESMS = typeUpper.includes("ESMS") || typeUpper.includes("EHPAD") || typeUpper.includes("FOYER");
-
-        const config = statusSettings[status] || { color: "#7f8c8d", checked: true };
-        const color = config.color;
-
+        const config = statusSettings[status] || { color: "#94a3b8", checked: true };
+        
         const marker = L.circleMarker([lat, lng], {
-            radius: typeUpper === "CABINET" ? 10 : 7,
-            fillColor: color,
-            color: "#fff",
-            weight: 2,
-            fillOpacity: 0.9
-        });
+            radius: 7, fillColor: config.color, color: "#fff", weight: 2, fillOpacity: 0.9
+        }).bindPopup(`<b>${item.Name}</b><br>${status}`);
 
-        if (config.checked && (!isESMS || statusSettings["TYPE_ESMS"].checked)) {
-            marker.addTo(map);
-        }
-
-        const tmsHtml = typeUpper !== "CABINET" ? `
-            <div style="flex: 1;">
-                <span style="font-size: 10px; color: #a0aec0; text-transform: uppercase; font-weight: bold; display: block;">TMS</span>
-                <span style="font-size: 11px; color: #2d3748; font-weight: 600;">${item.TMS || "—"}</span>
-            </div>` : '';
-
-        marker.bindPopup(`
-            <div style="min-width:250px;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                    <span style="background: #edf2f7; color: #4a5568; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 800;">${typeRaw}</span>
-                    <span style="color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; background:${color}">${status}</span>
-                </div>
-                <b style="color:#009597; font-size:15px;">${item.Name}</b>
-                <div style="color: #718096; font-size: 11px; margin: 8px 0;">📍 ${item.Address || "—"}</div>
-                <div style="display: flex; gap: 15px; border-top: 1px dashed #e2e8f0; padding-top: 10px;">
-                    <div style="flex: 1;">
-                        <span style="font-size: 10px; color: #a0aec0; font-weight: bold; display: block;">ATT</span>
-                        <span style="font-size: 11px; color: #2d3748; font-weight: 600;">${item.ATT || "—"}</span>
-                    </div>
-                    ${tmsHtml}
-                </div>
-            </div>
-        `);
-
-        allMarkers.push({ marker, status, isESMS });
+        if (config.checked) marker.addTo(map);
+        allMarkers.push({ marker, status, isESMS: (item.Type || "").includes("ESMS") });
     });
     renderFilters();
 }
@@ -113,8 +71,7 @@ window.toggleStatus = (name, isChecked) => {
 };
 
 function updateStats() {
-    const count = allMarkers.filter(m => map.hasLayer(m.marker)).length;
-    document.getElementById('site-count').innerText = count;
+    document.getElementById('site-count').innerText = allMarkers.filter(m => map.hasLayer(m.marker)).length;
 }
 
 function rechercheEtZoom() {
@@ -129,5 +86,4 @@ function rechercheEtZoom() {
 }
 
 function toggleMenu() { document.getElementById('side-menu').classList.toggle('open'); }
-
 chargerDonnees();

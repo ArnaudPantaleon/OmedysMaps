@@ -7,10 +7,10 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root { --primary: #009597; --dark: #2d3748; --glass: rgba(255, 255, 255, 0.95); }
-        body { margin: 0; padding: 0; height: 100vh; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; }
+        body { margin: 0; padding: 0; height: 100vh; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
         #map { height: 100vh; width: 100%; z-index: 1; }
         
-        /* Barre de recherche */
+        /* Recherche */
         #search-container { 
             position: absolute; top: 20px; left: 50%; transform: translateX(-50%); 
             width: 90%; max-width: 500px; height: 54px;
@@ -27,20 +27,27 @@
             border-radius: 50%; border: none; cursor: pointer; display: grid; place-items: center; z-index: 1100;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
-        
         #side-menu {
             position: absolute; top: 0; right: -320px; width: 280px; height: 100vh;
             background: white; z-index: 1050; transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); padding: 40px 25px; box-sizing: border-box;
         }
         #side-menu.open { right: 0; }
-        .filter-item { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; font-size: 14px; font-weight: 600; cursor: pointer; color: var(--dark); }
+        .filter-item { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; font-size: 14px; font-weight: 600; cursor: pointer; }
         .dot { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid white; box-shadow: 0 0 0 1px #ddd; }
         #menu-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.2); z-index: 1040; display: none; }
         #menu-overlay.open { display: block; }
 
         /* Popups */
-        .popup-card b { display: block; margin-bottom: 2px; }
-        .popup-status { display: inline-block; padding: 2px 8px; border-radius: 10px; color: white; font-size: 10px; font-weight: bold; margin-bottom: 8px; }
+        .popup-card { min-width: 200px; }
+        .popup-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; gap: 5px; }
+        .type-badge { background: #edf2f7; color: #4a5568; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 800; text-transform: uppercase; border: 1px solid #e2e8f0; }
+        .status-badge { color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; }
+        .tel-link {
+            display: flex; align-items: center; gap: 8px; margin-top: 10px; padding: 8px 12px;
+            background: #f0fdfa; color: var(--primary); text-decoration: none; font-weight: bold;
+            border-radius: 8px; font-size: 13px; border: 1px solid #ccfbf1; transition: background 0.2s;
+        }
+        .tel-link:hover { background: #ccfbf1; }
     </style>
 </head>
 <body>
@@ -69,7 +76,6 @@
         const map = L.map('map', { zoomControl: false }).setView([46.6033, 1.8883], 6);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-        // CONFIGURATION COULEURS (Charte Omedys + Gradation)
         const statusSettings = {
             "Ouvert": { color: "#009597", label: "Cabinet Omedys", active: true },
             "Ouvertes": { color: "#2ecc71", label: "Salles Ouvertes", active: true },
@@ -86,14 +92,10 @@
             document.getElementById('menu-overlay').classList.toggle('open');
         }
 
-        // Extraction robuste des données JSON
         function extractData(json) {
-            if (Array.isArray(json)) {
-                if (json[0]?.data) return json[0].data; // Format [ { "data": [...] } ]
-                return json; // Format [ {...}, {...} ]
-            }
-            if (json?.data) return json.data; // Format { "data": [...] }
-            return [];
+            if (Array.isArray(json) && json[0]?.data) return json[0].data;
+            if (json?.data) return json.data;
+            return Array.isArray(json) ? json : [];
         }
 
         async function chargerDonnees() {
@@ -102,14 +104,8 @@
                     fetch('salles.json').then(r => r.json()),
                     fetch('cabinet.json').then(r => r.json())
                 ]);
-                
-                const dataSalles = extractData(resSalles);
-                const dataCabinets = extractData(resCabinets);
-                
-                creerMarqueurs([...dataSalles, ...dataCabinets]);
-            } catch (err) { 
-                console.error("Erreur de chargement des fichiers JSON :", err); 
-            }
+                creerMarqueurs([...extractData(resSalles), ...extractData(resCabinets)]);
+            } catch (err) { console.error("Erreur JSON:", err); }
         }
 
         function creerMarqueurs(data) {
@@ -119,6 +115,7 @@
                 if (isNaN(lat) || isNaN(lng)) return;
 
                 const status = (item.Statut || "Inconnu").trim();
+                const typeEtab = (item.Type || "Établissement").trim();
                 const color = statusSettings[status]?.color || "#7f8c8d";
                 const isCabinet = (item.Type === "CABINET");
 
@@ -127,20 +124,30 @@
                     fillColor: color,
                     color: "#fff",
                     weight: 2,
-                    fillOpacity: 0.9,
-                    zIndexOffset: isCabinet ? 1000 : 0
+                    fillOpacity: 0.9
                 }).addTo(map);
 
-                marker.bindPopup(`
-                    <div class="popup-card" style="min-width:200px">
-                        <span class="popup-status" style="background:${color}">${status}</span>
-                        <b style="color:var(--primary); font-size:15px">${item.Name}</b>
-                        <div style="font-size:12px; color:#444; margin: 5px 0;">${item.Address || ""}</div>
-                        ${item.ATT ? `<div style="font-size:12px;">👤 Référent : <b>${item.ATT}</b></div>` : ""}
-                        ${item.Phone ? `<div style="font-size:12px; margin-top:3px;">📞 ${item.Phone}</div>` : ""}
-                    </div>
-                `);
+                let popupHtml = `
+                    <div class="popup-card">
+                        <div class="popup-header">
+                            <span class="type-badge">${typeEtab}</span>
+                            <span class="status-badge" style="background:${color}">${status}</span>
+                        </div>
+                        <b style="color:var(--primary); font-size:15px; display:block;">${item.Name}</b>
+                        <div style="font-size:12px; color:#4a5568; margin: 5px 0;">${item.Address || ""}</div>
+                        ${item.ATT ? `<div style="font-size:12px; margin-bottom:5px;">👤 Référent : <b>${item.ATT}</b></div>` : ""}`;
                 
+                if (item.Phone) {
+                    const cleanTel = item.Phone.toString().replace(/\D/g, '');
+                    popupHtml += `
+                        <a href="tel:${cleanTel}" class="tel-link">
+                            <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                            ${item.Phone}
+                        </a>`;
+                }
+                
+                popupHtml += `</div>`;
+                marker.bindPopup(popupHtml);
                 allMarkers.push({ marker, status });
             });
             initMenu();
@@ -157,15 +164,11 @@
         }
 
         window.toggleStatus = (s, v) => {
-            statusSettings[s].active = v;
-            allMarkers.forEach(m => {
-                if (m.status === s) v ? m.marker.addTo(map) : map.removeLayer(m.marker);
-            });
+            allMarkers.forEach(m => { if (m.status === s) v ? m.marker.addTo(map) : map.removeLayer(m.marker); });
         };
 
         function rechercheEtZoom() {
             const q = document.getElementById('query').value;
-            if(!q) return;
             fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(q)}&limit=1`)
                 .then(r => r.json()).then(res => {
                     if (res.features?.length > 0) {

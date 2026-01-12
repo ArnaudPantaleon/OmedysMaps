@@ -16,21 +16,37 @@ let allMarkers = [];
 const formatPhone = (n) => n ? String(n).replace(/\D/g, "").replace(/(\d{2})(?=\d)/g, "$1 ").trim() : "";
 
 async function chargerDonnees() {
-    try {
-        const fetchAndParse = async (url) => {
+    const fetchTableau = async (url) => {
+        try {
             const response = await fetch(url);
             let text = await response.text();
-            // Nettoyage si le fichier contient "data ="
-            if (text.includes('=')) text = text.split('=')[1].trim();
-            if (text.endsWith(';')) text = text.slice(0, -1);
-            return JSON.parse(text);
-        };
+            
+            // NETTOYAGE AGRESSIF pour n8n (data = [...])
+            if (text.includes('=')) {
+                text = text.substring(text.indexOf('=') + 1).trim();
+            }
+            if (text.endsWith(';')) {
+                text = text.slice(0, -1);
+            }
+            
+            const cleanJson = JSON.parse(text);
+            // Retourne le tableau que ce soit direct ou dans .data
+            return Array.isArray(cleanJson) ? cleanJson : (cleanJson.data || []);
+        } catch (e) {
+            console.error("Erreur sur " + url, e);
+            return [];
+        }
+    };
 
-        const resS = await fetchAndParse('salles.json');
-        const resC = await fetchAndParse('cabinet.json');
-        
-        creerMarqueurs([...resS, ...resC]);
-    } catch (e) { console.error("Erreur de données:", e); }
+    const [resS, resC] = await Promise.all([
+        fetchTableau('salles.json'),
+        fetchTableau('cabinet.json')
+    ]);
+    
+    console.log("Salles chargées:", resS.length);
+    console.log("Cabinets chargés:", resC.length);
+    
+    creerMarqueurs([...resS, ...resC]);
 }
 
 function creerMarqueurs(data) {
@@ -38,12 +54,14 @@ function creerMarqueurs(data) {
     allMarkers = [];
 
     data.forEach(item => {
-        const lat = parseFloat(String(item.Latitude).replace(',', '.'));
-        const lng = parseFloat(String(item.Longitude).replace(',', '.'));
-        if (isNaN(lat)) return;
+        // Sécurité sur les noms de colonnes (Majuscules/Minuscules)
+        const lat = parseFloat(String(item.Latitude || item.latitude || "").replace(',', '.'));
+        const lng = parseFloat(String(item.Longitude || item.longitude || "").replace(',', '.'));
+        
+        if (isNaN(lat) || isNaN(lng)) return;
 
-        const status = (item.Statut || "").trim();
-        const type = (item.Type || "SITE").trim().toUpperCase();
+        const status = (item.Statut || item.statut || "").trim();
+        const type = (item.Type || item.type || "SITE").trim().toUpperCase();
         const config = statusSettings[status] || { color: "#7f8c8d", checked: true };
         const isCabinet = type === "CABINET";
 
@@ -53,17 +71,27 @@ function creerMarqueurs(data) {
                     <span class="bento-type">${type}</span>
                     <span class="status-pill" style="background:${config.color}">${status}</span>
                 </div>
-                <h3 class="bento-title">${item.Name}</h3>
-                <div class="bento-grid">
-                    <div class="bento-item"><span class="item-label">ATT</span><span class="item-val">${item.ATT || "—"}</span></div>
-                    ${item.TMS ? `<div class="bento-item"><span class="item-label">TMS</span><span class="item-val">${item.TMS}</span></div>` : ''}
+                <h3 class="bento-title">${item.Name || item.name || "Site Omedys"}</h3>
+                <div class="bento-info-row">
+                    <div class="info-block">
+                        <span class="info-label">ATT</span>
+                        <span class="info-value">${item.ATT || item.Att || "—"}</span>
+                    </div>
+                    ${(item.TMS || item.Tms) ? `<div class="info-block"><span class="info-label">TMS</span><span class="info-value">${item.TMS || item.Tms}</span></div>` : ''}
                 </div>
-                <div class="bento-addr"><span>📍</span><span>${item.Address || ""}</span></div>
-                ${(item.Phone || item.Telephone) ? `<a href="tel:${String(item.Phone || item.Telephone).replace(/\s/g, '')}" class="bento-call"><span>📞</span><span>${formatPhone(item.Phone || item.Telephone)}</span></a>` : ''}
+                <div class="bento-address"><span>📍</span><span>${item.Address || item.address || ""}</span></div>
+                ${(item.Phone || item.Telephone) ? `
+                <a href="tel:${String(item.Phone || item.Telephone).replace(/\s/g, '')}" class="bento-call">
+                    <span>📞</span><span>${formatPhone(item.Phone || item.Telephone)}</span>
+                </a>` : ''}
             </div>`;
 
         const m = L.circleMarker([lat, lng], {
-            radius: isCabinet ? 10 : 7, fillColor: config.color, color: "#fff", weight: 2, fillOpacity: 0.9,
+            radius: isCabinet ? 10 : 7,
+            fillColor: config.color,
+            color: "#fff",
+            weight: 2,
+            fillOpacity: 0.9,
             className: isCabinet ? 'pulse-marker' : ''
         });
 
@@ -76,6 +104,7 @@ function creerMarqueurs(data) {
 
 function renderFilters() {
     const list = document.getElementById('filter-list');
+    if(!list) return;
     list.innerHTML = Object.keys(statusSettings).map(k => `
         <label class="filter-card" style="--status-color: ${statusSettings[k].color}">
             <input type="checkbox" ${statusSettings[k].checked ? 'checked' : ''} onchange="toggleStatus('${k}', this.checked)">
@@ -93,15 +122,22 @@ window.toggleStatus = (n, c) => {
     updateStats();
 };
 
-function updateStats() { document.getElementById('site-count').innerText = allMarkers.filter(m => map.hasLayer(m.marker)).length; }
+function updateStats() { 
+    const count = allMarkers.filter(m => map.hasLayer(m.marker)).length;
+    if(document.getElementById('site-count')) document.getElementById('site-count').innerText = count; 
+}
+
 function toggleMenu() { document.getElementById('menuWrapper').classList.toggle('open'); }
+
 function rechercheEtZoom() {
     const q = document.getElementById('query').value;
+    if(!q) return;
     fetch(`https://api-adresse.data.gouv.fr/search/?q=${q}&limit=1`).then(r => r.json()).then(res => {
-        if (res.features.length) {
+        if (res.features && res.features.length) {
             const [lon, lat] = res.features[0].geometry.coordinates;
             map.flyTo([lat, lon], 12);
         }
     });
 }
+
 chargerDonnees();

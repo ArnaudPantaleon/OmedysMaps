@@ -2,33 +2,35 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Omedys Maps</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
     <div id="map"></div>
 
-    <div class="floating-ui">
+    <div class="top-controls">
         <button class="menu-trigger" onclick="toggleMenu()">☰</button>
         
-        <div id="side-menu">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h3 style="margin:0; color:#009597;">Filtres</h3>
-                <button onclick="toggleMenu()" style="border:none; background:none; cursor:pointer;">✕</button>
-            </div>
-            
-            <div class="search-box">
-                <input type="text" id="query" placeholder="Chercher une ville..." onkeypress="if(event.key === 'Enter') rechercheEtZoom()">
-                <button onclick="rechercheEtZoom()">🔍</button>
-            </div>
+        <div class="search-floating">
+            <input type="text" id="query" placeholder="Chercher une ville..." onkeypress="if(event.key === 'Enter') rechercheEtZoom()">
+            <button onclick="rechercheEtZoom()" class="search-icon">🔍</button>
+        </div>
+    </div>
 
-            <div id="filter-list"></div>
+    <div id="side-menu" class="floating-panel">
+        <div class="panel-header">
+            <h3 style="margin:0; color:#009597;">Filtres</h3>
+            <button onclick="toggleMenu()" class="close-btn">✕</button>
+        </div>
 
-            <div class="stats-card">
-                <span id="site-count">0</span>
-                <div style="font-size: 9px; color: #94a3b8; font-weight: bold;">SITES AFFICHÉS</div>
-            </div>
+        <div id="filter-list"></div>
+
+        <div class="stats-card">
+            <span id="site-count">0</span>
+            <small>SITES AFFICHÉS</small>
         </div>
     </div>
 

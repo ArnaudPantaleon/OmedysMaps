@@ -43,11 +43,43 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', sans-
 
 /* Barre de recherche (Positionnée par rapport à l'écran, pas au menu) */
 .search-floating {
-    position: fixed; top: 20px; left: 85px; z-index: 2000;
-    background: white; height: 50px; width: 240px;
-    border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-    display: flex; align-items: center; padding: 0 15px;
-    transition: transform 0.4s;
+    position: fixed; 
+    top: 20px; 
+    left: 85px; /* Position initiale à côté du bouton burger */
+    z-index: 2000;
+    background: white; 
+    height: 50px; 
+    width: 240px;
+    border-radius: 12px; 
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    display: flex; 
+    align-items: center; 
+    padding: 0 15px;
+    
+    /* Animation de déplacement fluide */
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Quand le menu est ouvert, on décale la recherche à droite du panneau */
+.menu-wrapper.open ~ .search-floating {
+    left: 335px; /* 300px (largeur menu) + 20px (marge) + 15px d'écart */
+    opacity: 1; /* On s'assure qu'elle reste visible */
+}
+
+.search-floating input { 
+    border: none; 
+    flex: 1; 
+    outline: none; 
+    font-size: 14px; 
+    background: transparent;
+}
+
+.search-btn { 
+    background: none; 
+    border: none; 
+    cursor: pointer; 
+    display: flex; 
+    padding: 5px;
 }
 
 /* On décale légèrement la recherche quand le menu s'ouvre pour le style */

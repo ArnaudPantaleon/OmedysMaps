@@ -3,18 +3,18 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', syste
 
 /* --- MENU MORPHING --- */
 .menu-wrapper {
-    position: fixed; top: 20px; left: 20px; z-index: 3000;
+    position: fixed; top: 20px; left: 20px; z-index: 4000; /* Augmenté pour être au-dessus de tout */
     background: white; width: 50px; height: 50px;
-    border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.2);
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     overflow: hidden;
 }
 
 .menu-wrapper.open { 
-    width: 300px; height: auto; 
+    width: 320px; /* Un peu plus large pour la lisibilité */
+    height: auto; 
     max-height: calc(100vh - 40px); 
     border-radius: 24px; 
-    padding-bottom: 20px; 
 }
 
 .menu-toggle {
@@ -37,70 +37,78 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', syste
 .menu-wrapper.open .burger-icon span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 
 .menu-content {
-    opacity: 0; padding: 60px 20px 0;
+    opacity: 0; padding: 60px 20px 20px;
     transition: opacity 0.3s; pointer-events: none;
-    overflow-y: auto; max-height: calc(100vh - 100px);
+    overflow-y: auto; max-height: calc(100vh - 80px);
 }
 .menu-wrapper.open .menu-content { opacity: 1; pointer-events: auto; transition-delay: 0.2s; }
 
+.panel-header h3 { color: #009597; margin: 0 0 15px 0; font-size: 22px; font-weight: 800; }
+
 /* --- DESIGN DES PASTILLES (PILLS) --- */
-#filter-list { display: flex; flex-direction: column; gap: 8px; }
+#filter-list { display: flex; flex-direction: column; gap: 10px; }
 
 .filter-card {
-    display: flex; align-items: center; padding: 10px 16px;
+    display: flex; align-items: center; padding: 12px 18px;
     border-radius: 50px; border: 2px solid #f1f5f9;
-    background: #f8fafc; cursor: pointer;
+    background: #ffffff; cursor: pointer;
     transition: all 0.3s ease;
-    filter: grayscale(1); opacity: 0.6;
+    filter: grayscale(0.8); /* Moins gris pour plus de lisibilité */
+    opacity: 0.8; /* Plus opaque */
 }
 
 .filter-card input { display: none; }
 
-/* État coché : On utilise la variable --status-color injectée par JS */
 .filter-card:has(input:checked) {
     filter: grayscale(0); opacity: 1;
     background: white; border-color: var(--status-color);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
 .dot {
-    width: 10px; height: 10px; border-radius: 50%;
-    margin-right: 12px; flex-shrink: 0;
+    width: 12px; height: 12px; border-radius: 50%;
+    margin-right: 15px; flex-shrink: 0;
     box-shadow: 0 0 0 2px white, 0 0 0 4px var(--status-color);
 }
 
-.label { font-size: 13px; font-weight: 700; color: #334155; }
+.label { font-size: 14px; font-weight: 700; color: #334155; flex: 1; }
 
 /* Checkmark à droite */
 .filter-card::after {
-    content: '✓'; margin-left: auto; font-weight: 900;
+    content: '✓'; font-weight: 900;
     color: var(--status-color); opacity: 0; transform: scale(0.5);
-    transition: 0.2s;
+    transition: 0.2s; margin-left: 10px;
 }
 .filter-card:has(input:checked)::after { opacity: 1; transform: scale(1); }
 
 /* --- RECHERCHE --- */
 .search-floating {
-    position: fixed; top: 20px; left: 85px; z-index: 2000;
-    background: white; height: 50px; width: 240px;
-    border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    position: fixed; top: 20px; left: 85px; z-index: 3000; /* Sous le z-index du menu */
+    background: white; height: 50px; width: 260px;
+    border-radius: 14px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);
     display: flex; align-items: center; padding: 0 15px;
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.menu-wrapper.open ~ .search-floating { left: 335px; }
+.menu-wrapper.open ~ .search-floating { 
+    left: 355px; /* Décalage PC */
+}
 
 @media (max-width: 600px) {
     .menu-wrapper.open { width: calc(100% - 40px); height: 85vh; }
+    
+    /* Sur mobile, on évite que la recherche ne bloque la croix */
     .menu-wrapper.open ~ .search-floating {
-        left: 20px; top: 20px; width: calc(100% - 75px);
-        z-index: 3500; transform: translateY(60px);
+        left: 20px; 
+        top: 85px; /* On descend plus bas pour laisser la croix libre */
+        width: calc(100% - 70px);
+        transform: none;
     }
 }
 
 .stats-card {
-    margin-top: 20px; padding: 15px; background: #f0fdfa;
-    border-radius: 16px; text-align: center; border: 1px solid #ccfbf1;
+    margin-top: 25px; padding: 18px; background: #f0fdfa;
+    border-radius: 20px; text-align: center; border: 1px solid #ccfbf1;
 }
-#site-count { font-size: 26px; font-weight: 800; color: #009597; display: block; }
-.stats-card small { font-size: 10px; color: #5eead4; font-weight: 800; }
+#site-count { font-size: 28px; font-weight: 900; color: #009597; display: block; }
+.stats-card small { font-size: 11px; color: #5eead4; font-weight: 800; letter-spacing: 1px; }

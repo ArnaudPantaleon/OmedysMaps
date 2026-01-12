@@ -8,18 +8,20 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+    <div class="floating-header">
+        <button class="menu-btn" onclick="toggleMenu()">☰</button>
+        <div class="search-container">
+            <input type="text" id="query" placeholder="Rechercher une ville..." onkeypress="if(event.key === 'Enter') rechercheEtZoom()">
+            <button onclick="rechercheEtZoom()">🔍</button>
+        </div>
+    </div>
 
     <div id="map"></div>
 
     <div id="side-menu">
         <div class="menu-header">
             <h2>Filtres</h2>
-            <button onclick="toggleMenu()" style="background:none; border:none; cursor:pointer;">✕</button>
-        </div>
-        <div class="search-box">
-            <input type="text" id="query" placeholder="Rechercher une ville...">
-            <button onclick="rechercheEtZoom()">🔍</button>
+            <button onclick="toggleMenu()">✕</button>
         </div>
         <div id="filter-list"></div>
     </div>

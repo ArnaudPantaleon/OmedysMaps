@@ -1,22 +1,30 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Omedys Maps</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css">
+</head>
 <body>
-    <button class="menu-toggle" onclick="toggleMenu()" title="Ouvrir le menu">☰</button>
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
 
     <div id="map"></div>
 
     <div id="side-menu">
         <div class="menu-header">
-            <h2>Omedys Maps</h2>
-            <button class="close-menu" onclick="toggleMenu()">✕</button>
+            <h2>Filtres</h2>
+            <button onclick="toggleMenu()" style="background:none; border:none; cursor:pointer;">✕</button>
         </div>
-        
         <div class="search-box">
-            <input type="text" id="query" placeholder="Ville ou code postal..." onkeypress="if(event.key === 'Enter') rechercheEtZoom()">
+            <input type="text" id="query" placeholder="Rechercher une ville...">
             <button onclick="rechercheEtZoom()">🔍</button>
         </div>
-
         <div id="filter-list"></div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="script.js"></script>
 </body>
+</html>

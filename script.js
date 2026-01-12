@@ -51,40 +51,47 @@ function creerMarqueurs(data) {
         const att = item.ATT || item.Att || "";
         const tms = item.TMS || item.Tms || "";
 
-        // --- CONSTRUCTION DE LA POPUP AVEC TYPE ET STATUT ---
+        // --- DESIGN AÉRÉ ET RÉORGANISÉ ---
         let popupContent = `
-            <div style="min-width:230px; font-family: 'Segoe UI', sans-serif; padding:5px;">
-                <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:8px;">
-                    <div>
-                        <h4 style="margin:0; color:#009597; font-size:15px; font-weight:800; line-height:1.2;">${item.Name}</h4>
-                        <span style="font-size:10px; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.5px;">${typeRaw}</span>
-                    </div>
-                    <span style="background:${config.color}20; color:${config.color}; padding:3px 8px; border-radius:6px; font-size:10px; font-weight:800; border:1px solid ${config.color}40;">
+            <div style="min-width:280px; font-family: 'Segoe UI', sans-serif; padding:12px; color:#1e293b;">
+                
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <span style="font-size:10px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:1px;">${typeRaw}</span>
+                    <span style="background:${config.color}; color:white; padding:4px 10px; border-radius:50px; font-size:10px; font-weight:800;">
                         ${status}
                     </span>
                 </div>
-                
-                <p style="margin:0 0 12px 0; color:#64748b; font-size:12px; line-height:1.4;">${item.Address || "Adresse non disponible"}</p>`;
 
-        // ATT et TMS
-        if (att || tms) {
-            popupContent += `<div style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:12px;">`;
-            if (att) popupContent += `<span style="background:#f1f5f9; color:#475569; padding:4px 8px; border-radius:6px; font-size:10px; font-weight:700; border:1px solid #e2e8f0;">ATT: ${att}</span>`;
-            if (!isCabinet && tms) popupContent += `<span style="background:#f1f5f9; color:#475569; padding:4px 8px; border-radius:6px; font-size:10px; font-weight:700; border:1px solid #e2e8f0;">TMS: ${tms}</span>`;
-            popupContent += `</div>`;
-        }
+                <div style="display:flex; align-items:baseline; gap:10px; margin-bottom:10px;">
+                    <h4 style="margin:0; font-size:18px; font-weight:900; color:#0f172a;">${item.Name}</h4>
+                    ${att ? `<span style="font-size:13px; color:#64748b; font-weight:500;">• ATT : ${att}</span>` : ''}
+                </div>
 
-        if (phone) {
-            popupContent += `
-                <div style="border-top:1px solid #f1f5f9; padding-top:12px; margin-top:5px;">
-                    <a href="tel:${phone.replace(/\s/g, '')}" style="text-decoration:none; background:#f0fdfa; color:#009597; border:1px solid #ccfbf1; padding:10px; border-radius:10px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight:700; font-size:13px;">
-                        📞 ${phone}
-                    </a>
-                </div>`;
-        }
-        popupContent += `</div>`;
+                <div style="margin-bottom:20px; color:#64748b; font-size:13px; display:flex; align-items:start; gap:6px;">
+                    <span style="flex-shrink:0;">📍</span>
+                    <span>${item.Address || "Adresse non renseignée"}</span>
+                </div>
 
-        marker.bindPopup(popupContent);
+                ${!isCabinet && tms ? `
+                <div style="background:#f8fafc; padding:12px; border-radius:12px; margin-bottom:20px; border:1px solid #f1f5f9;">
+                    <div style="font-size:10px; color:#94a3b8; font-weight:800; text-transform:uppercase; margin-bottom:4px;">Responsable TMS</div>
+                    <div style="font-size:14px; font-weight:700; color:#334155;">${tms}</div>
+                </div>
+                ` : ''}
+
+                ${phone ? `
+                <a href="tel:${phone.replace(/\s/g, '')}" 
+                   style="text-decoration:none; background:#009597; color:white; display:flex; align-items:center; justify-content:center; gap:10px; padding:14px; border-radius:14px; font-weight:800; font-size:14px; box-shadow: 0 4px 15px rgba(0,149,151,0.25);">
+                    <span>📞</span> Appeler le site
+                </a>
+                ` : ''}
+            </div>`;
+
+        marker.bindPopup(popupContent, {
+            maxWidth: 320,
+            className: 'custom-popup'
+        });
+        
         allMarkers.push({ marker, status, isESMS });
     });
     renderFilters();

@@ -21,19 +21,28 @@ async function chargerDonnees() {
             const response = await fetch(url);
             let text = await response.text();
             
-            // NETTOYAGE AGRESSIF pour n8n (data = [...])
+            // 1. Nettoyage n8n : Retire "data =" si présent
             if (text.includes('=')) {
                 text = text.substring(text.indexOf('=') + 1).trim();
             }
-            if (text.endsWith(';')) {
-                text = text.slice(0, -1);
-            }
+            if (text.endsWith(';')) text = text.slice(0, -1);
             
-            const cleanJson = JSON.parse(text);
-            // Retourne le tableau que ce soit direct ou dans .data
-            return Array.isArray(cleanJson) ? cleanJson : (cleanJson.data || []);
+            // 2. Réparation des virgules traînantes
+            text = text.replace(/,\s*([\]}])/g, '$1');
+
+            const parsed = JSON.parse(text);
+
+            // 3. LOGIQUE D'EXTRACTION POUR TA STRUCTURE : [ { "data": [...] } ]
+            if (Array.isArray(parsed) && parsed[0] && parsed[0].data) {
+                return parsed[0].data; // C'est ici qu'on récupère ton contenu
+            } 
+            // Cas de secours si la structure change
+            if (Array.isArray(parsed)) return parsed;
+            if (parsed.data) return parsed.data;
+            
+            return [];
         } catch (e) {
-            console.error("Erreur sur " + url, e);
+            console.error("Erreur structure sur " + url + " :", e);
             return [];
         }
     };

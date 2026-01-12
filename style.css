@@ -1,74 +1,76 @@
-:root {
-    --primary: #009597;
-    --text: #334155;
-    --shadow: 0 10px 25px rgba(0,0,0,0.1);
+/* Conteneur qui morphose */
+.menu-wrapper {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 2500;
+    background: white;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden; /* Cache le contenu quand fermé */
 }
 
-body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', system-ui, sans-serif; overflow: hidden; }
-#map { height: 100vh; width: 100vw; z-index: 1; background: #f8fafc; }
-
-/* Positionnement Haut Gauche */
-.top-controls {
-    position: fixed; top: 20px; left: 20px;
-    z-index: 2000; display: flex; gap: 12px;
+/* État AGRANDI (Le menu) */
+.menu-wrapper.open {
+    width: 300px;
+    height: 450px; /* Ajuste selon tes besoins */
+    border-radius: 16px;
 }
 
-.menu-trigger {
-    background: white; border: none; width: 48px; height: 48px;
-    border-radius: 12px; box-shadow: var(--shadow);
-    cursor: pointer; font-size: 20px; color: var(--primary);
-    display: flex; align-items: center; justify-content: center;
+/* Le bouton invisible qui couvre la zone du burger */
+.menu-toggle {
+    position: absolute;
+    top: 0; left: 0;
+    width: 48px; height: 48px;
+    background: transparent;
+    border: none; cursor: pointer;
+    z-index: 10;
 }
 
-.search-container {
-    background: white; height: 48px; border-radius: 12px;
-    box-shadow: var(--shadow); display: flex; align-items: center;
-    padding: 0 12px; width: 250px;
+/* ANIMATION BURGER -> CROIX */
+.burger-icon {
+    width: 20px; height: 14px;
+    position: relative; margin: 17px auto;
 }
 
-.search-container input { border: none; flex: 1; outline: none; font-size: 14px; color: var(--text); }
-.search-icon { background: none; border: none; cursor: pointer; display: flex; }
-
-/* Panneau de filtres animé */
-.filter-panel {
-    position: fixed; top: 85px; left: 20px;
-    z-index: 1900; background: white; width: 280px;
-    border-radius: 16px; padding: 20px;
-    box-shadow: var(--shadow);
-    
-    /* Animation */
-    display: flex; flex-direction: column;
-    opacity: 0; visibility: hidden;
-    transform: translateY(-20px);
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+.burger-icon span {
+    display: block; position: absolute;
+    height: 2.5px; width: 100%;
+    background: #009597; border-radius: 9px;
+    transition: .25s ease-in-out;
 }
 
-.filter-panel.open { opacity: 1; visibility: visible; transform: translateY(0); }
+.burger-icon span:nth-child(1) { top: 0px; }
+.burger-icon span:nth-child(2) { top: 6px; }
+.burger-icon span:nth-child(3) { top: 12px; }
 
-.panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.panel-header h3 { margin: 0; color: var(--primary); font-size: 18px; }
+/* Transformation en croix */
+.menu-wrapper.open .burger-icon span:nth-child(1) { top: 6px; transform: rotate(135deg); }
+.menu-wrapper.open .burger-icon span:nth-child(2) { opacity: 0; left: -20px; }
+.menu-wrapper.open .burger-icon span:nth-child(3) { top: 6px; transform: rotate(-135deg); }
 
-.close-btn {
-    background: #f1f5f9; border: none; width: 32px; height: 32px;
-    border-radius: 8px; cursor: pointer; color: #64748b;
-    display: flex; align-items: center; justify-content: center;
+/* CONTENU DU MENU (Apparaît en fondu) */
+.menu-content {
+    padding: 60px 20px 20px 20px; /* Espace pour le bouton en haut */
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
 }
 
-/* Cartes des filtres */
-.filter-card {
-    display: flex; align-items: center; padding: 12px;
-    background: white; border: 1px solid #e2e8f0; border-radius: 10px;
-    margin-bottom: 8px; cursor: pointer; transition: 0.2s;
+.menu-wrapper.open .menu-content {
+    opacity: 1;
+    pointer-events: auto;
+    transition-delay: 0.2s;
 }
-.filter-card:hover { border-color: var(--primary); background: #f0fdfa; }
-.filter-card input { margin-right: 12px; accent-color: var(--primary); }
 
-.dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 12px; }
-.label { font-size: 13px; font-weight: 600; color: var(--text); }
-
-.stats-card {
-    margin-top: 15px; padding: 15px; background: #f8fafc;
-    border-radius: 12px; text-align: center; border: 1px solid #e2e8f0;
+/* La recherche à côté */
+.search-floating-standalone {
+    position: fixed; top: 20px; left: 80px;
+    z-index: 2000; background: white; height: 48px;
+    border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    display: flex; align-items: center; padding: 0 15px; width: 200px;
 }
-#site-count { font-size: 24px; font-weight: 800; color: var(--primary); display: block; }
-.stats-card small { font-size: 9px; color: #94a3b8; font-weight: 800; letter-spacing: 0.5px; }
+.search-floating-standalone input { border: none; outline: none; width: 100%; }

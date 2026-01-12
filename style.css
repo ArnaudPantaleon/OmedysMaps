@@ -1,58 +1,32 @@
-body, html { margin: 0; padding: 0; height: 100%; font-family: sans-serif; }
+body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', sans-serif; }
 #map { height: 100vh; width: 100vw; z-index: 1; }
 
-/* Barre de recherche et bouton flottants */
-.top-controls {
-    position: fixed; top: 20px; left: 20px;
-    display: flex; gap: 10px; z-index: 1000;
+.menu-toggle {
+    position: fixed; top: 20px; left: 20px; z-index: 1000;
+    background: white; border: 1px solid #ddd; border-radius: 8px;
+    padding: 12px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
-.menu-btn, .search-box {
-    background: white;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.menu-btn { width: 40px; height: 40px; cursor: pointer; font-size: 20px; }
-
-.search-box { display: flex; align-items: center; padding: 0 10px; }
-.search-box input { border: none; padding: 8px; outline: none; width: 200px; }
-.search-box button { border: none; background: none; cursor: pointer; }
-
-/* Menu Latéral */
 #side-menu {
-    position: fixed; top: 0; left: -320px;
-    width: 280px; height: 100%;
-    background: white; z-index: 2000;
-    transition: 0.3s; padding: 20px;
-    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    position: fixed; top: 0; left: -320px; width: 280px; height: 100%;
+    background: #f8fafc; z-index: 2000; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 20px; box-shadow: 4px 0 15px rgba(0,0,0,0.1);
 }
 #side-menu.open { left: 0; }
 
-.menu-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.search-box { display: flex; background: white; border: 1px solid #e2e8f0; border-radius: 8px; margin: 15px 0; overflow: hidden; }
+.search-box input { border: none; padding: 10px; flex: 1; outline: none; }
+.search-box button { border: none; background: #f1f5f9; padding: 0 12px; cursor: pointer; }
 
-/* TES CARDS ORIGINALES */
-.filter-item {
-    display: flex;
-    align-items: center;
-    padding: 10px;
-    border: 1px solid #eee;
-    margin-bottom: 8px;
-    cursor: pointer;
-    background: #fff;
+/* TES CARDS */
+.filter-card {
+    display: flex; align-items: center; padding: 12px;
+    background: white; border: 1px solid #e2e8f0; border-radius: 10px;
+    margin-bottom: 8px; cursor: pointer; transition: 0.2s;
 }
-.filter-item:hover { background: #f9f9f9; }
-.filter-item input { margin-right: 10px; }
+.filter-card:hover { border-color: #009597; transform: translateY(-1px); }
+.dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 12px; }
+.label { font-size: 13px; font-weight: 600; color: #475569; }
 
-.dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 10px; }
-
-/* Compteur en bas */
-.stats-block {
-    margin-top: 20px;
-    padding: 15px;
-    background: #f4f4f4;
-    text-align: center;
-    font-weight: bold;
-}
-#site-count { color: #009597; font-size: 20px; }
+#stats-block { margin-top: 20px; padding: 15px; background: white; border-radius: 10px; text-align: center; border: 1px solid #e2e8f0; }
+#site-count { font-size: 22px; font-weight: 800; color: #009597; display: block; }

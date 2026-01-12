@@ -10,8 +10,29 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', sans-
     overflow: hidden;
 }
 
-.menu-wrapper.open { width: 300px; height: 520px; border-radius: 20px; }
+.menu-wrapper.open { 
+    width: 300px; 
+    height: auto; /* Permet au menu de s'adapter à la liste des filtres */
+    max-height: calc(100vh - 40px); /* Empêche de dépasser de l'écran */
+    border-radius: 20px; 
+    padding-bottom: 20px; /* Espace esthétique en bas après le compteur */
+}
 
+/* On s'assure que si la liste est trop longue, on peut scroller à l'intérieur */
+.menu-content {
+    opacity: 0; 
+    padding: 60px 20px 0px; /* Réduit le padding pour laisser de la place */
+    transition: opacity 0.3s; 
+    pointer-events: none;
+    max-height: 100%;
+    overflow-y: auto; /* Ajoute un scroll interne si besoin */
+}
+
+.menu-wrapper.open .menu-content { 
+    opacity: 1; 
+    pointer-events: auto; 
+    transition-delay: 0.2s; 
+}
 .menu-toggle {
     width: 50px; height: 50px; background: none; border: none;
     cursor: pointer; position: absolute; top: 0; left: 0; z-index: 10;
@@ -30,11 +51,6 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', sans-
 .menu-wrapper.open .burger-icon span:nth-child(2) { opacity: 0; transform: translateX(-10px); }
 .menu-wrapper.open .burger-icon span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 
-.menu-content {
-    opacity: 0; padding: 60px 20px 20px;
-    transition: opacity 0.3s; pointer-events: none;
-}
-.menu-wrapper.open .menu-content { opacity: 1; pointer-events: auto; transition-delay: 0.2s; }
 .panel-header h3 { color: #009597; margin: 0 0 20px 0; font-size: 20px; }
 
 /* --- BARRE DE RECHERCHE --- */
@@ -80,5 +96,13 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', sans-
 }
 .filter-card input { margin-right: 12px; accent-color: #009597; }
 .dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 12px; }
-.stats-card { margin-top: 15px; padding: 15px; background: #f8fafc; border-radius: 12px; text-align: center; border: 1px solid #e2e8f0; }
+.stats-card {
+    margin-top: 20px; 
+    padding: 15px; 
+    background: #f8fafc;
+    border-radius: 12px; 
+    text-align: center; 
+    border: 1px solid #e2e8f0;
+    /* On s'assure qu'elle n'est pas collée au dernier filtre */
+}
 #site-count { font-size: 24px; font-weight: 800; color: #009597; display: block; }

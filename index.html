@@ -2,32 +2,28 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Omedys Explorer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Omedys Maps</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="map"></div>
-
     <div class="menu-wrapper" id="menuWrapper">
-        <button class="menu-toggle" onclick="toggleMenu()" aria-label="Menu">
+        <button class="menu-toggle" onclick="toggleMenu()">
             <div class="burger-icon"><span></span><span></span><span></span></div>
         </button>
         <div class="menu-content">
-            <h3 class="panel-title">Filtres</h3>
-            <div id="filter-list" class="bento-grid-menu"></div>
-            <div class="stats-bento">
-                <span id="site-count">0</span> sites affichés
+            <h3 style="margin-top:0">Filtres</h3>
+            <div id="filter-list"></div>
+            <div style="margin-top:20px; font-weight:800; font-size:12px; color:#94a3b8">
+                <span id="site-count">0</span> SITES AFFICHÉS
             </div>
         </div>
     </div>
-
     <div class="search-container">
-        <input type="text" id="query" placeholder="Rechercher une ville..." onkeypress="if(event.key === 'Enter') rechercheEtZoom()">
-        <button onclick="rechercheEtZoom()">🔍</button>
+        <input type="text" id="query" placeholder="Ville..." onkeypress="if(event.key === 'Enter') rechercheEtZoom()">
     </div>
-
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="script.js"></script>
 </body>

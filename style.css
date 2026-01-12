@@ -1,97 +1,58 @@
-:root {
-    --primary: #009597;
-    --shadow: 0 4px 12px rgba(0,0,0,0.12);
-}
-
-body, html { margin: 0; padding: 0; height: 100%; font-family: 'Inter', sans-serif; }
+body, html { margin: 0; padding: 0; height: 100%; font-family: sans-serif; }
 #map { height: 100vh; width: 100vw; z-index: 1; }
 
-/* Positionnement de la barre de recherche */
-.top-bar {
-    position: fixed;
-    top: 15px;
-    left: 15px;
-    display: flex;
-    gap: 12px;
-    z-index: 1000;
+/* Barre de recherche et bouton flottants */
+.top-controls {
+    position: fixed; top: 20px; left: 20px;
+    display: flex; gap: 10px; z-index: 1000;
 }
 
-/* Bouton menu épuré */
-.menu-btn {
+.menu-btn, .search-box {
     background: white;
-    border: none;
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    box-shadow: var(--shadow);
-    cursor: pointer;
-    font-size: 22px;
-    color: var(--primary);
-    transition: transform 0.2s;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-/* Barre de recherche blanche et arrondie */
-.search-box {
-    background: white;
-    box-shadow: var(--shadow);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    padding: 0 15px;
-    width: 280px;
-}
+.menu-btn { width: 40px; height: 40px; cursor: pointer; font-size: 20px; }
 
-.search-box input {
-    border: none;
-    flex: 1;
-    padding: 12px 5px;
-    font-size: 15px;
-    outline: none;
-    color: #334155;
-}
+.search-box { display: flex; align-items: center; padding: 0 10px; }
+.search-box input { border: none; padding: 8px; outline: none; width: 200px; }
+.search-box button { border: none; background: none; cursor: pointer; }
 
-.search-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #94a3b8; /* Gris doux pour la loupe */
-    padding: 8px;
-    display: flex;
-    align-items: center;
-    transition: color 0.2s;
-}
-
-.search-btn:hover { color: var(--primary); }
-
-/* Menu latéral */
+/* Menu Latéral */
 #side-menu {
-    position: fixed;
-    top: 0; left: -350px;
-    width: 320px; height: 100%;
-    background: white;
-    z-index: 2000;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    padding: 20px;
-    box-shadow: 10px 0 30px rgba(0,0,0,0.05);
+    position: fixed; top: 0; left: -320px;
+    width: 280px; height: 100%;
+    background: white; z-index: 2000;
+    transition: 0.3s; padding: 20px;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
 }
+#side-menu.open { left: 0; }
 
-#side-menu.open { transform: translateX(350px); }
+.menu-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
 
-/* Cartes de Filtres (Card Design) */
+/* TES CARDS ORIGINALES */
 .filter-item {
     display: flex;
     align-items: center;
-    padding: 14px;
-    background: white;
-    border: 1px solid #f1f5f9;
-    border-radius: 12px;
-    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #eee;
+    margin-bottom: 8px;
     cursor: pointer;
-    transition: all 0.2s;
+    background: #fff;
 }
+.filter-item:hover { background: #f9f9f9; }
+.filter-item input { margin-right: 10px; }
 
-.filter-item:hover {
-    border-color: var(--primary);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+.dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 10px; }
+
+/* Compteur en bas */
+.stats-block {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f4f4f4;
+    text-align: center;
+    font-weight: bold;
 }
+#site-count { color: #009597; font-size: 20px; }

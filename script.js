@@ -139,13 +139,7 @@ function rechercheEtZoom() {
 }
 
 function toggleMenu() {
-    const wrapper = document.getElementById('menuWrapper');
-    wrapper.classList.toggle('open');
-    
-    // On rafraîchit la carte car la taille du menu change
-    if (wrapper.classList.contains('open')) {
-        setTimeout(() => map.invalidateSize(), 500);
-    }
+    document.getElementById('menuWrapper').classList.toggle('open');
 }
 
 chargerDonnees();

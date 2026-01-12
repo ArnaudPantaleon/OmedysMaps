@@ -139,11 +139,17 @@
                         ${item.ATT ? `<div style="font-size:12px; margin-bottom:5px;">👤 Référent : <b>${item.ATT}</b></div>` : ""}`;
                 
                 if (item.Phone) {
+                    // 1. On nettoie pour le lien cliquable (tel:0612345678)
                     const cleanTel = item.Phone.toString().replace(/\D/g, '');
+                    
+                    // 2. On formate l'affichage pour avoir des espaces (xx xx xx xx xx)
+                    // On prend le numéro nettoyé et on ajoute un espace tous les 2 chiffres
+                    const formattedTel = cleanTel.match(/.{1,2}/g).join(' ');
+                
                     popupHtml += `
                         <a href="tel:${cleanTel}" class="tel-link">
                             <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
-                            ${item.Phone}
+                            ${formattedTel}
                         </a>`;
                 }
                 
@@ -183,4 +189,5 @@
     </script>
 </body>
 </html>
+
 

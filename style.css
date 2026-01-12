@@ -1,89 +1,38 @@
-:root {
-    --bg-main: #f8fafc;
-    --bento-bg: #ffffff;
-    --bento-border: #f1f5f9;
-    --text-dark: #0f172a;
-    --text-soft: #64748b;
-    --text-label: #94a3b8;
-    --accent-teal: #008080;
-    --bg-teal-soft: #e6fffa;
-}
-
-body, html { margin: 0; padding: 0; height: 100%; font-family: -apple-system, sans-serif; background: var(--bg-main); overflow: hidden; }
+:root { --teal: #008080; --soft-teal: #e6fffa; --border: #f1f5f9; --text: #1e293b; --label: #94a3b8; }
+body, html { margin: 0; padding: 0; height: 100%; font-family: -apple-system, sans-serif; background: #f8fafc; }
 #map { height: 100vh; width: 100vw; z-index: 1; }
 
-/* --- INTERFACE FLOTTANTE --- */
-.menu-wrapper {
-    position: fixed; top: 15px; left: 15px; z-index: 4000;
-    background: var(--bento-bg); width: 50px; height: 50px;
-    border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    transition: 0.5s cubic-bezier(0.16, 1, 0.3, 1); overflow: hidden;
-}
-.menu-wrapper.open { width: 300px; height: 600px; border-radius: 24px; }
-
+.menu-wrapper { position: fixed; top: 15px; left: 15px; z-index: 4000; background: white; width: 50px; height: 50px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); transition: 0.5s cubic-bezier(0.16, 1, 0.3, 1); overflow: hidden; }
+.menu-wrapper.open { width: 280px; height: 580px; border-radius: 24px; }
 .menu-toggle { width: 50px; height: 50px; background: none; border: none; cursor: pointer; position: absolute; top: 0; left: 0; display: flex; align-items: center; justify-content: center; }
-.burger-icon span { display: block; height: 2px; width: 20px; background: var(--accent-teal); margin: 4px 0; transition: .3s; }
+.burger-icon span { display: block; height: 2px; width: 18px; background: var(--teal); margin: 4px auto; }
 
 .menu-content { opacity: 0; padding: 60px 20px 20px; transition: 0.3s; }
 .menu-wrapper.open .menu-content { opacity: 1; }
-.panel-title { margin: 0 0 20px 0; font-size: 18px; font-weight: 800; color: var(--text-dark); }
 
-/* --- FILTRES BENTO --- */
-.filter-card {
-    display: flex; align-items: center; padding: 12px 15px; margin-bottom: 8px;
-    background: var(--bento-bg); border: 2px solid var(--bento-border);
-    border-radius: 14px; cursor: pointer; transition: 0.2s; opacity: 0.5;
-}
+.filter-card { display: flex; align-items: center; padding: 12px 15px; margin-bottom: 8px; border: 2px solid var(--border); border-radius: 14px; cursor: pointer; opacity: 0.5; transition: 0.2s; }
 .filter-card input { display: none; }
-.filter-card:has(input:checked) { opacity: 1; border-color: var(--status-color); box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+.filter-card:has(input:checked) { opacity: 1; border-color: var(--status-color); }
 .dot { width: 8px; height: 8px; border-radius: 50%; margin-right: 12px; background: var(--status-color); }
-.label { font-size: 13px; font-weight: 700; color: var(--text-dark); }
+.label { font-size: 13px; font-weight: 700; color: var(--text); }
 
-.search-container {
-    position: fixed; top: 15px; left: 75px; z-index: 3000;
-    background: var(--bento-bg); height: 50px; width: 250px;
-    border-radius: 16px; box-shadow: 0 8px 25px rgba(0,0,0,0.05);
-    display: flex; align-items: center; padding: 0 15px;
-}
-.search-container input { border: none; flex: 1; outline: none; font-size: 14px; color: var(--text-dark); }
-.search-container button { background: none; border: none; cursor: pointer; }
+.search-container { position: fixed; top: 15px; left: 75px; z-index: 3000; background: white; height: 50px; width: 220px; border-radius: 16px; box-shadow: 0 8px 25px rgba(0,0,0,0.05); display: flex; align-items: center; padding: 0 15px; }
+.search-container input { border: none; flex: 1; outline: none; font-size: 14px; }
 
-/* --- POPUP BENTO --- */
-.leaflet-popup-content-wrapper { border-radius: 24px !important; padding: 0 !important; overflow: hidden; box-shadow: 0 15px 45px rgba(0,0,0,0.1) !important; }
-.leaflet-popup-content { margin: 0 !important; width: 280px !important; }
-.leaflet-popup-tip-container { display: none; }
-
-.bento-card { padding: 20px; color: var(--text-soft); }
-.bento-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-.bento-type { font-size: 10px; font-weight: 800; color: var(--text-label); letter-spacing: 0.8px; }
+/* POPUP BENTO */
+.leaflet-popup-content-wrapper { border-radius: 24px !important; padding: 0 !important; box-shadow: 0 15px 45px rgba(0,0,0,0.1) !important; }
+.leaflet-popup-content { margin: 0 !important; width: 270px !important; }
+.bento-card { padding: 20px; }
+.bento-header { display: flex; justify-content: space-between; margin-bottom: 12px; }
+.bento-type { font-size: 10px; font-weight: 800; color: var(--label); }
 .status-pill { padding: 4px 10px; border-radius: 50px; font-size: 9px; font-weight: 800; color: white; }
+.bento-title { margin: 0 0 12px 0; font-size: 17px; font-weight: 800; color: var(--teal); }
+.bento-grid { display: flex; gap: 8px; margin-bottom: 15px; }
+.bento-item { flex: 1; background: #f8fafc; border: 1px solid var(--border); padding: 8px; border-radius: 10px; }
+.item-label { font-size: 9px; font-weight: 800; color: var(--label); display: block; }
+.item-val { font-size: 11px; font-weight: 700; color: var(--text); }
+.bento-addr { font-size: 12px; color: #64748b; margin-bottom: 15px; display: flex; gap: 6px; }
+.bento-call { display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--soft-teal); border: 1px solid #b2f5ea; height: 44px; border-radius: 12px; text-decoration: none !important; color: var(--teal) !important; font-weight: 800; font-size: 15px; }
 
-.bento-title { margin: 0 0 12px 0; font-size: 18px; font-weight: 800; color: var(--accent-teal); line-height: 1.2; }
-
-.bento-grid { display: flex; gap: 10px; margin-bottom: 15px; }
-.bento-item { flex: 1; background: var(--bg-main); border: 1px solid var(--bento-border); padding: 10px; border-radius: 12px; }
-.item-label { font-size: 9px; font-weight: 800; color: var(--text-label); display: block; margin-bottom: 2px; }
-.item-val { font-size: 12px; font-weight: 700; color: var(--text-dark); }
-
-.bento-addr { display: flex; gap: 8px; font-size: 12px; color: var(--text-soft); margin-bottom: 20px; line-height: 1.4; }
-.bento-call { 
-    display: flex; align-items: center; justify-content: center; gap: 10px; 
-    background: var(--bg-teal-soft); border: 1px solid #b2f5ea; height: 48px; 
-    border-radius: 14px; text-decoration: none !important; color: var(--accent-teal) !important; 
-    font-weight: 800; font-size: 16px; transition: 0.2s; 
-}
-.bento-call:active { transform: scale(0.96); }
-
-@media (max-width: 600px) {
-    .menu-wrapper.open { width: calc(100% - 30px); }
-    .search-container { opacity: 0; pointer-events: none; }
-    .leaflet-popup-content { width: 260px !important; }
-}
-@keyframes pulse-animation {
-    0% { stroke-width: 2px; stroke-opacity: 1; }
-    50% { stroke-width: 10px; stroke-opacity: 0.4; }
-    100% { stroke-width: 2px; stroke-opacity: 1; }
-}
-.pulse-marker {
-    animation: pulse-animation 2s infinite;
-}
+.pulse-marker { animation: marker-glow 2s infinite; }
+@keyframes marker-glow { 0% { stroke-width: 2px; stroke-opacity: 1; } 50% { stroke-width: 8px; stroke-opacity: 0.3; } 100% { stroke-width: 2px; stroke-opacity: 1; } }

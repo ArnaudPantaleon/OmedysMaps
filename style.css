@@ -1,74 +1,41 @@
-/* Bouton pour ouvrir le menu */
+body, html { margin: 0; padding: 0; height: 100%; width: 100%; font-family: sans-serif; }
+
+#map { 
+    height: 100vh; 
+    width: 100vw; 
+    z-index: 1; 
+    background: #f8fafc; /* Couleur de fond en attendant les tuiles */
+}
+
+/* Bouton Menu Flottant */
 .menu-toggle {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    z-index: 2000; /* Plus haut que la carte */
-    background: #009597;
-    color: white;
-    border: none;
-    padding: 12px 18px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 20px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    position: fixed; top: 20px; left: 20px; z-index: 1000;
+    padding: 12px 15px; background: white; border: none;
+    border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    cursor: pointer; font-size: 20px;
 }
 
 /* Menu Latéral */
 #side-menu {
-    position: fixed;
-    top: 0;
-    left: -350px; /* Caché à gauche */
-    width: 320px;
-    height: 100vh;
-    background: white;
-    z-index: 3000; /* Très haut */
-    transition: transform 0.3s ease;
-    padding: 20px;
-    box-shadow: 5px 0 15px rgba(0,0,0,0.1);
-    display: flex;
-    flex-direction: column;
+    position: fixed; top: 0; left: -350px; width: 300px; height: 100%;
+    background: white; z-index: 2000; transition: 0.3s;
+    padding: 20px; box-shadow: 2px 0 15px rgba(0,0,0,0.1);
+    display: flex; flex-direction: column;
 }
+#side-menu.open { left: 0; }
 
-/* Quand le menu est ouvert */
-#side-menu.open {
-    transform: translateX(350px);
+/* Design des Cartes de Filtres (Card Design) */
+.filter-item {
+    display: flex; align-items: center; padding: 12px;
+    margin-bottom: 8px; border: 1px solid #e2e8f0; border-radius: 10px;
+    cursor: pointer; transition: 0.2s;
 }
+.filter-item:hover { border-color: #009597; background: #f0fdfa; }
+.filter-item.special-case { background: #f0fdfa; border-left: 4px solid #009597; }
 
-.menu-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+/* Compteur */
+.stats-block {
+    margin-top: auto; padding: 20px; background: #f8fafc;
+    border-radius: 12px; text-align: center; border: 1px solid #e2e8f0;
 }
-
-.close-menu {
-    background: none;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-    color: #718096;
-}
-
-/* Style de la barre de recherche */
-.search-box {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 25px;
-}
-
-.search-box input {
-    flex: 1;
-    padding: 10px;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    font-size: 14px;
-}
-
-.search-box button {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    padding: 8px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-}
+#site-count { font-size: 24px; font-weight: 800; color: #009597; display: block; }

@@ -1,145 +1,154 @@
-const statusSettings = {
-    "Ouvert": { color: "#009597", label: "Cabinet Omedys", checked: true },
-    "Ouvertes": { color: "#2ecc71", label: "Salles Ouvertes", checked: true },
-    "Telesecretariat OMEDYS": { color: "#8956FB", label: "Télésecrétariat", checked: true },
-    "Ouverture en cours": { color: "#3498db", label: "En cours", checked: false },
-    "En sourcing": { color: "#f1c40f", label: "Sourcing", checked: false },
-    "Inactives": { color: "#95a5a6", label: "Inactives", checked: false },
-    "Fermees ou refus OTT": { color: "#e74c3c", label: "Fermés / Refus", checked: false },
-    "TYPE_ESMS": { color: "#334155", label: "Afficher ESMS", checked: false }
-};
+// --- CONFIGURATION INITIALE ---
+const map = L.map('map', {
+    zoomControl: false // On cache le zoom par défaut pour le look Bento
+}).setView([46.603354, 1.888334], 6);
 
-let map = L.map('map', { zoomControl: false }).setView([46.6033, 1.8883], 6);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-let allMarkers = [];
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap contributors'
+}).addTo(map);
 
-function formatPhone(num) {
-    if (!num) return "";
-    let clean = String(num).replace(/\D/g, "");
-    return clean.replace(/(\d{2})(?=\d)/g, "$1 ").trim();
+let markersLayer = L.layerGroup().addTo(map);
+let allData = [];
+let activeFilters = new Set();
+
+// --- LOGIQUE DU MENU ---
+function toggleMenu() {
+    const wrapper = document.getElementById('menuWrapper');
+    wrapper.classList.toggle('open');
 }
 
-async function fetchN8N(url) {
+// --- NETTOYAGE DES DONNÉES (Fix Bug TMSTMS) ---
+function formatTMS(val) {
+    if (!val) return "N/A";
+    // Supprime "TMS" s'il est déjà écrit pour éviter les doublons
+    let clean = val.toString().toUpperCase().replace("TMS", "").trim();
+    return "TMS " + clean;
+}
+
+// --- RÉCUPÉRATION DES DONNÉES ---
+async function loadData() {
     try {
-        const response = await fetch(url);
-        let text = await response.text();
-        if (text.includes('=')) text = text.substring(text.indexOf('=') + 1).trim();
-        if (text.endsWith(';')) text = text.slice(0, -1);
-        text = text.replace(/,\s*([\]}])/g, '$1');
-        const parsed = JSON.parse(text);
+        // Remplace par l'URL de ton Google Apps Script
+        const response = await fetch('TON_URL_APPS_SCRIPT');
+        const data = await response.json();
+        allData = data;
         
-        // Extraction spécifique pour ta structure [ { "data": [...] } ]
-        if (Array.isArray(parsed) && parsed[0] && parsed[0].data) return parsed[0].data;
-        return Array.isArray(parsed) ? parsed : (parsed.data || []);
-    } catch (e) { return []; }
+        createFilters(data);
+        updateDisplay();
+    } catch (error) {
+        console.error("Erreur de chargement:", error);
+    }
 }
 
-async function chargerDonnees() {
-    const [dataS, dataC] = await Promise.all([
-        fetchN8N('salles.json'),
-        fetchN8N('cabinet.json')
-    ]);
-    creerMarqueurs([...dataS, ...dataC]);
+// --- CRÉATION DES FILTRES ---
+function createFilters(data) {
+    const statuses = [...new Set(data.map(item => item.Statut))];
+    const filterList = document.getElementById('filter-list');
+    filterList.innerHTML = '';
+
+    statuses.forEach(status => {
+        const color = getStatusColor(status);
+        const card = document.createElement('label');
+        card.className = 'filter-card';
+        card.style.setProperty('--status-color', color);
+        
+        card.innerHTML = `
+            <input type="checkbox" value="${status}" onchange="toggleFilter('${status}')">
+            <span class="dot"></span>
+            <span class="label">${status}</span>
+        `;
+        filterList.appendChild(card);
+    });
 }
 
-function creerMarqueurs(data) {
-    allMarkers.forEach(m => map.removeLayer(m.marker));
-    allMarkers = [];
+function toggleFilter(status) {
+    if (activeFilters.has(status)) {
+        activeFilters.delete(status);
+    } else {
+        activeFilters.add(status);
+    }
+    updateDisplay();
+}
 
-    data.forEach(item => {
-        const lat = parseFloat(String(item.Latitude || "").replace(',', '.'));
-        const lng = parseFloat(String(item.Longitude || "").replace(',', '.'));
-        if (isNaN(lat)) return;
+// --- MISE À JOUR DE LA CARTE ---
+function updateDisplay() {
+    markersLayer.clearLayers();
+    
+    const filteredData = allData.filter(item => 
+        activeFilters.size === 0 || activeFilters.has(item.Statut)
+    );
 
-        const status = (item.Statut || "").trim();
-        const typeRaw = (item.Type || "SITE").trim();
-        const config = statusSettings[status] || { color: "#7f8c8d", checked: true };
-        const isCabinet = typeRaw.toUpperCase() === "CABINET";
-        const isESMS = typeRaw.toUpperCase().includes("ESMS");
-
-        // TA POPUP BENTO (INTOUCHÉE)
-        let popupContent = `
-            <div class="bento-card">
-                <div class="bento-header">
-                    <span class="bento-type">${typeRaw.toUpperCase()}</span>
-                    <span class="bento-status" style="background:${config.color}">${status}</span>
-                </div>
-                <h3 class="bento-title">${item.Name || "Site"}</h3>
-                <div class="bento-info-row">
-                    <div class="info-block">
-                        <span class="info-label">ATT</span>
-                        <span class="info-value">${item.ATT || item.Att || "—"}</span>
-                    </div>
-                    ${(item.TMS || item.Tms) ? `<div class="info-block"><span class="info-label">TMS</span><span class="info-value">TMS ${item.TMS || item.Tms}</span></div>` : ''}
-                </div>
-                <div class="bento-address"><span>📍</span><span>${item.Address || ""}</span></div>
-                ${(item.Phone || item.Telephone) ? `<a href="tel:${String(item.Phone || item.Telephone).replace(/\s/g, '')}" class="bento-call-btn"><span>📞</span><span>${formatPhone(item.Phone || item.Telephone)}</span></a>` : ''}
-            </div>`;
-
-        const marker = L.circleMarker([lat, lng], {
-            radius: isCabinet ? 10 : 7,
-            fillColor: config.color,
-            color: "#fff",
+    filteredData.forEach(item => {
+        const marker = L.circleMarker([item.Lat, item.Lng], {
+            radius: 8,
+            fillColor: getStatusColor(item.Statut),
+            color: '#fff',
             weight: 2,
             fillOpacity: 0.9
         });
 
-        // Logique d'affichage initiale
-        const show = isESMS ? (config.checked && statusSettings["TYPE_ESMS"].checked) : config.checked;
-        if (show) marker.addTo(map);
+        // Structure Bento pour la Popup
+        const popupContent = `
+            <div class="bento-card">
+                <h2 class="bento-title">${item.Nom || 'Site Omedys'}</h2>
+                <div class="bento-grid">
+                    <div class="info-block">
+                        <span class="info-label">ATT</span>
+                        <span class="info-value">${item.ATT || 'N/A'}</span>
+                    </div>
+                    <div class="info-block">
+                        <span class="info-label">CODE TMS</span>
+                        <span class="info-value">${formatTMS(item.TMS || item.Tms)}</span>
+                    </div>
+                </div>
+                <div class="info-block" style="margin-bottom: 15px;">
+                    <span class="info-label">STATUT</span>
+                    <span class="info-value" style="color:${getStatusColor(item.Statut)}">● ${item.Statut}</span>
+                </div>
+                <a href="tel:${item.Tel}" class="bento-call-btn">📞 Appeler le site</a>
+            </div>
+        `;
 
         marker.bindPopup(popupContent);
-        allMarkers.push({ marker, status, isESMS });
+        markersLayer.addLayer(marker);
     });
-    renderFilters();
+
+    document.getElementById('site-count').innerText = filteredData.length;
 }
 
-function renderFilters() {
-    const list = document.getElementById('filter-list');
-    if (!list) return;
-    list.innerHTML = Object.keys(statusSettings).map(k => `
-        <label class="filter-card" style="--status-color: ${statusSettings[k].color}">
-            <input type="checkbox" ${statusSettings[k].checked ? 'checked' : ''} onchange="toggleStatus('${k}', this.checked)">
-            <span class="dot"></span><span class="label">${statusSettings[k].label}</span>
-        </label>`).join('');
-    updateStats();
-}
+// --- RECHERCHE ET ZOOM ---
+async function rechercheEtZoom() {
+    const query = document.getElementById('query').value;
+    if (!query) return;
 
-window.toggleStatus = (n, c) => {
-    statusSettings[n].checked = c;
-    allMarkers.forEach(m => {
-        const conf = statusSettings[m.status] || { checked: true };
-        const show = m.isESMS ? (conf.checked && statusSettings["TYPE_ESMS"].checked) : conf.checked;
-        if (show) m.marker.addTo(map); else map.removeLayer(m.marker);
-    });
-    updateStats();
-};
-
-function updateStats() {
-    const count = allMarkers.filter(m => map.hasLayer(m.marker)).length;
-    if (document.getElementById('site-count')) document.getElementById('site-count').innerText = count;
-}
-
-function toggleMenu() { document.getElementById('menuWrapper').classList.toggle('open'); }
-
-function rechercheEtZoom() {
-    const q = document.getElementById('query').value;
-    fetch(`https://api-adresse.data.gouv.fr/search/?q=${q}&limit=1`).then(r => r.json()).then(res => {
-        if (res.features && res.features.length) {
-            const [lon, lat] = res.features[0].geometry.coordinates;
-            map.flyTo([lat, lon], 12);
+    try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}`);
+        const data = await response.json();
+        
+        if (data.length > 0) {
+            const { lat, lon } = data[0];
+            map.flyTo([lat, lon], 12, { duration: 1.5 });
+            
+            // Sur mobile, on ferme le menu après une recherche
+            if(window.innerWidth < 480) {
+                document.getElementById('menuWrapper').classList.remove('open');
+            }
         }
-    });
-}
-function toggleSearchMobile() {
-    if (window.innerWidth <= 480) {
-        const searchBar = document.getElementById('searchContainer');
-        searchBar.classList.toggle('active');
-        if (searchBar.classList.contains('active')) {
-            document.getElementById('query').focus();
-        }
-    } else {
-        rechercheEtZoom();
+    } catch (error) {
+        console.error("Erreur recherche:", error);
     }
 }
-chargerDonnees();
+
+// --- UTILITAIRES ---
+function getStatusColor(status) {
+    const colors = {
+        'Actif': '#009597',
+        'En attente': '#f59e0b',
+        'Projet': '#6366f1',
+        'Maintenance': '#ef4444'
+    };
+    return colors[status] || '#94a3b8';
+}
+
+// Lancement
+loadData();

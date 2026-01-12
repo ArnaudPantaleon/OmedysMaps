@@ -79,3 +79,11 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: -apple-system, sa
     .search-container { opacity: 0; pointer-events: none; }
     .leaflet-popup-content { width: 260px !important; }
 }
+@keyframes pulse-animation {
+    0% { stroke-width: 2px; stroke-opacity: 1; }
+    50% { stroke-width: 10px; stroke-opacity: 0.4; }
+    100% { stroke-width: 2px; stroke-opacity: 1; }
+}
+.pulse-marker {
+    animation: pulse-animation 2s infinite;
+}

@@ -7,25 +7,23 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
     <div id="map"></div>
-
-    <div class="top-controls">
-        <button class="menu-btn" onclick="toggleMenu()">☰</button>
+    <div id="side-menu">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2 style="color:#009597; margin:0;">Omedys</h2>
+            <button onclick="toggleMenu()" style="border:none; background:none; cursor:pointer; font-size:18px;">✕</button>
+        </div>
         <div class="search-box">
             <input type="text" id="query" placeholder="Rechercher une ville..." onkeypress="if(event.key === 'Enter') rechercheEtZoom()">
             <button onclick="rechercheEtZoom()">🔍</button>
         </div>
-    </div>
-
-    <div id="side-menu">
-        <div class="menu-header">
-            <h2>Filtres</h2>
-            <button onclick="toggleMenu()">✕</button>
-        </div>
         <div id="filter-list"></div>
+        <div id="stats-block">
+            <span id="site-count">0</span>
+            <span style="font-size:10px; color:#94a3b8; font-weight:bold; text-transform:uppercase;">Sites affichés</span>
+        </div>
     </div>
-
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="script.js"></script>
 </body>

@@ -101,7 +101,7 @@
         const map = L.map('map', { zoomControl: false, tap: false }).setView([46.6033, 1.8883], 6);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-        // CONFIGURATION PRÉCISE DES STATUTS (Analyse salles.json)
+        // CONFIGURATION DES STATUTS
         const statusSettings = {
             "En sourcing": { color: "#ffa502", active: true },
             "Ouvertes": { color: "#2ed573", active: true },
@@ -136,12 +136,10 @@
                     fetch(urlCabinets).then(r => r.json())
                 ]);
                 
-                let salles = [];
-                if (Array.isArray(resSalles) && resSalles[0]?.data) salles = resSalles[0].data;
-                else if (resSalles.data) salles = resSalles.data;
-                else if (Array.isArray(resSalles)) salles = resSalles;
+                // Correction pour accepter les formats n8n (soit tableau direct, soit .data)
+                let salles = Array.isArray(resSalles) ? resSalles : (resSalles.data || []);
+                let cabinets = Array.isArray(resCabinets) ? resCabinets : (resCabinets.data || []);
 
-                let cabinets = resCabinets.data || (Array.isArray(resCabinets) ? resCabinets : []);
                 creerMarqueurs([...salles, ...cabinets]);
             } catch (err) { console.error("Erreur de chargement:", err); }
         }
@@ -151,27 +149,34 @@
             data.forEach(item => {
                 const lat = parseFloat(item.Latitude);
                 const lng = parseFloat(item.Longitude);
+                
+                // Sécurité : ignore l'item si les coordonnées sont invalides
                 if (isNaN(lat) || isNaN(lng)) return;
 
                 const statusKey = (item.Statut || "").trim();
                 const isCabinet = (item.Type === "CABINET");
-                const typeEtab = item.Type;
+                const typeEtab = item.Type || "Inconnu";
                 const tel = formaterTel(item.Phone);
 
                 let marker;
                 if (isCabinet) {
                     marker = L.marker([lat, lng], { 
-                        icon: L.divIcon({ className: 'cabinet-pin', html: `<div style="background:#009597; width:100%; height:100%; border-radius:50%;"></div>` }),
+                        icon: L.divIcon({ 
+                            className: 'cabinet-pin', 
+                            html: `<div style="background:#009597; width:100%; height:100%; border-radius:50%; border:2px solid white;"></div>` 
+                        }),
                         zIndexOffset: 1000 
                     });
                 } else {
-                    const col = statusSettings[statusKey]?.color || "#333";
+                    const col = statusSettings[statusKey]?.color || "#a4b0be";
                     marker = L.marker([lat, lng], { 
-                        icon: L.divIcon({ html: `<div style="background:${col}; width:12px; height:12px; border-radius:50%; border:2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2);"></div>`, className: "" }) 
+                        icon: L.divIcon({ 
+                            html: `<div style="background:${col}; width:12px; height:12px; border-radius:50%; border:2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2);"></div>`, 
+                            className: "" 
+                        }) 
                     });
                 }
 
-                // --- CONSTRUCTION DE LA BULLE ESTHÉTIQUE ---
                 let popupContent = `
                 <div class="popup-card">
                     <div class="popup-header">

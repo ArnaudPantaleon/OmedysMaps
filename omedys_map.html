@@ -271,20 +271,22 @@
         }).join('');
     }
 
-    window.toggleStatus = (statusName, isChecked) => {
-        // On met à jour l'état dans notre config globale
-        if (statusSettings[statusName]) {
-            statusSettings[statusName].checked = isChecked;
-        }
+    window.toggleStatus = (name, isChecked) => {
+        if (statusSettings[name]) statusSettings[name].checked = isChecked;
     
-        // On affiche/cache les marqueurs concernés
         allMarkers.forEach(m => {
-            if (m.status === statusName) {
-                if (isChecked) {
-                    m.marker.addTo(map);
-                } else {
-                    map.removeLayer(m.marker);
-                }
+            // Un marqueur doit être visible si :
+            // 1. Son filtre de statut est activé
+            // 2. S'il est ESMS, l'interrupteur global ESMS doit être activé
+            const statusActive = statusSettings[m.status].checked;
+            const esmsActive = statusSettings["TYPE_ESMS"].checked;
+    
+            const visible = m.isESMS ? (statusActive && esmsActive) : statusActive;
+    
+            if (visible) {
+                m.marker.addTo(map);
+            } else {
+                map.removeLayer(m.marker);
             }
         });
     };
@@ -299,6 +301,7 @@
 </script>
 </body>
 </html>
+
 
 
 

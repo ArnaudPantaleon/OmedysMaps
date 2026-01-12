@@ -17,8 +17,11 @@
                 <span></span><span></span><span></span>
             </div>
         </button>
+
         <div class="menu-content">
-            <div class="panel-header"><h3>Filtres</h3></div>
+            <div class="panel-header">
+                <h3>Filtres</h3>
+            </div>
             <div id="filter-list"></div>
             <div class="stats-card">
                 <span id="site-count">0</span>
@@ -26,7 +29,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="search-floating">
         <input type="text" id="query" placeholder="Chercher une ville..." onkeypress="if(event.key === 'Enter') rechercheEtZoom()">
         <button onclick="rechercheEtZoom()" class="search-btn">

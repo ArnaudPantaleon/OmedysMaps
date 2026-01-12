@@ -1,0 +1,22 @@
+<body>
+    <button class="menu-toggle" onclick="toggleMenu()" title="Ouvrir le menu">☰</button>
+
+    <div id="map"></div>
+
+    <div id="side-menu">
+        <div class="menu-header">
+            <h2>Omedys Maps</h2>
+            <button class="close-menu" onclick="toggleMenu()">✕</button>
+        </div>
+        
+        <div class="search-box">
+            <input type="text" id="query" placeholder="Ville ou code postal..." onkeypress="if(event.key === 'Enter') rechercheEtZoom()">
+            <button onclick="rechercheEtZoom()">🔍</button>
+        </div>
+
+        <div id="filter-list"></div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="script.js"></script>
+</body>

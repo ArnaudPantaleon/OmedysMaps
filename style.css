@@ -25,7 +25,7 @@ body, html {
     position: fixed; 
     top: 15px; 
     left: 50%; 
-    transform: translateX(-50%); /* Centrage parfait sur PC */
+    transform: translateX(-50%); 
     z-index: 5000; 
     background: var(--white); 
     height: 50px; 
@@ -36,50 +36,55 @@ body, html {
     align-items: center; 
     padding: 0 15px;
     border: 1px solid #e2e8f0;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .search-floating input { border: none; flex: 1; outline: none; font-size: 14px; background: transparent; color: var(--text-dark); }
-.search-btn { background: none; border: none; cursor: pointer; font-size: 18px; }
-/* --- RESPONSIVE MOBILE --- */
-@media (max-width: 480px) { 
-    /* Sur mobile, on ne peut pas centrer si le burger est à gauche */
-    /* On décale donc la barre à droite du burger */
-    .search-floating {
-        left: 75px; /* On la pousse après les 50px du burger + 25px de marge */
-        transform: none; /* On enlève le centrage forcé */
-        width: calc(100% - 90px); /* Elle prend tout le reste de la largeur */
-        max-width: none;
-    }
+.search-btn { background: none; border: none; cursor: pointer; font-size: 18px; display: flex; align-items: center; }
 
-    /* Pour éviter que le menu ouvert ne cache la barre de recherche */
-    .menu-wrapper.open { 
-        width: calc(100vw - 30px);
-        left: 15px;
-        z-index: 4000; /* Le menu reste en dessous de la barre (5000) */
-    }
-    
-    /* On ajoute une marge haute au contenu du menu pour que la barre de recherche */
-    /* ne cache pas le titre "Filtres" quand le menu est ouvert */
-    .menu-wrapper.open .menu-content {
-        padding-top: 85px; 
-    }
-}
 /* --- MENU LATÉRAL --- */
 .menu-wrapper { 
-    position: fixed; top: 15px; left: 15px; z-index: 4000; 
+    position: fixed; top: 15px; left: 15px; z-index: 4500; 
     background: var(--white); width: 50px; height: 50px; 
     border-radius: 18px; box-shadow: var(--shadow); 
     transition: 0.5s cubic-bezier(0.16, 1, 0.3, 1); 
-    /* IMPORTANT: On ne met pas overflow hidden ici pour ne pas mordre la recherche */
 }
 
 .menu-wrapper.open { 
-    width: 340px; 
-    height: auto; 
-    max-height: 90vh;
-    border-radius: 28px; 
-    overflow-y: auto; /* Le scroll se fait à l'intérieur quand c'est ouvert */
+    width: 340px; height: auto; max-height: 90vh; border-radius: 28px; overflow-y: auto; 
+}
+/* --- RESPONSIVE MOBILE (CORRECTIF FINAL) --- */
+@media (max-width: 480px) {
+    /* On décale la recherche à droite pour laisser la place au burger */
+    .search-floating {
+        left: auto;
+        right: 15px;
+        transform: none;
+        width: 50px; /* On la réduit à un bouton sur mobile par défaut */
+        overflow: hidden;
+        transition: width 0.4s ease;
+    }
+
+    /* Quand on clique sur la loupe sur mobile, elle s'agrandit */
+    .search-floating.active {
+        width: calc(100% - 90px);
+        z-index: 6000; /* Passe au dessus du burger si besoin */
+    }
+
+    .search-floating input {
+        display: none; /* Caché par défaut sur mobile */
+    }
+
+    .search-floating.active input {
+        display: block;
+        padding-left: 10px;
+    }
+
+    /* Le menu ouvert sur mobile laisse de la place sur les bords (Bento effect) */
+    .menu-wrapper.open {
+        width: calc(100vw - 30px);
+        left: 15px;
+    }
 }
 
 .menu-toggle { width: 50px; height: 50px; background: none; border: none; cursor: pointer; position: absolute; top: 0; left: 0; z-index: 4001; }

@@ -10,7 +10,6 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', sans-
     overflow: hidden;
 }
 
-/* Taille du menu une fois déplié */
 .menu-wrapper.open { width: 300px; height: 520px; border-radius: 20px; }
 
 .menu-toggle {
@@ -18,7 +17,6 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', sans-
     cursor: pointer; position: absolute; top: 0; left: 0; z-index: 10;
 }
 
-/* Animation de l'icône Burger vers Croix */
 .burger-icon { width: 20px; height: 14px; position: relative; margin: 18px auto; }
 .burger-icon span {
     display: block; position: absolute; height: 2.5px; width: 100%;
@@ -37,7 +35,6 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', sans-
     transition: opacity 0.3s; pointer-events: none;
 }
 .menu-wrapper.open .menu-content { opacity: 1; pointer-events: auto; transition-delay: 0.2s; }
-
 .panel-header h3 { color: #009597; margin: 0 0 20px 0; font-size: 20px; }
 
 /* --- BARRE DE RECHERCHE --- */
@@ -46,31 +43,42 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', sans-
     background: white; height: 50px; width: 240px;
     border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1);
     display: flex; align-items: center; padding: 0 15px;
-    /* Transition synchronisée avec le menu */
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Décalage dynamique quand le menu est ouvert */
+/* Bureau : Décalage à droite */
 .menu-wrapper.open ~ .search-floating {
-    left: 335px; /* Largeur menu (300) + Marge (20) + Écart (15) */
+    left: 335px;
 }
 
 .search-floating input { border: none; flex: 1; outline: none; font-size: 14px; background: transparent; }
 .search-btn { background: none; border: none; cursor: pointer; display: flex; padding: 5px; }
 
-/* --- FILTRES & STATS --- */
+/* --- ADAPTATION MOBILE (iPhone, etc.) --- */
+@media (max-width: 600px) {
+    /* Le menu prend plus de place sur mobile */
+    .menu-wrapper.open {
+        width: calc(100% - 40px);
+        height: 80vh;
+    }
+
+    /* La recherche se place AU-DESSUS du menu quand il est ouvert */
+    .menu-wrapper.open ~ .search-floating {
+        left: 20px;
+        top: 20px;
+        width: calc(100% - 70px); /* Laisse la place pour la croix du menu dessous */
+        z-index: 3500; /* Passe au premier plan */
+        transform: translateY(60px); /* Descend juste sous le header du menu */
+    }
+}
+
+/* --- FILTRES & STATS (Ton design) --- */
 .filter-card {
     display: flex; align-items: center; padding: 12px;
     border: 1px solid #f1f5f9; border-radius: 10px; margin-bottom: 8px;
-    cursor: pointer; font-size: 13px; font-weight: 600; color: #334155; transition: 0.2s;
+    cursor: pointer; font-size: 13px; font-weight: 600; color: #334155;
 }
-.filter-card:hover { border-color: #009597; background: #f0fdfa; }
 .filter-card input { margin-right: 12px; accent-color: #009597; }
 .dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 12px; }
-
-.stats-card {
-    margin-top: 15px; padding: 15px; background: #f8fafc;
-    border-radius: 12px; text-align: center; border: 1px solid #e2e8f0;
-}
+.stats-card { margin-top: 15px; padding: 15px; background: #f8fafc; border-radius: 12px; text-align: center; border: 1px solid #e2e8f0; }
 #site-count { font-size: 24px; font-weight: 800; color: #009597; display: block; }
-.stats-card small { font-size: 9px; color: #94a3b8; font-weight: 800; }

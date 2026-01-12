@@ -51,10 +51,12 @@
 <body>
 
     <div id="search-container">
-        <select id="geo-select" onchange="rechercheSelection(this.value)" 
-            style="width: 100%; border: none; background: transparent; font-size: 16px; outline: none; padding: 10px; cursor: pointer;">
-            <option value="">Chargement des zones...</option>
-        </select>
+        <input type="text" id="query" list="geo-suggestions" placeholder="Ville, Département ou Région..." onkeypress="if(event.key === 'Enter') rechercheEtZoom()">
+        <datalist id="geo-suggestions">
+            </datalist>
+        <button id="search-button" onclick="rechercheEtZoom()">
+            <svg width="20" height="20" fill="white" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        </button>
     </div>
 
     <button id="filter-toggle" onclick="toggleMenu()">
@@ -92,60 +94,57 @@
             document.getElementById('menu-overlay').classList.toggle('open');
         }
 
-        async function chargerListeZones() {
+        // 1. Charger les suggestions dans la datalist au démarrage
+        async function chargerSuggestions() {
             try {
                 const response = await fetch('zones.json');
                 const data = await response.json();
-                const select = document.getElementById('geo-select');
+                const datalist = document.getElementById('geo-suggestions');
                 
-                let html = '<option value="">📍 Choisir une Région ou un Département</option>';
-                
-                // Catégorie Régions
-                html += '<optgroup label="Régions">';
+                let html = '';
                 data.regions.forEach(reg => {
-                    html += `<option value="reg:${reg.code}">${reg.nom}</option>`;
+                    html += `<option value="${reg.nom}">Région</option>`;
                 });
-                html += '</optgroup>';
-        
-                // Catégorie Départements
-                html += '<optgroup label="Départements">';
                 data.departements.forEach(dep => {
-                    html += `<option value="dep:${dep.code}">${dep.code} - ${dep.nom}</option>`;
+                    html += `<option value="${dep.code} - ${dep.nom}">Département</option>`;
                 });
-                html += '</optgroup>';
-        
-                select.innerHTML = html;
-            } catch (err) {
-                console.error("Impossible de charger zones.json :", err);
-            }
+                datalist.innerHTML = html;
+                
+                // On stocke les données pour les retrouver facilement lors de la recherche
+                window.geoData = data; 
+            } catch (err) { console.error("Erreur suggestions:", err); }
         }
         
-        // Lancer le chargement au démarrage
-        chargerListeZones();
+        chargerSuggestions();
         
-        // Fonction de zoom et surbrillance
-        async function rechercheSelection(valeur) {
-            if (!valeur) return;
+        // 2. Fonction de recherche intelligente
+        async function rechercheEtZoom() {
+            const input = document.getElementById('query').value.trim();
+            if (!input) return;
         
-            // Supprimer l'ancienne surbrillance bleue
-            if (highlightLayer) {
-                map.removeLayer(highlightLayer);
-                highlightLayer = null;
+            if (highlightLayer) map.removeLayer(highlightLayer);
+        
+            // Vérifier si l'input correspond à un département dans notre JSON
+            const depMatch = window.geoData.departements.find(d => input.startsWith(d.code) || input.includes(d.nom));
+            if (depMatch && input.length <= depMatch.nom.length + 5) {
+                const res = await fetch(`https://geo.api.gouv.fr/departements/${depMatch.code}?format=geojson&geometry=contour`).then(r => r.json());
+                showGeoJson(res);
+                return;
             }
         
-            const [type, code] = valeur.split(':');
-            const endpoint = type === 'dep' ? 'departements' : 'regions';
-            const url = `https://geo.api.gouv.fr/${endpoint}/${code}?format=geojson&geometry=contour`;
+            // Vérifier si l'input correspond à une région
+            const regMatch = window.geoData.regions.find(r => input.toLowerCase() === r.nom.toLowerCase());
+            if (regMatch) {
+                const res = await fetch(`https://geo.api.gouv.fr/regions/${regMatch.code}?format=geojson&geometry=contour`).then(r => r.json());
+                showGeoJson(res);
+                return;
+            }
         
-            try {
-                const res = await fetch(url).then(r => r.json());
-                highlightLayer = L.geoJSON(res, {
-                    style: { color: "#009597", weight: 3, fillColor: "#009597", fillOpacity: 0.15 }
-                }).addTo(map);
-                
-                map.flyToBounds(highlightLayer.getBounds(), { padding: [30, 30], duration: 1.5 });
-            } catch (err) {
-                console.error("Erreur API Géo :", err);
+            // Si ce n'est ni un département ni une région -> Recherche de ville classique
+            const addrRes = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(input)}&limit=1`).then(r => r.json());
+            if (addrRes.features?.length > 0) {
+                const [lon, lat] = addrRes.features[0].geometry.coordinates;
+                map.flyTo([lat, lon], 13);
             }
         }
         
@@ -234,6 +233,7 @@
     </script>
 </body>
 </html>
+
 
 
 

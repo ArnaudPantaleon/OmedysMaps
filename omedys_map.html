@@ -258,8 +258,22 @@
         }).join('');
     }
 
-    window.toggleStatus = (s, v) => {
-        allMarkers.forEach(m => { if (m.status === s) v ? m.marker.addTo(map) : map.removeLayer(m.marker); });
+    window.toggleStatus = (statusName, isChecked) => {
+        // On met à jour l'état dans notre config globale
+        if (statusSettings[statusName]) {
+            statusSettings[statusName].checked = isChecked;
+        }
+    
+        // On affiche/cache les marqueurs concernés
+        allMarkers.forEach(m => {
+            if (m.status === statusName) {
+                if (isChecked) {
+                    m.marker.addTo(map);
+                } else {
+                    map.removeLayer(m.marker);
+                }
+            }
+        });
     };
 
     function toggleMenu() {
@@ -272,6 +286,7 @@
 </script>
 </body>
 </html>
+
 
 
 

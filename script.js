@@ -13,18 +13,24 @@ let map = L.map('map', { zoomControl: false }).setView([46.6033, 1.8883], 6);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 let allMarkers = [];
 
-// Utilitaire : Formatage numéro XX XX XX XX XX
 const formatPhone = (n) => n ? n.replace(/\D/g, "").replace(/(\d{2})(?=\d)/g, "$1 ").trim() : "";
 
 async function chargerDonnees() {
     try {
+        // Chargement des fichiers depuis la racine du dépôt
         const [resS, resC] = await Promise.all([
             fetch('salles.json').then(r => r.json()),
             fetch('cabinet.json').then(r => r.json())
         ]);
-        const data = [...(resS.data || resS), ...(resC.data || resC)];
-        creerMarqueurs(data);
-    } catch (e) { console.error("Erreur de chargement", e); }
+
+        // Correction : Accès direct aux tableaux si .data n'existe pas
+        const dataSalles = Array.isArray(resS) ? resS : (resS.data || []);
+        const dataCabinets = Array.isArray(resC) ? resC : (resC.data || []);
+        
+        creerMarqueurs([...dataSalles, ...dataCabinets]);
+    } catch (e) {
+        console.error("Erreur critique de chargement :", e);
+    }
 }
 
 function creerMarqueurs(data) {
@@ -32,42 +38,53 @@ function creerMarqueurs(data) {
     allMarkers = [];
 
     data.forEach(item => {
-        const lat = parseFloat(item.Latitude), lng = parseFloat(item.Longitude);
-        if (isNaN(lat)) return;
+        // Nettoyage des coordonnées (suppression des espaces éventuels)
+        const lat = parseFloat(String(item.Latitude).replace(',', '.').trim());
+        const lng = parseFloat(String(item.Longitude).replace(',', '.').trim());
+
+        if (isNaN(lat) || isNaN(lng)) return;
 
         const status = (item.Statut || "").trim();
-        const type = (item.Type || "SITE").trim();
+        const type = (item.Type || "SITE").trim().toUpperCase();
         const config = statusSettings[status] || { color: "#7f8c8d", checked: true };
-        const phone = item.Phone || item.Telephone || "";
-        const tms = item.TMS || item.Tms || "";
-
+        const isCabinet = type === "CABINET";
+        
         const popupHtml = `
             <div class="bento-card">
                 <div class="bento-header">
-                    <span class="bento-type">${type.toUpperCase()}</span>
+                    <span class="bento-type">${type}</span>
                     <span class="status-pill" style="background:${config.color}">${status}</span>
                 </div>
-                <h3 class="bento-title">${item.Name}</h3>
+                <h3 class="bento-title">${item.Name || "Sans nom"}</h3>
                 <div class="bento-grid">
-                    <div class="bento-item"><span class="item-label">ATT</span><span class="item-val">${item.ATT || "—"}</span></div>
-                    ${tms ? `<div class="bento-item"><span class="item-label">TMS</span><span class="item-val">${tms}</span></div>` : ''}
+                    <div class="bento-item"><span class="item-label">ATT</span><span class="item-val">${item.ATT || item.Att || "—"}</span></div>
+                    ${item.TMS || item.Tms ? `<div class="bento-item"><span class="item-label">TMS</span><span class="item-val">${item.TMS || item.Tms}</span></div>` : ''}
                 </div>
-                <div class="bento-addr"><span>📍</span><span>${item.Address || ""}</span></div>
-                ${phone ? `<a href="tel:${phone.replace(/\s/g, '')}" class="bento-call"><span>📞</span><span>${formatPhone(phone)}</span></a>` : ''}
+                <div class="bento-addr"><span>📍</span><span>${item.Address || "Adresse non renseignée"}</span></div>
+                ${(item.Phone || item.Telephone) ? `
+                    <a href="tel:${String(item.Phone || item.Telephone).replace(/\s/g, '')}" class="bento-call">
+                        <span>📞</span><span>${formatPhone(item.Phone || item.Telephone)}</span>
+                    </a>` : ''}
             </div>`;
 
+        // Création du marqueur avec classe spécifique pour l'animation si Cabinet
         const m = L.circleMarker([lat, lng], {
-            radius: type.toUpperCase() === "CABINET" ? 10 : 7,
-            fillColor: config.color, color: "#fff", weight: 2, fillOpacity: 0.9
+            radius: isCabinet ? 10 : 7,
+            fillColor: config.color,
+            color: "#fff",
+            weight: 2,
+            fillOpacity: 0.9,
+            className: isCabinet ? 'pulse-marker' : ''
         });
 
         if (config.checked) m.addTo(map);
         m.bindPopup(popupHtml);
-        allMarkers.push({ marker: m, status, isESMS: type.toUpperCase().includes("ESMS") });
+        allMarkers.push({ marker: m, status, isESMS: type.includes("ESMS") });
     });
     renderFilters();
 }
 
+// Les fonctions toggleStatus, renderFilters, updateStats, etc. restent identiques
 function renderFilters() {
     const list = document.getElementById('filter-list');
     list.innerHTML = Object.keys(statusSettings).map(k => `
@@ -93,7 +110,7 @@ function rechercheEtZoom() {
     const q = document.getElementById('query').value;
     fetch(`https://api-adresse.data.gouv.fr/search/?q=${q}&limit=1`)
         .then(r => r.json()).then(res => {
-            if (res.features.length) {
+            if (res.features && res.features.length) {
                 const [lon, lat] = res.features[0].geometry.coordinates;
                 map.flyTo([lat, lon], 12);
             }

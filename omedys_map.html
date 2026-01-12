@@ -45,14 +45,6 @@
         .status-badge { color: white; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: bold; }
         
         .address-box { color: var(--gray-text); font-size: 12px; line-height: 1.4; margin: 8px 0; display: flex; gap: 5px; }
-        
-        .tech-info { 
-            margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e2e8f0;
-            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-        }
-        .info-label { font-size: 10px; color: #a0aec0; text-transform: uppercase; font-weight: bold; display: block; }
-        .info-value { font-size: 11px; color: var(--dark); font-weight: 600; }
-
         .tel-link {
             display: flex; align-items: center; justify-content: center; gap: 8px; 
             margin-top: 12px; padding: 10px;
@@ -60,22 +52,25 @@
             border-radius: 8px; font-size: 14px; border: 1px solid #ccfbf1; transition: 0.2s;
         }
         .tel-link:hover { background: var(--primary); color: white; }
-        /* Force l'ATT sur une seule ligne */
-        .info-value { 
-            font-size: 11px; 
-            color: var(--dark); 
-            font-weight: 600; 
-            white-space: nowrap; /* Empêche le retour à la ligne automatique */
-            display: block;
-        }
-        
-        /* Ajustement du conteneur pour donner plus d'espace horizontal */
+
+        /* Style pour forcer l'alignement et éviter les retours à la ligne */
         .tech-info { 
             margin-top: 10px; 
             padding-top: 10px; 
             border-top: 1px dashed #e2e8f0;
-            display: flex; /* Utilisation de flex au lieu de grid pour plus de souplesse */
-            gap: 20px;
+            display: flex; 
+            gap: 15px; 
+        }
+        .info-item { flex: 1; min-width: 0; } /* min-width: 0 permet au texte de ne pas déborder */
+        .info-label { font-size: 10px; color: #a0aec0; text-transform: uppercase; font-weight: bold; display: block; }
+        .info-value { 
+            font-size: 11px; 
+            color: var(--dark); 
+            font-weight: 600; 
+            white-space: nowrap; /* Force une seule ligne */
+            overflow: hidden; 
+            text-overflow: ellipsis; /* Ajoute "..." si vraiment trop long */
+            display: block;
         }
     </style>
 </head>
@@ -180,68 +175,80 @@
             }
         }
         
-        function creerMarqueurs(data) {
-            allMarkers = []; // Réinitialise la liste
-            data.forEach(item => {
-                const lat = parseFloat(item.Latitude);
-                const lng = parseFloat(item.Longitude);
-                if (isNaN(lat) || isNaN(lng)) return;
-        
-                const status = (item.Statut || "Inconnu").trim();
-                const type = (item.Type || "Salle").trim();
-                const color = statusSettings[status]?.color || "#7f8c8d";
-        
-                const marker = L.circleMarker([lat, lng], {
-                    radius: type === "CABINET" ? 10 : 7,
-                    fillColor: color, 
-                    color: "#fff", 
-                    weight: 2, 
-                    fillOpacity: 0.9
-                }).addTo(map);
-        
-                // Bloc TMS : Uniquement pour les Salles, pas pour les Cabinets
-                const tmsHtml = type !== "CABINET" ? `
-                    <div style="flex: 1;">
-                        <span class="info-label">TMS</span>
-                        <span class="info-value" style="white-space: nowrap;">${item.TMS || "Non spécifié"}</span>
-                    </div>` : '';
-        
-                let telBtn = "";
-                if (item.Phone) {
-                    const clean = item.Phone.toString().replace(/\D/g, '');
-                    const fmt = clean.match(/.{1,2}/g)?.join(' ') || item.Phone;
-                    telBtn = `<a href="tel:${clean}" class="tel-link">📞 ${fmt}</a>`;
-                }
-        
-                marker.bindPopup(`
-                    <div style="min-width:250px">
-                        <div class="popup-header">
-                            <span class="type-badge">${type}</span>
-                            <span class="status-badge" style="background:${color}">${status}</span>
-                        </div>
-                        
-                        <b style="color:var(--primary); font-size:15px; display:block; margin-bottom:4px;">${item.Name}</b>
-                        
-                        <div class="address-box">
-                            <span style="color: #e91e63;">📍</span>
-                            <span>${item.Address || "Adresse non renseignée"}</span>
-                        </div>
-        
-                        <div class="tech-info" style="display: flex; gap: 15px; border-top: 1px dashed #e2e8f0; padding-top: 10px;">
-                            <div style="flex: 1;">
-                                <span class="info-label">ATT</span>
-                                <span class="info-value" style="white-space: nowrap; display: block;">${item.ATT || "Non spécifié"}</span>
-                            </div>
-                            ${tmsHtml}
-                        </div>
-                        
-                        ${telBtn}
-                    </div>
-                `);
-                allMarkers.push({ marker, status });
-            });
-            initMenu();
+async function chargerDonnees() {
+    try {
+        const [resSalles, resCabinets] = await Promise.all([
+            fetch('salles.json').then(r => r.json()),
+            fetch('cabinet.json').then(r => r.json())
+        ]);
+
+        // Extraction sécurisée : on cherche la clé .data car elle est présente dans salles.json
+        const salles = resSalles.data || (Array.isArray(resSalles) ? resSalles : []);
+        const cabinets = resCabinets.data || (Array.isArray(resCabinets) ? resCabinets : []);
+
+        creerMarqueurs([...salles, ...cabinets]);
+    } catch (err) { 
+        console.error("Erreur lors du chargement des JSON :", err); 
+    }
+}
+
+function creerMarqueurs(data) {
+    allMarkers.forEach(m => map.removeLayer(m.marker)); // Nettoyage
+    allMarkers = [];
+
+    data.forEach(item => {
+        const lat = parseFloat(item.Latitude);
+        const lng = parseFloat(item.Longitude);
+        if (isNaN(lat) || isNaN(lng)) return;
+
+        const status = (item.Statut || "Inconnu").trim();
+        const type = (item.Type || "Salle").trim();
+        const color = statusSettings[status]?.color || "#7f8c8d";
+
+        const marker = L.circleMarker([lat, lng], {
+            radius: type === "CABINET" ? 10 : 7,
+            fillColor: color, color: "#fff", weight: 2, fillOpacity: 0.9
+        }).addTo(map);
+
+        // TMS : Uniquement affiché pour les Salles
+        const tmsHtml = type !== "CABINET" ? `
+            <div class="info-item">
+                <span class="info-label">TMS</span>
+                <span class="info-value">${item.TMS || "—"}</span>
+            </div>` : '';
+
+        let telBtn = "";
+        if (item.Phone) {
+            const clean = item.Phone.toString().replace(/\D/g, '');
+            const fmt = clean.match(/.{1,2}/g)?.join(' ') || item.Phone;
+            telBtn = `<a href="tel:${clean}" class="tel-link">📞 ${fmt}</a>`;
         }
+
+        marker.bindPopup(`
+            <div style="min-width:240px">
+                <div class="popup-header">
+                    <span class="type-badge">${type}</span>
+                    <span class="status-badge" style="background:${color}">${status}</span>
+                </div>
+                <b style="color:var(--primary); font-size:15px; display:block; margin-bottom:4px;">${item.Name}</b>
+                <div class="address-box">
+                    <span style="color: #e91e63;">📍</span>
+                    <span>${item.Address || "Adresse non renseignée"}</span>
+                </div>
+                <div class="tech-info">
+                    <div class="info-item">
+                        <span class="info-label">ATT</span>
+                        <span class="info-value">${item.ATT || "—"}</span>
+                    </div>
+                    ${tmsHtml}
+                </div>
+                ${telBtn}
+            </div>
+        `);
+        allMarkers.push({ marker, status });
+    });
+    initMenu(); // Relance la création des filtres
+}
 
         function renderFilters() {
             const list = document.getElementById('filter-list');
@@ -264,5 +271,6 @@
     </script>
 </body>
 </html>
+
 
 

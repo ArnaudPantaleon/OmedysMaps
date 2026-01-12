@@ -1,6 +1,6 @@
 // --- CONFIGURATION INITIALE ---
 const map = L.map('map', {
-    zoomControl: false // On cache le zoom par défaut pour le look Bento
+    zoomControl: false 
 }).setView([46.603354, 1.888334], 6);
 
 L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
@@ -25,15 +25,17 @@ function formatTMS(val) {
     return "TMS " + clean;
 }
 
-// --- RÉCUPÉRATION DES DONNÉES ---
+// --- RÉCUPÉRATION DES DONNÉES (Structure { data: [] }) ---
 async function loadData() {
     try {
-        // Remplace par l'URL de ton Google Apps Script
+        // Remplace par ton URL Google Apps Script
         const response = await fetch('TON_URL_APPS_SCRIPT');
-        const data = await response.json();
-        allData = data;
+        const json = await response.json();
         
-        createFilters(data);
+        // CORRECTION ICI : On accède à json.data
+        allData = json.data || []; 
+        
+        createFilters(allData);
         updateDisplay();
     } catch (error) {
         console.error("Erreur de chargement:", error);
@@ -42,7 +44,7 @@ async function loadData() {
 
 // --- CRÉATION DES FILTRES ---
 function createFilters(data) {
-    const statuses = [...new Set(data.map(item => item.Statut))];
+    const statuses = [...new Set(data.map(item => item.Statut))].filter(s => s);
     const filterList = document.getElementById('filter-list');
     filterList.innerHTML = '';
 
@@ -79,15 +81,17 @@ function updateDisplay() {
     );
 
     filteredData.forEach(item => {
+        if (!item.Lat || !item.Lng) return;
+
         const marker = L.circleMarker([item.Lat, item.Lng], {
-            radius: 8,
+            radius: 9,
             fillColor: getStatusColor(item.Statut),
             color: '#fff',
             weight: 2,
             fillOpacity: 0.9
         });
 
-        // Structure Bento pour la Popup
+        // Structure Bento pour la Popup (ATT et TMS côte à côte)
         const popupContent = `
             <div class="bento-card">
                 <h2 class="bento-title">${item.Nom || 'Site Omedys'}</h2>
@@ -97,13 +101,13 @@ function updateDisplay() {
                         <span class="info-value">${item.ATT || 'N/A'}</span>
                     </div>
                     <div class="info-block">
-                        <span class="info-label">CODE TMS</span>
+                        <span class="info-label">CODE</span>
                         <span class="info-value">${formatTMS(item.TMS || item.Tms)}</span>
                     </div>
                 </div>
                 <div class="info-block" style="margin-bottom: 15px;">
-                    <span class="info-label">STATUT</span>
-                    <span class="info-value" style="color:${getStatusColor(item.Statut)}">● ${item.Statut}</span>
+                    <span class="info-label">ADRESSE</span>
+                    <span class="info-value">${item.Adresse || 'N/A'}</span>
                 </div>
                 <a href="tel:${item.Tel}" class="bento-call-btn">📞 Appeler le site</a>
             </div>
@@ -129,7 +133,7 @@ async function rechercheEtZoom() {
             const { lat, lon } = data[0];
             map.flyTo([lat, lon], 12, { duration: 1.5 });
             
-            // Sur mobile, on ferme le menu après une recherche
+            // Ferme le menu sur mobile après recherche
             if(window.innerWidth < 480) {
                 document.getElementById('menuWrapper').classList.remove('open');
             }

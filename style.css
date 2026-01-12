@@ -25,8 +25,8 @@ body, html {
     position: fixed; 
     top: 15px; 
     left: 50%; 
-    transform: translateX(-50%); 
-    z-index: 5000; /* Priorité maximale absolue */
+    transform: translateX(-50%); /* Centrage parfait sur PC */
+    z-index: 5000; 
     background: var(--white); 
     height: 50px; 
     width: 320px; 
@@ -41,7 +41,30 @@ body, html {
 
 .search-floating input { border: none; flex: 1; outline: none; font-size: 14px; background: transparent; color: var(--text-dark); }
 .search-btn { background: none; border: none; cursor: pointer; font-size: 18px; }
+/* --- RESPONSIVE MOBILE --- */
+@media (max-width: 480px) { 
+    /* Sur mobile, on ne peut pas centrer si le burger est à gauche */
+    /* On décale donc la barre à droite du burger */
+    .search-floating {
+        left: 75px; /* On la pousse après les 50px du burger + 25px de marge */
+        transform: none; /* On enlève le centrage forcé */
+        width: calc(100% - 90px); /* Elle prend tout le reste de la largeur */
+        max-width: none;
+    }
 
+    /* Pour éviter que le menu ouvert ne cache la barre de recherche */
+    .menu-wrapper.open { 
+        width: calc(100vw - 30px);
+        left: 15px;
+        z-index: 4000; /* Le menu reste en dessous de la barre (5000) */
+    }
+    
+    /* On ajoute une marge haute au contenu du menu pour que la barre de recherche */
+    /* ne cache pas le titre "Filtres" quand le menu est ouvert */
+    .menu-wrapper.open .menu-content {
+        padding-top: 85px; 
+    }
+}
 /* --- MENU LATÉRAL --- */
 .menu-wrapper { 
     position: fixed; top: 15px; left: 15px; z-index: 4000; 

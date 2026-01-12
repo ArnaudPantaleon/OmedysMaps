@@ -9,36 +9,28 @@ const statusSettings = {
     "TYPE_ESMS": { color: "#334155", label: "Afficher les ESMS", checked: false }
 };
 
-// Initialisation de la carte avec correction de taille immédiate
 let map = L.map('map', { zoomControl: false }).setView([46.6033, 1.8883], 6);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors'
-}).addTo(map);
-
-// Correction bug tuiles grises
-setTimeout(() => { map.invalidateSize(); }, 500);
+// Force le rendu de la carte
+setTimeout(() => map.invalidateSize(), 500);
 
 let allMarkers = [];
 
 async function chargerDonnees() {
     try {
-        console.log("Tentative de chargement des fichiers JSON...");
         const [resSalles, resCabinets] = await Promise.all([
             fetch('salles.json').then(r => r.json()),
             fetch('cabinet.json').then(r => r.json())
         ]);
         
-        // Extraction sécurisée pour format GitHub [ { "data": [...] } ]
-        const dataSalles = (resSalles[0] && resSalles[0].data) ? resSalles[0].data : (resSalles.data || []);
-        const dataCabinets = (resCabinets[0] && resCabinets[0].data) ? resCabinets[0].data : (resCabinets.data || []);
+        // Extraction sécurisée si format [ { data: [] } ]
+        const sData = resSalles[0]?.data || resSalles.data || [];
+        const cData = resCabinets[0]?.data || resCabinets.data || [];
         
-        const combiné = [...dataSalles, ...dataCabinets];
-        console.log("Données chargées avec succès :", combiné.length, "sites trouvés.");
-        
-        creerMarqueurs(combiné);
+        creerMarqueurs([...sData, ...cData]);
     } catch (err) {
-        console.error("ERREUR D'AFFICHAGE (JSON mal formé ou absent) :", err);
+        console.error("Erreur de chargement des données:", err);
     }
 }
 
@@ -63,11 +55,9 @@ function creerMarqueurs(data) {
             fillColor: color, color: "#fff", weight: 2, fillOpacity: 0.9
         });
 
-        if (config.checked && (!isESMS || statusSettings["TYPE_ESMS"].checked)) {
-            marker.addTo(map);
-        }
+        if (config.checked && (!isESMS || statusSettings["TYPE_ESMS"].checked)) marker.addTo(map);
 
-        // DESIGN POPUP RÉFÉRENCE + TÉLÉPHONE
+        // LOGIQUE TÉLÉPHONE
         const phoneRaw = item.Phone || item.Telephone || "";
         const phoneHtml = phoneRaw ? `
             <div style="margin-top: 12px; border-top: 1px solid #f1f5f9; padding-top: 10px;">
@@ -80,6 +70,7 @@ function creerMarqueurs(data) {
                 </a>
             </div>` : '';
 
+        // DESIGN POPUP RÉFÉRENCE
         const tmsHtml = typeUpper !== "CABINET" ? `
             <div style="flex: 1;">
                 <span style="font-size: 10px; color: #a0aec0; text-transform: uppercase; font-weight: bold; display: block;">TMS</span>
@@ -133,8 +124,7 @@ window.toggleStatus = (name, isChecked) => {
 };
 
 function updateStats() {
-    const active = allMarkers.filter(m => map.hasLayer(m.marker)).length;
-    document.getElementById('site-count').innerText = active;
+    document.getElementById('site-count').innerText = allMarkers.filter(m => map.hasLayer(m.marker)).length;
 }
 
 function rechercheEtZoom() {

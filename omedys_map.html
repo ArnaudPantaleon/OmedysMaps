@@ -135,7 +135,9 @@
         "Ouverture en cours": { color: "#3498db", label: "En cours", checked: false },// Désactivé par défaut
         "En sourcing": { color: "#f1c40f", label: "En sourcing", checked: false },// Désactivé par défaut
         "Inactives": { color: "#95a5a6", label: "Inactives", checked: false }, // Désactivé par défaut
-        "Fermees ou refus OTT": { color: "#e74c3c", label: "Fermé / Refus", checked: false } // Désactivé par défaut
+        "Fermees ou refus OTT": { color: "#e74c3c", label: "Fermé / Refus", checked: false },// Désactivé par défaut
+        // filtre interrupteur général pour les ESMS
+        "TYPE_ESMS": { color: "#334155", label: "Afficher les ESMS", checked: false, isTypeFilter: true }
     };
 
     // 2. Fonction de Recherche (Celle qui manquait)
@@ -185,7 +187,7 @@
     
             const status = (item.Statut || "Inconnu").trim();
             const type = (item.Type || "Salle").trim();
-            
+            const isESMS = type.includes("ESMS") || type === "EHPAD" || type === "FOYER D'ACCUEIL";
             // On récupère la configuration depuis statusSettings
             const config = statusSettings[status] || { color: "#7f8c8d", checked: true };
             const color = config.color; // On définit explicitement 'color' ici
@@ -199,10 +201,12 @@
             });
     
             // Appliquer l'état initial selon vos réglages checked: true/false
-            if (config.checked) {
+            const shouldShow = config.checked && (!isESMS || statusSettings["TYPE_ESMS"].checked);
+        
+            if (shouldShow) {
                 marker.addTo(map);
             }
-    
+        
             // TMS : Masqué si CABINET
             const tmsHtml = type !== "CABINET" ? `
                 <div style="flex: 1; min-width: 0;">
@@ -295,6 +299,7 @@
 </script>
 </body>
 </html>
+
 
 
 

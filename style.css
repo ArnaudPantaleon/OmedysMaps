@@ -102,8 +102,38 @@ body, html {
 .bento-address { display: flex; gap: 8px; font-size: 13px; color: #64748b; margin-bottom: 20px; line-height: 1.4; }
 .bento-call-btn { display: flex; align-items: center; justify-content: center; gap: 10px; background: var(--primary-soft); border: 1px solid var(--primary-border); height: 50px; border-radius: 16px; text-decoration: none !important; color: #008080 !important; font-weight: 800; font-size: 16px; transition: 0.2s; }
 
-/* --- RESPONSIVE MOBILE --- */
-@media (max-width: 480px) { 
-    .search-floating { width: 70vw; top: 10px; }
-    .menu-wrapper.open { width: 90vw; left: 5vw; }
+/* --- RESPONSIVE MOBILE (Correctif Centrage & Chevauchement) --- */
+@media (max-width: 480px) {
+    /* On repositionne la barre pour qu'elle ne soit plus centrée sur mobile */
+    .search-floating {
+        width: calc(100% - 90px); /* Prend toute la largeur moins le bouton burger */
+        left: 75px; /* Aligné après le bouton menu */
+        transform: none; /* On annule le centrage horizontal */
+        top: 15px;
+        height: 50px;
+        z-index: 3000; /* Un peu moins que le menu ouvert */
+    }
+
+    /* Quand le menu est OUVERT sur mobile */
+    .menu-wrapper.open {
+        width: 100vw; /* Prend toute la largeur */
+        height: 100vh; /* Prend toute la hauteur */
+        top: 0;
+        left: 0;
+        border-radius: 0;
+        z-index: 6000; /* Passe au-dessus de la barre de recherche */
+    }
+
+    /* On cache la barre de recherche quand le menu est ouvert pour éviter le bug visuel */
+    body:has(.menu-wrapper.open) .search-floating {
+        display: none;
+    }
+
+    .menu-content {
+        padding: 80px 20px 40px;
+    }
+
+    .leaflet-popup-content {
+        width: 260px !important;
+    }
 }

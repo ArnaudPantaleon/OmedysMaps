@@ -13,58 +13,39 @@ let map = L.map('map', { zoomControl: false }).setView([46.6033, 1.8883], 6);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 let allMarkers = [];
 
-// Formatage XX XX XX XX XX
-const formatPhone = (n) => {
-    if (!n) return "";
-    let clean = String(n).replace(/\D/g, "");
-    return clean.replace(/(\d{2})(?=\d)/g, "$1 ").trim();
-};
+const formatPhone = (n) => n ? String(n).replace(/\D/g, "").replace(/(\d{2})(?=\d)/g, "$1 ").trim() : "";
 
 async function chargerDonnees() {
     try {
-        console.log("Tentative de chargement des JSON...");
-        const [resS, resC] = await Promise.all([
-            fetch('salles.json').then(r => r.json()),
-            fetch('cabinet.json').then(r => r.json())
-        ]);
-
-        // Sécurisation : on extrait le tableau peu importe la structure
-        const extract = (res) => {
-            if (Array.isArray(res)) return res;
-            if (res && res.data && Array.isArray(res.data)) return res.data;
-            return [];
+        const fetchAndParse = async (url) => {
+            const response = await fetch(url);
+            let text = await response.text();
+            // Nettoyage si le fichier contient "data ="
+            if (text.includes('=')) text = text.split('=')[1].trim();
+            if (text.endsWith(';')) text = text.slice(0, -1);
+            return JSON.parse(text);
         };
 
-        const dataFinal = [...extract(resS), ...extract(resC)];
-        console.log("Données chargées :", dataFinal.length, "sites trouvés.");
+        const resS = await fetchAndParse('salles.json');
+        const resC = await fetchAndParse('cabinet.json');
         
-        creerMarqueurs(dataFinal);
-    } catch (e) {
-        console.error("Erreur de chargement des fichiers JSON. Vérifiez qu'ils sont à la racine.", e);
-    }
+        creerMarqueurs([...resS, ...resC]);
+    } catch (e) { console.error("Erreur de données:", e); }
 }
 
 function creerMarqueurs(data) {
-    if (!Array.isArray(data)) return;
-
     allMarkers.forEach(m => map.removeLayer(m.marker));
     allMarkers = [];
 
     data.forEach(item => {
-        // Nettoyage coordonnées
-        const lat = parseFloat(String(item.Latitude || "").replace(',', '.'));
-        const lng = parseFloat(String(item.Longitude || "").replace(',', '.'));
-
-        if (isNaN(lat) || isNaN(lng)) return;
+        const lat = parseFloat(String(item.Latitude).replace(',', '.'));
+        const lng = parseFloat(String(item.Longitude).replace(',', '.'));
+        if (isNaN(lat)) return;
 
         const status = (item.Statut || "").trim();
         const type = (item.Type || "SITE").trim().toUpperCase();
         const config = statusSettings[status] || { color: "#7f8c8d", checked: true };
         const isCabinet = type === "CABINET";
-        
-        const phone = item.Phone || item.Telephone || "";
-        const att = item.ATT || item.Att || "";
-        const tms = item.TMS || item.Tms || "";
 
         const popupHtml = `
             <div class="bento-card">
@@ -72,95 +53,55 @@ function creerMarqueurs(data) {
                     <span class="bento-type">${type}</span>
                     <span class="status-pill" style="background:${config.color}">${status}</span>
                 </div>
-                <h3 class="bento-title">${item.Name || "Site Omedys"}</h3>
-                <div class="bento-info-row">
-                    <div class="info-block">
-                        <span class="info-label">ATT</span>
-                        <span class="info-value">${att || "—"}</span>
-                    </div>
-                    ${tms ? `
-                    <div class="info-block">
-                        <span class="info-label">TMS</span>
-                        <span class="info-value">${tms}</span>
-                    </div>` : ''}
+                <h3 class="bento-title">${item.Name}</h3>
+                <div class="bento-grid">
+                    <div class="bento-item"><span class="item-label">ATT</span><span class="item-val">${item.ATT || "—"}</span></div>
+                    ${item.TMS ? `<div class="bento-item"><span class="item-label">TMS</span><span class="item-val">${item.TMS}</span></div>` : ''}
                 </div>
-                <div class="bento-address">
-                    <span>📍</span><span>${item.Address || ""}</span>
-                </div>
-                ${phone ? `
-                <a href="tel:${String(phone).replace(/\s/g, '')}" class="bento-call-btn">
-                    <span>📞</span><span>${formatPhone(phone)}</span>
-                </a>` : ''}
+                <div class="bento-addr"><span>📍</span><span>${item.Address || ""}</span></div>
+                ${(item.Phone || item.Telephone) ? `<a href="tel:${String(item.Phone || item.Telephone).replace(/\s/g, '')}" class="bento-call"><span>📞</span><span>${formatPhone(item.Phone || item.Telephone)}</span></a>` : ''}
             </div>`;
 
-        const marker = L.circleMarker([lat, lng], {
-            radius: isCabinet ? 10 : 7,
-            fillColor: config.color,
-            color: "#fff",
-            weight: 2,
-            fillOpacity: 0.9,
+        const m = L.circleMarker([lat, lng], {
+            radius: isCabinet ? 10 : 7, fillColor: config.color, color: "#fff", weight: 2, fillOpacity: 0.9,
             className: isCabinet ? 'pulse-marker' : ''
         });
 
-        if (config.checked) marker.addTo(map);
-        marker.bindPopup(popupHtml);
-        allMarkers.push({ marker, status, isESMS: type.includes("ESMS") });
+        if (config.checked) m.addTo(map);
+        m.bindPopup(popupHtml);
+        allMarkers.push({ marker: m, status, isESMS: type.includes("ESMS") });
     });
-
     renderFilters();
 }
 
 function renderFilters() {
     const list = document.getElementById('filter-list');
-    if (!list) return;
-
-    list.innerHTML = Object.keys(statusSettings).map(key => {
-        const s = statusSettings[key];
-        return `
-            <label class="filter-card" style="--status-color: ${s.color}">
-                <input type="checkbox" ${s.checked ? 'checked' : ''} onchange="toggleStatus('${key}', this.checked)">
-                <span class="dot"></span>
-                <span class="label">${s.label}</span>
-            </label>`;
-    }).join('');
+    list.innerHTML = Object.keys(statusSettings).map(k => `
+        <label class="filter-card" style="--status-color: ${statusSettings[k].color}">
+            <input type="checkbox" ${statusSettings[k].checked ? 'checked' : ''} onchange="toggleStatus('${k}', this.checked)">
+            <span class="dot"></span><span class="label">${statusSettings[k].label}</span>
+        </label>`).join('');
     updateStats();
 }
 
 window.toggleStatus = (n, c) => {
     statusSettings[n].checked = c;
     allMarkers.forEach(m => {
-        const isVisible = m.isESMS 
-            ? (statusSettings[m.status].checked && statusSettings["TYPE_ESMS"].checked)
-            : statusSettings[m.status].checked;
-        
-        if (isVisible) m.marker.addTo(map);
-        else map.removeLayer(m.marker);
+        const show = m.isESMS ? (statusSettings[m.status].checked && statusSettings["TYPE_ESMS"].checked) : statusSettings[m.status].checked;
+        show ? m.marker.addTo(map) : map.removeLayer(m.marker);
     });
     updateStats();
 };
 
-function updateStats() {
-    const count = allMarkers.filter(m => map.hasLayer(m.marker)).length;
-    const el = document.getElementById('site-count');
-    if (el) el.innerText = count;
-}
-
-function toggleMenu() {
-    document.getElementById('menuWrapper').classList.toggle('open');
-}
-
+function updateStats() { document.getElementById('site-count').innerText = allMarkers.filter(m => map.hasLayer(m.marker)).length; }
+function toggleMenu() { document.getElementById('menuWrapper').classList.toggle('open'); }
 function rechercheEtZoom() {
     const q = document.getElementById('query').value;
-    if (!q) return;
-    fetch(`https://api-adresse.data.gouv.fr/search/?q=${q}&limit=1`)
-        .then(r => r.json())
-        .then(res => {
-            if (res.features && res.features.length) {
-                const [lon, lat] = res.features[0].geometry.coordinates;
-                map.flyTo([lat, lon], 12);
-            }
-        });
+    fetch(`https://api-adresse.data.gouv.fr/search/?q=${q}&limit=1`).then(r => r.json()).then(res => {
+        if (res.features.length) {
+            const [lon, lat] = res.features[0].geometry.coordinates;
+            map.flyTo([lat, lon], 12);
+        }
+    });
 }
-
-// Initialisation
 chargerDonnees();

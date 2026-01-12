@@ -95,40 +95,52 @@
             const query = document.getElementById('query').value.trim();
             if (!query) return;
         
-            // Supprimer l'ancienne surbrillance
+            // 1. Nettoyage de la surbrillance précédente
             if (highlightLayer) {
                 map.removeLayer(highlightLayer);
                 highlightLayer = null;
             }
         
             try {
-                // 1. Test si c'est un numéro de département (2 ou 3 chiffres)
+                // 2. TEST DÉPARTEMENT (2 ou 3 chiffres)
                 if (/^\d{2,3}$/.test(query)) {
-                    const data = await fetch(`https://geo.api.gouv.fr/departements/${query}?format=geojson&geometry=contour`).then(r => r.json());
-                    if (data && data.type) { // Vérifie que c'est un GeoJSON valide
-                        showGeoJson(data);
-                        return;
-                    }
-                }
-        
-                // 2. Test si c'est une région (Recherche par nom)
-                const resRegion = await fetch(`https://geo.api.gouv.fr/regions?nom=${encodeURIComponent(query)}&fields=code`).then(r => r.json());
-                if (resRegion && resRegion.length > 0) {
-                    const data = await fetch(`https://geo.api.gouv.fr/regions/${resRegion[0].code}?format=geojson&geometry=contour`).then(r => r.json());
+                    const data = await fetch(`https://geo.api.gouv.fr/departements/${query}?format=geojson&geometry=contour`)
+                        .then(r => r.ok ? r.json() : null);
+                    
                     if (data && data.type) {
                         showGeoJson(data);
-                        return;
+                        return; // STOP ICI : On ne va pas vers l'API adresse
                     }
                 }
         
-                // 3. Sinon, recherche classique de ville/adresse
-                const resAddr = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=1`).then(r => r.json());
-                if (resAddr.features && resAddr.features.length > 0) {
-                    const [lon, lat] = resAddr.features[0].geometry.coordinates;
-                    map.flyTo([lat, lon], 13);
+                // 3. TEST RÉGION (Recherche par nom)
+                const resRegion = await fetch(`https://geo.api.gouv.fr/regions?nom=${encodeURIComponent(query)}&fields=code`)
+                    .then(r => r.json());
+        
+                if (resRegion && resRegion.length > 0) {
+                    // On vérifie si le nom correspond exactement ou de très près
+                    const data = await fetch(`https://geo.api.gouv.fr/regions/${resRegion[0].code}?format=geojson&geometry=contour`)
+                        .then(r => r.ok ? r.json() : null);
+                    
+                    if (data && data.type) {
+                        showGeoJson(data);
+                        return; // STOP ICI
+                    }
                 }
+        
+                // 4. SI RIEN N'A ÉTÉ TROUVÉ, RECHERCHE ADRESSE/VILLE (Seulement si > 2 caractères)
+                if (query.length > 2) {
+                    const resAddr = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=1`)
+                        .then(r => r.json());
+        
+                    if (resAddr.features && resAddr.features.length > 0) {
+                        const [lon, lat] = resAddr.features[0].geometry.coordinates;
+                        map.flyTo([lat, lon], 13);
+                    }
+                }
+        
             } catch (error) {
-                console.error("Erreur lors de la recherche :", error);
+                console.error("Erreur de recherche :", error);
             }
         }
 
@@ -220,4 +232,5 @@
     </script>
 </body>
 </html>
+
 

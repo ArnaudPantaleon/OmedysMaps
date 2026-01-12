@@ -125,118 +125,96 @@
     const map = L.map('map', { zoomControl: false }).setView([46.6033, 1.8883], 6);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-    let highlightLayer = null;
     let allMarkers = [];
 
+    // Configuration des filtres (Ordre et réglages par défaut)
     const statusSettings = {
         "Ouvert": { color: "#009597", label: "Cabinet Omedys", checked: true, special: true },
         "Ouvertes": { color: "#2ecc71", label: "Salles Ouvertes", checked: true },
         "Telesecretariat OMEDYS": { color: "#8956FB", label: "Télésecrétariat OMEDYS", checked: true },
-        "Ouverture en cours": { color: "#3498db", label: "En cours", checked: false },// Désactivé par défaut
-        "En sourcing": { color: "#f1c40f", label: "En sourcing", checked: false },// Désactivé par défaut
-        "Inactives": { color: "#95a5a6", label: "Inactives", checked: false }, // Désactivé par défaut
-        "Fermees ou refus OTT": { color: "#e74c3c", label: "Fermé / Refus", checked: false },// Désactivé par défaut
-        // filtre interrupteur général pour les ESMS
-        "TYPE_ESMS": { color: "#334155", label: "Afficher les ESMS", checked: false, isTypeFilter: true }
+        "Ouverture en cours": { color: "#3498db", label: "En cours", checked: false },
+        "En sourcing": { color: "#f1c40f", label: "En sourcing", checked: false },
+        "Inactives": { color: "#95a5a6", label: "Inactives", checked: false },
+        "Fermees ou refus OTT": { color: "#e74c3c", label: "Fermé / Refus", checked: false },
+        "TYPE_ESMS": { color: "#334155", label: "Afficher les ESMS", checked: false, special: false }
     };
 
-    // 2. Fonction de Recherche (Celle qui manquait)
+    // 2. Recherche par ville
     async function rechercheEtZoom() {
         const input = document.getElementById('query').value.trim();
         if (!input) return;
-
-        // Appel à l'API Gouv pour transformer le texte en coordonnées
-        fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(input)}&limit=1`)
+        fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(input)}&type=municipality&limit=1`)
             .then(r => r.json())
             .then(res => {
                 if (res.features && res.features.length > 0) {
                     const [lon, lat] = res.features[0].geometry.coordinates;
-                    map.flyTo([lat, lon], 13);
+                    map.flyTo([lat, lon], 12);
                 }
-            })
-            .catch(err => console.error("Erreur recherche:", err));
+            });
     }
 
-    // 3. Chargement des données (Structure [{"data": []}])
+    // 3. Chargement des données [ { "data": [...] } ]
     async function chargerDonnees() {
         try {
             const [resSalles, resCabinets] = await Promise.all([
                 fetch('salles.json').then(r => r.json()),
                 fetch('cabinet.json').then(r => r.json())
             ]);
-            
-            // Extraction précise : Tableau -> Premier Objet -> Clé data
             const salles = (resSalles[0] && resSalles[0].data) ? resSalles[0].data : [];
             const cabinets = (resCabinets[0] && resCabinets[0].data) ? resCabinets[0].data : [];
-            
             creerMarqueurs([...salles, ...cabinets]);
-        } catch (err) { 
-            console.error("Erreur chargement JSON:", err); 
-        }
+        } catch (err) { console.error("Erreur de chargement JSON:", err); }
     }
 
-    // 4. Création des points sur la carte
+    // 4. Création des marqueurs avec logique ESMS
     function creerMarqueurs(data) {
         allMarkers.forEach(m => map.removeLayer(m.marker));
         allMarkers = [];
-    
+
         data.forEach(item => {
             const lat = parseFloat(item.Latitude);
             const lng = parseFloat(item.Longitude);
             if (isNaN(lat) || isNaN(lng)) return;
-    
+
             const status = (item.Statut || "Inconnu").trim();
-            const type = (item.Type || "").trim().toUpperCase();
+            const typeRaw = (item.Type || "").trim();
+            const typeUpper = typeRaw.toUpperCase();
             
-            // Détection : est-ce un ESMS ?
-            const isESMS = type.includes("ESMS") || type === "EHPAD" || type === "FOYER D'ACCUEIL";
-    
+            // Détection ESMS
+            const isESMS = typeUpper.includes("ESMS") || typeUpper.includes("EHPAD") || typeUpper.includes("FOYER");
+
             const config = statusSettings[status] || { color: "#7f8c8d", checked: true };
             const color = config.color;
-    
+
             const marker = L.circleMarker([lat, lng], {
-                radius: type === "CABINET" ? 10 : 7,
-                fillColor: color, // Utilisation de la variable color définie au dessus
+                radius: typeUpper === "CABINET" ? 10 : 7,
+                fillColor: color,
                 color: "#fff",
                 weight: 2,
                 fillOpacity: 0.9
             });
-    
-            // Appliquer l'état initial selon vos réglages checked: true/false
-            const statusChecked = config.checked;
-            const esmsFilterActive = statusSettings["TYPE_ESMS"].checked;
-    
-            // On affiche si le statut est OK ET (si c'est un ESMS, le filtre ESMS doit être ON)
-            if (statusChecked && (!isESMS || esmsFilterActive)) {
-                marker.addTo(map);
-            }
-        
-            // TMS : Masqué si CABINET
-            const tmsHtml = type !== "CABINET" ? `
+
+            // Affichage initial
+            const shouldShow = config.checked && (!isESMS || statusSettings["TYPE_ESMS"].checked);
+            if (shouldShow) marker.addTo(map);
+
+            // Construction Popup
+            const tmsHtml = typeUpper !== "CABINET" ? `
                 <div style="flex: 1; min-width: 0;">
                     <span style="font-size: 10px; color: #a0aec0; text-transform: uppercase; font-weight: bold; display: block;">TMS</span>
                     <span style="font-size: 11px; color: #2d3748; font-weight: 600; white-space: nowrap; display: block; overflow: hidden; text-overflow: ellipsis;">${item.TMS || "—"}</span>
                 </div>` : '';
-    
-            // Téléphone
-            let telBtn = "";
-            if (item.Phone) {
-                const clean = item.Phone.toString().replace(/\D/g, '');
-                const fmt = clean.match(/.{1,2}/g)?.join(' ') || item.Phone;
-                telBtn = `<a href="tel:${clean}" style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 12px; padding: 10px; background: #f0fdfa; color: #009597; text-decoration: none; font-weight: bold; border-radius: 8px; font-size: 14px; border: 1px solid #ccfbf1;">📞 ${fmt}</a>`;
-            }
-    
-            // Popup avec ATT sur une ligne (white-space: nowrap)
+
             marker.bindPopup(`
                 <div style="min-width:250px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <span style="background: #edf2f7; color: #4a5568; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 800; text-transform: uppercase;">${type}</span>
+                        <span style="background: #edf2f7; color: #4a5568; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 800; text-transform: uppercase;">${typeRaw}</span>
                         <span style="color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; background:${color}">${status}</span>
                     </div>
                     <b style="color:#009597; font-size:15px; display:block; margin-bottom:4px;">${item.Name}</b>
                     <div style="color: #718096; font-size: 11px; margin: 8px 0; display: flex; gap: 5px;">
                         <span style="color: #e91e63;">📍</span>
-                        <span>${item.Address || ""}</span>
+                        <span>${item.Address || "Adresse non renseignée"}</span>
                     </div>
                     <div style="display: flex; gap: 15px; border-top: 1px dashed #e2e8f0; padding-top: 10px; margin-top: 10px;">
                         <div style="flex: 1; min-width: 0;">
@@ -245,76 +223,59 @@
                         </div>
                         ${tmsHtml}
                     </div>
-                    ${telBtn}
                 </div>
             `);
-    
-            allMarkers.push({ marker, status });
+
+            allMarkers.push({ marker, status, isESMS });
         });
         renderFilters();
     }
 
-    // 5. Gestion des filtres et menu
+    // 5. Gestion des filtres
     function renderFilters() {
         const list = document.getElementById('filter-list');
         if (!list) return;
-    
-        list.className = "filter-list-container";
         list.innerHTML = Object.keys(statusSettings).map(key => {
             const s = statusSettings[key];
-            const isSpecial = s.special ? 'special-case' : '';
-            
+            const isSpecial = s.special ? 'style="background:#f0fdfa; border:1px solid #ccfbf1; padding:8px; border-radius:8px; margin-bottom:10px;"' : 'style="padding:6px;"';
             return `
-                <label class="filter-item ${isSpecial}">
-                    <input type="checkbox" ${s.checked ? 'checked' : ''} 
-                           onclick="toggleStatus('${key}', this.checked)">
-                    <span class="dot" style="background:${s.color}"></span>
-                    <span class="filter-label">${s.label}</span>
-                </label>
-            `;
+                <div ${isSpecial}>
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13px; font-weight: 600;">
+                        <input type="checkbox" ${s.checked ? 'checked' : ''} onclick="toggleStatus('${key}', this.checked)">
+                        <span style="width: 10px; height: 10px; border-radius: 50%; background:${s.color}"></span>
+                        ${s.label}
+                    </label>
+                </div>`;
         }).join('');
     }
 
     window.toggleStatus = (name, isChecked) => {
-    // 1. Mettre à jour l'état dans la config
-    if (statusSettings[name]) {
-        statusSettings[name].checked = isChecked;
-    }
+        if (statusSettings[name]) statusSettings[name].checked = isChecked;
+        
+        allMarkers.forEach(m => {
+            const isStatusOn = statusSettings[m.status]?.checked;
+            const isEsmsGlobalOn = statusSettings["TYPE_ESMS"].checked;
+            
+            // Logique croisée : 
+            // - Si c'est un ESMS : visible seulement si (Statut coché ET Bouton ESMS coché)
+            // - Sinon : visible seulement si (Statut coché)
+            const visible = m.isESMS ? (isStatusOn && isEsmsGlobalOn) : isStatusOn;
 
-    // 2. Parcourir tous les marqueurs pour décider s'ils doivent être vus
-    allMarkers.forEach(m => {
-        const statusConfig = statusSettings[m.status] || { checked: true };
-        const isStatusOn = statusConfig.checked;
-        const isEsmsGlobalOn = statusSettings["TYPE_ESMS"].checked;
-
-        // Logique : 
-        // Si c'est un ESMS -> visible seulement si (Statut coché ET Filtre ESMS coché)
-        // Si ce n'est pas un ESMS -> visible seulement si (Statut coché)
-        let visible = false;
-        if (m.isESMS) {
-            visible = isStatusOn && isEsmsGlobalOn;
-        } else {
-            visible = isStatusOn;
-        }
-
-        if (visible) {
-            m.marker.addTo(map);
-        } else {
-            map.removeLayer(m.marker);
-        }
-    });
-};
+            if (visible) m.marker.addTo(map);
+            else map.removeLayer(m.marker);
+        });
+    };
 
     function toggleMenu() {
         document.getElementById('side-menu').classList.toggle('open');
         document.getElementById('menu-overlay').classList.toggle('open');
     }
 
-    // 6. Lancement initial
     chargerDonnees();
 </script>
 </body>
 </html>
+
 
 
 

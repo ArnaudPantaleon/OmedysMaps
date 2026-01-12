@@ -70,7 +70,7 @@ function creerMarqueurs(data) {
                         <span class="info-label">ATT</span>
                         <span class="info-value">${item.ATT || item.Att || "—"}</span>
                     </div>
-                    ${(item.TMS || item.Tms) ? `<div class="info-block"><span class="info-label">TMS</span><span class="info-value">${item.TMS || item.Tms}</span></div>` : ''}
+                    ${(item.TMS || item.Tms) ? `<div class="info-block"><span class="info-label">TMS</span><span class="info-value">TMS ${item.TMS || item.Tms}</span></div>` : ''}
                 </div>
                 <div class="bento-address"><span>📍</span><span>${item.Address || ""}</span></div>
                 ${(item.Phone || item.Telephone) ? `<a href="tel:${String(item.Phone || item.Telephone).replace(/\s/g, '')}" class="bento-call-btn"><span>📞</span><span>${formatPhone(item.Phone || item.Telephone)}</span></a>` : ''}

@@ -69,15 +69,19 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', syste
 .stats-card { margin-top: 25px; padding: 18px; background: #f0fdfa; border-radius: 20px; text-align: center; border: 1px solid #ccfbf1; }
 #site-count { font-size: 28px; font-weight: 900; color: #009597; display: block; }
 
-
-/* ... (Garder tout le style précédent pour le menu et la recherche) ... */
-
-/* Ajustement des popups Leaflet pour le design pro */
+/* Personnalisation de la bulle Leaflet */
 .leaflet-popup-content-wrapper {
-    border-radius: 16px;
-    padding: 5px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    border-radius: 20px !important;
+    padding: 0 !important;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important;
 }
-.leaflet-popup-tip {
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+
+.leaflet-popup-content {
+    margin: 0 !important;
+    width: 280px !important;
+}
+
+.leaflet-popup-tip-container {
+    display: none; /* Cache la flèche pour un look plus moderne "flottant" */
 }

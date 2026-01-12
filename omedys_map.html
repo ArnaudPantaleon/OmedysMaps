@@ -155,7 +155,7 @@
 
                 const statusKey = (item.Statut || "").trim();
                 const isCabinet = (item.Type === "CABINET");
-                const typeEtab = item.Type || (item.Name.toLowerCase().includes("ehpad") ? "EHPAD" : "SALLE");
+                const typeEtab = item.Type;
                 const tel = formaterTel(item.Phone);
 
                 let marker;

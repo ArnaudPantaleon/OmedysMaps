@@ -10,13 +10,10 @@ const statusSettings = {
 };
 
 let map = L.map('map', { zoomControl: false }).setView([46.6033, 1.8883], 6);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors'
-}).addTo(map);
-
-// Réparation du bug d'affichage partiel de la carte
-setTimeout(() => { map.invalidateSize(); }, 400);
+// Force le rendu si la carte est mal calculée au chargement
+setTimeout(() => map.invalidateSize(), 400);
 
 let allMarkers = [];
 
@@ -28,7 +25,7 @@ async function chargerDonnees() {
         ]);
         const data = [...(resSalles[0]?.data || []), ...(resCabinets[0]?.data || [])];
         creerMarqueurs(data);
-    } catch (err) { console.error("Erreur chargement:", err); }
+    } catch (err) { console.error("Erreur de chargement JSON:", err); }
 }
 
 function creerMarqueurs(data) {
@@ -44,17 +41,17 @@ function creerMarqueurs(data) {
         const typeRaw = (item.Type || "").trim();
         const typeUpper = typeRaw.toUpperCase();
         const isESMS = typeUpper.includes("ESMS") || typeUpper.includes("EHPAD");
-
         const config = statusSettings[status] || { color: "#7f8c8d", checked: true };
-        
+        const color = config.color;
+
         const marker = L.circleMarker([lat, lng], {
             radius: typeUpper === "CABINET" ? 10 : 7,
-            fillColor: config.color, color: "#fff", weight: 2, fillOpacity: 0.9
+            fillColor: color, color: "#fff", weight: 2, fillOpacity: 0.9
         });
 
         if (config.checked && (!isESMS || statusSettings["TYPE_ESMS"].checked)) marker.addTo(map);
 
-        // VOTRE POPUP (DESIGN FINAL)
+        // --- TON DESIGN DE POPUP CONSERVÉ ---
         const tmsHtml = typeUpper !== "CABINET" ? `
             <div style="flex: 1;">
                 <span style="font-size: 10px; color: #a0aec0; text-transform: uppercase; font-weight: bold; display: block;">TMS</span>
@@ -65,7 +62,7 @@ function creerMarqueurs(data) {
             <div style="min-width:250px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                     <span style="background: #edf2f7; color: #4a5568; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 800;">${typeRaw}</span>
-                    <span style="color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; background:${config.color}">${status}</span>
+                    <span style="color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; background:${color}">${status}</span>
                 </div>
                 <b style="color:#009597; font-size:15px; display:block; margin-bottom:4px;">${item.Name}</b>
                 <div style="color: #718096; font-size: 11px; margin: 8px 0;">📍 ${item.Address || "—"}</div>
@@ -78,6 +75,7 @@ function creerMarqueurs(data) {
                 </div>
             </div>
         `);
+        // --- FIN DE TON DESIGN ---
 
         allMarkers.push({ marker, status, isESMS });
     });
@@ -116,7 +114,7 @@ function rechercheEtZoom() {
         .then(r => r.json()).then(res => {
             if (res.features.length) {
                 const [lon, lat] = res.features[0].geometry.coordinates;
-                map.flyTo([lat, lon], 13);
+                map.flyTo([lat, lon], 12);
             }
         });
 }

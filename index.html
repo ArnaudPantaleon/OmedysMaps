@@ -2,35 +2,31 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Omedys Maps</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
     <div id="map"></div>
 
-    <div class="top-controls">
-        <button class="menu-trigger" onclick="toggleMenu()">☰</button>
-        <div class="search-floating">
-            <input type="text" id="query" placeholder="Ville ou Code Postal..." onkeypress="if(event.key === 'Enter') rechercheEtZoom()">
-            <button onclick="rechercheEtZoom()" style="background:none; border:none; cursor:pointer;">🔍</button>
+    <div class="menu-wrapper" id="menuWrapper">
+        <button class="menu-toggle" onclick="toggleMenu()">
+            <div class="burger-icon"><span></span><span></span><span></span></div>
+        </button>
+        <div class="menu-content">
+            <div class="panel-header"><h3>Filtres</h3></div>
+            <div id="filter-list"></div>
+            <div class="stats-card">
+                <span id="site-count">0</span>
+                <small>SITES AFFICHÉS</small>
+            </div>
         </div>
     </div>
 
-    <div id="side-menu" class="bento-menu">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h2 style="margin:0; font-size:20px; color:var(--primary);">Omedys</h2>
-            <button onclick="toggleMenu()" style="border:none; background:none; cursor:pointer; font-size:20px;">✕</button>
-        </div>
-
-        <div class="tile-stats">
-            <span style="font-size:10px; font-weight:800; text-transform:uppercase; opacity:0.8;">Sites Actifs</span>
-            <span id="site-count">0</span>
-        </div>
-
-        <div id="filter-list"></div>
+    <div class="search-floating">
+        <input type="text" id="query" placeholder="Ville..." onkeypress="if(event.key === 'Enter') rechercheEtZoom()">
+        <button onclick="rechercheEtZoom()" class="search-btn">🔍</button>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>

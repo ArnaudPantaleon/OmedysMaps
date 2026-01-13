@@ -1,46 +1,36 @@
-body, html { margin: 0; padding: 0; height: 100%; font-family: 'Inter', -apple-system, sans-serif; overflow: hidden; }
+:root { --primary: #009597; }
+body, html { margin: 0; padding: 0; height: 100%; font-family: sans-serif; overflow: hidden; }
 #map { height: 100vh; width: 100vw; z-index: 1; }
 
 .top-controls {
-    position: fixed; top: 20px; left: 20px; right: 20px;
-    z-index: 1000; display: flex; gap: 12px; pointer-events: none;
+    position: fixed; top: 20px; left: 20px; z-index: 1000;
+    display: flex; gap: 10px; pointer-events: none;
 }
 
 .menu-trigger {
-    background: #009597; color: white; border: none; width: 48px; height: 48px;
+    background: var(--primary); color: white; border: none; width: 50px; height: 50px;
     border-radius: 12px; cursor: pointer; font-size: 20px; pointer-events: auto;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
 }
 
-.search-floating {
-    background: white; flex-grow: 1; max-width: 350px; height: 48px;
-    border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    display: flex; align-items: center; padding: 0 15px; pointer-events: auto;
-}
-
-.search-floating input { border: none; width: 100%; outline: none; font-size: 14px; }
-
-/* Panel Flottant Animé */
-.floating-panel {
+/* Le menu flottant */
+.side-menu {
     position: fixed; left: -340px; top: 20px; bottom: 20px; width: 300px;
     background: white; z-index: 2000; border-radius: 20px;
-    box-shadow: 15px 0 40px rgba(0,0,0,0.1); padding: 25px;
-    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 10px 0 40px rgba(0,0,0,0.1); padding: 25px;
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.floating-panel.open { left: 20px; }
+.side-menu.open { transform: translateX(360px); } /* Glisse vers la droite */
 
-.panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.panel-header h3 { color: #009597; margin: 0; }
-
-.stats-tile {
-    background: #f1f5f9; padding: 20px; border-radius: 15px; text-align: center; margin-bottom: 20px;
+.stats-box {
+    background: #f1f5f9; padding: 20px; border-radius: 15px;
+    text-align: center; margin-bottom: 20px;
 }
-#site-count { font-size: 32px; font-weight: 800; color: #009597; display: block; }
+#site-count { font-size: 38px; font-weight: 800; color: var(--primary); display: block; }
 
 .filter-card {
     display: flex; align-items: center; padding: 12px; border-radius: 10px;
-    margin-bottom: 8px; cursor: pointer; border: 1px solid #f1f5f9; transition: 0.2s;
+    margin-bottom: 8px; cursor: pointer; background: #fff; border: 1px solid #eee;
 }
-.filter-card:hover { background: #f8fafc; }
 .dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 12px; }

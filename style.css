@@ -49,7 +49,58 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'Plus Jakarta San
 .bento-filters.open {
     max-height: 500px; padding: 20px; opacity: 1; transform: translateY(0);
 }
+/* Styles de la Popup Bento */
+.custom-bento-popup .leaflet-popup-content-wrapper {
+    padding: 0;
+    overflow: hidden;
+    border-radius: 18px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
 
+.custom-bento-popup .leaflet-popup-content {
+    margin: 0;
+    width: 250px !important;
+}
+
+.bento-popup .popup-header {
+    padding: 12px 15px;
+    color: white;
+    font-weight: 800;
+    font-size: 14px;
+}
+
+.bento-popup .popup-body {
+    padding: 15px;
+    background: white;
+    font-size: 12px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 4px;
+}
+
+.info-row.addr {
+    display: block;
+    border: none;
+    margin-top: 10px;
+    color: #64748b;
+}
+
+.info-row b { color: #1e293b; font-weight: 700; }
+
+/* Checkbox style bento */
+.checkbox-box {
+    width: 14px; height: 14px; border: 2px solid #cbd5e1;
+    border-radius: 4px; margin-right: 10px; transition: 0.3s;
+}
+.checkbox-box.active {
+    background: var(--primary);
+    border-color: var(--primary);
+}
 .filter-item {
     display: flex; align-items: center; padding: 10px; border-radius: 12px;
     margin-bottom: 6px; cursor: pointer; transition: 0.2s; border: 1px solid #f1f5f9;

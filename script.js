@@ -12,25 +12,35 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 let allMarkers = [];
 
 async function charger() {
-    const [s, c] = await Promise.all([fetch('salles.json').then(r=>r.json()), fetch('cabinet.json').then(r=>r.json())]);
-    const data = [...(s[0]?.data || []), ...(c[0]?.data || [])];
-    
-    data.forEach(item => {
-        const lat = parseFloat(String(item.Latitude || item.Lat).replace(',', '.'));
-        const lng = parseFloat(String(item.Longitude || item.Lng).replace(',', '.'));
-        if (!isNaN(lat) && !isNaN(lng)) {
-            const isESMS = ["EHPAD", "MAS", "FAM"].some(t => (item.Type || "").includes(t));
-            const marker = L.circleMarker([lat, lng], {
-                radius: item.Type === "CABINET" ? 10 : 7,
-                fillColor: statusSettings[item.Statut]?.color || "#ccc",
-                color: "#fff", weight: 2, fillOpacity: 0.9
-            }).bindPopup(`<b>${item.Nom || item.Name}</b>`);
-            
-            allMarkers.push({ marker, status: item.Statut, isESMS });
-            if (statusSettings[item.Statut]?.checked && (!isESMS || statusSettings["TYPE_ESMS"].checked)) marker.addTo(map);
-        }
-    });
-    renderFiltres();
+    try {
+        const [s, c] = await Promise.all([
+            fetch('salles.json').then(r => r.json()),
+            fetch('cabinet.json').then(r => r.json())
+        ]);
+        const data = [...(s[0]?.data || []), ...(c[0]?.data || [])];
+        
+        data.forEach(item => {
+            const lat = parseFloat(String(item.Latitude || item.Lat).replace(',', '.'));
+            const lng = parseFloat(String(item.Longitude || item.Lng).replace(',', '.'));
+
+            if (!isNaN(lat) && !isNaN(lng)) {
+                const isESMS = ["EHPAD", "Foyer", "FAM", "MAS"].some(t => (item.Type || "").includes(t));
+                const marker = L.circleMarker([lat, lng], {
+                    radius: item.Type === "CABINET" ? 10 : 7,
+                    fillColor: statusSettings[item.Statut]?.color || "#ccc",
+                    color: "#fff", weight: 2, fillOpacity: 0.9
+                });
+
+                marker.bindPopup(`<b>${item.Nom || item.Name}</b><br>${item.Adresse || item.Address}`);
+                allMarkers.push({ marker, status: item.Statut, isESMS });
+
+                if (statusSettings[item.Statut]?.checked && (!isESMS || statusSettings["TYPE_ESMS"].checked)) {
+                    marker.addTo(map);
+                }
+            }
+        });
+        renderFiltres();
+    } catch (e) { console.error(e); }
 }
 
 function renderFiltres() {
@@ -38,7 +48,8 @@ function renderFiltres() {
         <label class="filter-card">
             <input type="checkbox" ${statusSettings[k].checked ? 'checked' : ''} onchange="toggleFilter('${k}', this.checked)">
             <span class="dot" style="background:${statusSettings[k].color}"></span>${statusSettings[k].label}
-        </label>`).join('');
+        </label>
+    `).join('');
     updateCount();
 }
 
@@ -51,7 +62,6 @@ function toggleFilter(key, checked) {
     updateCount();
 }
 
-// Fonction pour l'animation du bouton et du menu
 function toggleMenu() {
     document.getElementById('menu-btn').classList.toggle('open');
     document.getElementById('side-menu').classList.toggle('open');
@@ -59,6 +69,17 @@ function toggleMenu() {
 
 function updateCount() {
     document.getElementById('site-count').innerText = allMarkers.filter(m => map.hasLayer(m.marker)).length;
+}
+
+function rechercheEtZoom() {
+    const q = document.getElementById('query').value;
+    fetch(`https://api-adresse.data.gouv.fr/search/?q=${q}&limit=1`)
+        .then(r => r.json()).then(res => {
+            if (res.features.length) {
+                const [lon, lat] = res.features[0].geometry.coordinates;
+                map.flyTo([lat, lon], 12);
+            }
+        });
 }
 
 charger();

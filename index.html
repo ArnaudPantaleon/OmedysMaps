@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Omedys Maps - Menu Animé</title>
+    <title>Omedys Maps</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="style.css">
 </head>
@@ -19,18 +19,20 @@
         </button>
         
         <div class="search-floating">
-            <input type="text" id="query" placeholder="Ville..." onkeypress="if(event.key === 'Enter') rechercheEtZoom()">
+            <input type="text" id="query" placeholder="Chercher une ville..." onkeypress="if(event.key === 'Enter') rechercheEtZoom()">
         </div>
     </div>
-
+    
     <div id="side-menu" class="floating-panel">
         <div class="panel-header">
-            <h3>Configuration</h3>
+            <h3>Filtres</h3>
         </div>
-        <div class="stats-card">
-            <small>SITES AFFICHÉS</small>
+
+        <div class="stats-tile">
+            <span class="label">Sites Affichés</span>
             <span id="site-count">0</span>
         </div>
+
         <div id="filter-list"></div>
     </div>
 

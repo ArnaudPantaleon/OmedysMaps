@@ -1,20 +1,22 @@
-:root { --primary: #009597; }
 body, html { margin: 0; padding: 0; height: 100%; font-family: 'Inter', sans-serif; overflow: hidden; }
 #map { height: 100vh; width: 100vw; z-index: 1; }
 
-.top-controls { position: fixed; top: 20px; left: 20px; z-index: 1000; display: flex; gap: 15px; pointer-events: none; }
+.top-controls {
+    position: fixed; top: 20px; left: 20px;
+    z-index: 1000; display: flex; gap: 12px; pointer-events: none;
+}
 
-/* Bouton Morphing */
+/* Bouton Hamburger Animé */
 .menu-btn {
-    width: 50px; height: 50px; background: var(--primary); border: none; border-radius: 15px;
-    cursor: pointer; pointer-events: auto; display: flex; flex-direction: column;
-    justify-content: center; align-items: center; gap: 5px; transition: 0.3s;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    background: #009597; width: 48px; height: 48px; border: none;
+    border-radius: 12px; cursor: pointer; pointer-events: auto;
+    display: flex; flex-direction: column; justify-content: center;
+    align-items: center; gap: 5px; transition: 0.3s;
 }
 
 .bar { width: 22px; height: 3px; background: white; border-radius: 2px; transition: 0.4s; }
 
-/* Transformation en CROIX */
+/* Animation vers la Croix */
 .menu-btn.open .bar:nth-child(1) { transform: translateY(8px) rotate(45deg); }
 .menu-btn.open .bar:nth-child(2) { opacity: 0; }
 .menu-btn.open .bar:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
@@ -22,14 +24,28 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'Inter', sans-ser
 /* Panel Flottant */
 .floating-panel {
     position: fixed; left: -340px; top: 20px; bottom: 20px; width: 300px;
-    background: white; z-index: 999; border-radius: 20px; padding: 25px;
-    box-shadow: 10px 0 40px rgba(0,0,0,0.1); transition: 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    background: white; z-index: 999; border-radius: 20px;
+    box-shadow: 15px 0 40px rgba(0,0,0,0.1); padding: 25px;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.floating-panel.open { left: 85px; } /* Se décale à côté du bouton */
+.floating-panel.open { left: 85px; }
 
-.stats-card { background: #f1f5f9; padding: 15px; border-radius: 15px; text-align: center; margin-bottom: 20px; }
-#site-count { font-size: 32px; font-weight: 800; color: var(--primary); display: block; }
+.stats-tile {
+    background: #f1f5f9; padding: 15px; border-radius: 15px;
+    text-align: center; margin-bottom: 20px;
+}
+#site-count { font-size: 32px; font-weight: 800; color: #009597; display: block; }
 
-.filter-card { display: flex; align-items: center; padding: 10px; margin-bottom: 5px; cursor: pointer; }
+.filter-card {
+    display: flex; align-items: center; padding: 10px;
+    border-radius: 10px; margin-bottom: 5px; cursor: pointer;
+}
 .dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 12px; }
+
+.search-floating {
+    background: white; height: 48px; border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex;
+    align-items: center; padding: 0 15px; width: 250px; pointer-events: auto;
+}
+.search-floating input { border: none; width: 100%; outline: none; }

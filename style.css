@@ -1,40 +1,59 @@
-body, html { margin: 0; padding: 0; height: 100%; font-family: 'Inter', sans-serif; overflow: hidden; }
+:root {
+    --primary: #009597;
+    --bg-tile: rgba(255, 255, 255, 0.95);
+    --shadow: 0 8px 30px rgba(0,0,0,0.12);
+}
+
+body, html { margin: 0; padding: 0; height: 100%; font-family: 'Plus Jakarta Sans', sans-serif; background: #f0f2f5; }
 #map { height: 100vh; width: 100vw; z-index: 1; }
 
-.top-controls {
-    position: fixed; top: 20px; left: 20px; right: 20px;
-    z-index: 1000; display: flex; gap: 12px; pointer-events: none;
+.bento-wrapper {
+    position: fixed; top: 20px; left: 20px; z-index: 1000;
+    display: flex; flex-direction: column; gap: 12px;
+    width: 320px; pointer-events: none;
 }
 
-.menu-trigger {
-    background: #009597; color: white; border: none; width: 48px; height: 48px;
-    border-radius: 12px; cursor: pointer; font-size: 20px; pointer-events: auto;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+.bento-tile {
+    background: var(--bg-tile); border-radius: 20px; padding: 15px;
+    box-shadow: var(--shadow); backdrop-filter: blur(10px);
+    pointer-events: auto; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.floating-panel {
-    position: fixed; left: -340px; top: 20px; bottom: 20px; width: 300px;
-    background: white; z-index: 2000; border-radius: 20px;
-    box-shadow: 15px 0 40px rgba(0,0,0,0.1); padding: 25px;
-    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+/* Ligne de commande */
+.bento-row { display: flex; gap: 10px; }
+
+.bento-action {
+    width: 54px; height: 54px; border: none; background: var(--primary);
+    display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 5px; cursor: pointer;
 }
 
-.floating-panel.open { left: 20px; }
+.bar { width: 22px; height: 3px; background: white; border-radius: 2px; transition: 0.3s; }
+.bento-action.active .bar:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+.bento-action.active .bar:nth-child(2) { opacity: 0; }
+.bento-action.active .bar:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
 
-.panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.bento-search { flex-grow: 1; display: flex; align-items: center; padding: 0 15px; }
+.bento-search input { border: none; background: transparent; width: 100%; outline: none; font-weight: 600; }
+.inner-search-btn { background: none; border: none; cursor: pointer; font-size: 18px; }
 
-.stats-tile { background: #f1f5f9; padding: 20px; border-radius: 15px; text-align: center; margin-bottom: 20px; }
-#site-count { font-size: 32px; font-weight: 800; color: #009597; display: block; }
+/* Stats */
+.bento-stats { text-align: center; border: 2px solid transparent; }
+.bento-stats small { font-size: 10px; font-weight: 800; color: #64748b; letter-spacing: 1px; }
+#site-count { display: block; font-size: 32px; font-weight: 800; color: var(--primary); }
 
-.filter-card {
-    display: flex; align-items: center; padding: 12px; border-radius: 10px;
-    margin-bottom: 8px; cursor: pointer; border: 1px solid #f1f5f9;
+/* Filtres Bento */
+.bento-filters {
+    max-height: 0; padding-top: 0; padding-bottom: 0; opacity: 0; overflow: hidden;
+    transform: translateY(-10px);
 }
+.bento-filters.open {
+    max-height: 500px; padding: 20px; opacity: 1; transform: translateY(0);
+}
+
+.filter-item {
+    display: flex; align-items: center; padding: 10px; border-radius: 12px;
+    margin-bottom: 6px; cursor: pointer; transition: 0.2s; border: 1px solid #f1f5f9;
+}
+.filter-item:hover { background: #f8fafc; border-color: var(--primary); }
 .dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 12px; }
-
-.search-floating {
-    background: white; flex-grow: 1; max-width: 350px; height: 48px;
-    border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    display: flex; align-items: center; padding: 0 12px; pointer-events: auto;
-}
-.search-floating input { border: none; width: 100%; outline: none; }
+.filter-label { font-size: 13px; font-weight: 600; color: #334155; }

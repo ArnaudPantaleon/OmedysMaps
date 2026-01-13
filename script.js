@@ -78,15 +78,33 @@ function toggleFilter(status) {
 
 function updateDisplay() {
     markersLayer.clearLayers();
-    const filteredData = allData.filter(item => activeFilters.size === 0 || activeFilters.has(item.Statut));
+    
+    // On filtre les données selon les boutons cochés
+    const filteredData = allData.filter(item => 
+        activeFilters.size === 0 || activeFilters.has(item.Statut)
+    );
+
+    console.log("Tentative d'affichage de", filteredData.length, "points...");
 
     filteredData.forEach(item => {
-        // On s'assure que les coordonnées sont bien des nombres
-        const lat = parseFloat(item.Lat);
-        const lng = parseFloat(item.Lng);
-        
-        if (isNaN(lat) || isNaN(lng)) return;
+        // --- SÉCURITÉ COORDONNÉES ---
+        // On récupère Lat/Lng peu importe la casse (Lat, lat, Lng, lng)
+        let rawLat = item.Lat || item.lat;
+        let rawLng = item.Lng || item.lng;
 
+        if (!rawLat || !rawLng) return;
+
+        // On remplace la virgule par un point et on transforme en nombre
+        const lat = parseFloat(String(rawLat).replace(',', '.'));
+        const lng = parseFloat(String(rawLng).replace(',', '.'));
+
+        // Si après ça ce n'est toujours pas un nombre valide, on ignore ce point
+        if (isNaN(lat) || isNaN(lng)) {
+            console.warn("Coordonnées invalides pour :", item.Nom, rawLat, rawLng);
+            return;
+        }
+
+        // Création du point
         const marker = L.circleMarker([lat, lng], {
             radius: 9,
             fillColor: getStatusColor(item.Statut),
@@ -95,6 +113,7 @@ function updateDisplay() {
             fillOpacity: 0.9
         });
 
+        // Contenu de la popup (Design Bento)
         const popupContent = `
             <div class="bento-popup">
                 <h2 class="bento-title">${item.Nom || 'Site Omedys'}</h2>
@@ -115,14 +134,15 @@ function updateDisplay() {
                 <a href="tel:${item.Tel}" class="call-btn">📞 Appeler le site</a>
             </div>
         `;
+
         marker.bindPopup(popupContent);
         markersLayer.addLayer(marker);
     });
-    
-    const countEl = document.getElementById('site-count');
-    if(countEl) countEl.innerText = filteredData.length;
-}
 
+    // Mise à jour du compteur visuel
+    const countEl = document.getElementById('site-count');
+    if (countEl) countEl.innerText = filteredData.length;
+}
 function getStatusColor(status) {
     const colors = { 'Actif': '#009597', 'En attente': '#f59e0b', 'Projet': '#6366f1', 'Maintenance': '#ef4444' };
     return colors[status] || '#94a3b8';

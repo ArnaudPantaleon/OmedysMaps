@@ -2,22 +2,32 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Omedys Maps - Menu Animé</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
     <div id="map"></div>
 
     <div class="top-controls">
-        <button class="menu-trigger" onclick="toggleMenu()">☰</button>
+        <button id="menu-btn" class="menu-btn" onclick="toggleMenu()">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </button>
+        
+        <div class="search-floating">
+            <input type="text" id="query" placeholder="Ville..." onkeypress="if(event.key === 'Enter') rechercheEtZoom()">
+        </div>
     </div>
 
-    <div id="side-menu" class="side-menu">
-        <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
-            <h3 style="color:var(--primary); margin:0;">Configuration</h3>
-            <button onclick="toggleMenu()" style="border:none; background:none; cursor:pointer;">✕</button>
+    <div id="side-menu" class="floating-panel">
+        <div class="panel-header">
+            <h3>Configuration</h3>
         </div>
-        <div class="stats-box">
+        <div class="stats-card">
             <small>SITES AFFICHÉS</small>
             <span id="site-count">0</span>
         </div>

@@ -3,31 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Omedys Maps</title>
+    <title>Omedys Maps - Design Bento</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
+
     <div id="map"></div>
 
-    <div class="top-interface">
-        <div class="menu-wrapper" id="menuWrapper">
-            <button class="menu-toggle" onclick="toggleMenu()">
-                <div class="burger-icon"><span></span><span></span><span></span></div>
-            </button>
-            <div class="menu-content">
-                <h3 class="menu-title">Filtres</h3>
-                <div id="filter-list"></div>
-                <div class="stat-bento-tile">
-                    <span id="site-count">0</span>
-                    <span class="stat-unit">SITES AFFICHÉS</span>
-                </div>
+    <div class="interface-container">
+        <div class="search-bar-container">
+            <button class="menu-btn" onclick="toggleMenu()">☰</button>
+            <div class="search-input-wrapper">
+                <input type="text" id="query" placeholder="Rechercher une ville..." onkeypress="if(event.key === 'Enter') rechercheEtZoom()">
+                <button onclick="rechercheEtZoom()" class="search-submit">🔍</button>
             </div>
         </div>
 
-        <div class="search-floating">
-            <input type="text" id="query" placeholder="Rechercher une ville..." onkeypress="if(event.key === 'Enter') rechercheEtZoom()">
-            <button class="search-btn" onclick="rechercheEtZoom()">🔍</button>
+        <div id="side-menu" class="bento-menu">
+            <div class="menu-header">
+                <h3>Configuration</h3>
+                <button onclick="toggleMenu()" class="close-menu">✕</button>
+            </div>
+            
+            <div class="bento-grid">
+                <div class="bento-tile stats">
+                    <span class="tile-label">Sites Affichés</span>
+                    <span id="site-count">0</span>
+                </div>
+
+                <div class="bento-tile filters-container">
+                    <span class="tile-label">Filtres Statuts</span>
+                    <div id="filter-list" class="filter-scroll"></div>
+                </div>
+            </div>
         </div>
     </div>
 

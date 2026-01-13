@@ -13,6 +13,15 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
 let markersStore = [];
 
+// Fonction pour formater le téléphone en xx xx xx xx xx
+function formatPhone(num) {
+    if (!num) return "Non renseigné";
+    let cleaned = ('' + num).replace(/\D/g, '');
+    let match = cleaned.match(/^(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})$/);
+    if (match) return match.slice(1).join(' ');
+    return num;
+}
+
 async function startApp() {
     try {
         const [salles, cabinets] = await Promise.all([
@@ -28,25 +37,51 @@ async function startApp() {
 
             if (!isNaN(lat) && !isNaN(lng)) {
                 const isESMS = ["EHPAD", "Foyer", "FAM", "MAS"].some(t => (item.Type || "").includes(t));
+                
                 const marker = L.circleMarker([lat, lng], {
                     radius: item.Type === "CABINET" ? 10 : 7,
                     fillColor: CONFIG.status[item.Statut]?.color || "#94a3b8",
                     color: "#fff", weight: 2, fillOpacity: 0.9
-                }).bindPopup(`<strong>${item.Nom || item.Name}</strong><br><small>${item.Adresse || item.Address}</small>`);
+                });
+
+                // Création de la Popup Style Bento
+                const popupContent = `
+                    <div class="bento-popup">
+                        <div class="popup-header" style="background:${CONFIG.status[item.Statut]?.color || '#94a3b8'}">
+                            <strong>${item.Nom || item.Name || "Sans nom"}</strong>
+                        </div>
+                        <div class="popup-body">
+                            <div class="info-row"><b>Type:</b> <span>${item.Type || "N/C"}</span></div>
+                            <div class="info-row"><b>Statut:</b> <span>${item.Statut || "N/C"}</span></div>
+                            <div class="info-row"><b>Att TMS:</b> <span>${item["Att tms"] || item.Att_tms || "N/C"}</span></div>
+                            <div class="info-row"><b>Tel:</b> <span>${formatPhone(item.Telephone || item.Phone)}</span></div>
+                            <div class="info-row addr"><b>Adresse:</b><br>${item.Adresse || item.Address || "N/C"}</div>
+                        </div>
+                    </div>
+                `;
+
+                marker.bindPopup(popupContent, { maxWidth: 280, className: 'custom-bento-popup' });
 
                 markersStore.push({ marker, status: item.Statut, isESMS });
                 applyVisibility(markersStore[markersStore.length - 1]);
             }
         });
         renderFilters();
-    } catch (err) { console.error("Erreur d'initialisation", err); }
+    } catch (err) { console.error("Erreur", err); }
+}
+
+function applyVisibility(item) {
+    const showByStatus = CONFIG.status[item.status]?.checked;
+    const showByESMS = item.isESMS ? CONFIG.status["TYPE_ESMS"].checked : true;
+    if (showByStatus && showByESMS) item.marker.addTo(map);
+    else map.removeLayer(item.marker);
 }
 
 function renderFilters() {
     const container = document.getElementById('filter-list');
     container.innerHTML = Object.keys(CONFIG.status).map(key => `
         <div class="filter-item" onclick="toggleFilter('${key}')">
-            <input type="checkbox" ${CONFIG.status[key].checked ? 'checked' : ''} style="margin-right:10px pointer-events:none">
+            <div class="checkbox-box ${CONFIG.status[key].checked ? 'active' : ''}"></div>
             <span class="dot" style="background:${CONFIG.status[key].color}"></span>
             <span class="filter-label">${CONFIG.status[key].label}</span>
         </div>
@@ -60,17 +95,8 @@ window.toggleFilter = (key) => {
     renderFilters();
 };
 
-function applyVisibility(item) {
-    const showByStatus = CONFIG.status[item.status]?.checked;
-    const showByESMS = item.isESMS ? CONFIG.status["TYPE_ESMS"].checked : true;
-    
-    if (showByStatus && showByESMS) item.marker.addTo(map);
-    else map.removeLayer(item.marker);
-}
-
 function updateStats() {
-    const count = markersStore.filter(m => map.hasLayer(m.marker)).length;
-    document.getElementById('site-count').innerText = count;
+    document.getElementById('site-count').innerText = markersStore.filter(m => map.hasLayer(m.marker)).length;
 }
 
 function toggleMenu() {

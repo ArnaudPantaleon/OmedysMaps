@@ -1,117 +1,99 @@
-// Initialisation de la carte
-const map = L.map('map', { zoomControl: false }).setView([46.603354, 1.888334], 6);
+const statusSettings = {
+    "Ouvert": { color: "#009597", label: "Cabinet Omedys", checked: true },
+    "Ouvertes": { color: "#2ecc71", label: "Salles Ouvertes", checked: true },
+    "En cours": { color: "#3498db", label: "Ouverture en cours", checked: true },
+    "En sourcing": { color: "#f1c40f", label: "En sourcing", checked: false },
+    "Fermees ou refus OTT": { color: "#e74c3c", label: "Inactives", checked: false }
+};
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors'
-}).addTo(map);
+let map = L.map('map', { zoomControl: false }).setView([46.6033, 1.8883], 6);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-let markersLayer = L.layerGroup().addTo(map);
-let allData = [];
-let activeFilters = new Set();
+// Fix affichage mobile
+setTimeout(() => map.invalidateSize(), 400);
 
-function formatTMS(val) {
-    if (!val) return "N/A";
-    let clean = val.toString().toUpperCase().replace("TMS", "").trim();
-    return "TMS " + clean;
-}
+let allMarkers = [];
 
-async function loadData() {
+async function chargerDonnees() {
     try {
-        const [resSalles, resCabinet] = await Promise.all([
+        const [resSalles, resCabinets] = await Promise.all([
             fetch('salles.json').then(r => r.json()),
             fetch('cabinet.json').then(r => r.json())
         ]);
 
-        // Extraction selon ta structure [{ "data": [...] }]
-        const listSalles = (resSalles[0] && resSalles[0].data) ? resSalles[0].data : [];
-        const listCabinet = (resCabinet[0] && resCabinet[0].data) ? resCabinet[0].data : [];
+        const dataSalles = resSalles[0]?.data || [];
+        const dataCabinets = resCabinets[0]?.data || [];
 
-        allData = [...listSalles, ...listCabinet];
-        console.log("Analyse profonde : " + allData.length + " sites identifiés.");
-
-        createFilters(allData);
-        updateDisplay();
+        const combined = [...dataSalles, ...dataCabinets];
         
-        // Force le rendu visuel
-        setTimeout(() => { map.invalidateSize(); }, 500);
-    } catch (e) {
-        console.error("Erreur de lecture :", e);
+        combined.forEach(item => {
+            const lat = parseFloat(String(item.Latitude || item.Lat || "").replace(',', '.'));
+            const lng = parseFloat(String(item.Longitude || item.Lng || "").replace(',', '.'));
+
+            if (!isNaN(lat) && !isNaN(lng)) {
+                const marker = L.circleMarker([lat, lng], {
+                    radius: 9,
+                    fillColor: statusSettings[item.Statut]?.color || "#95a5a6",
+                    color: "#fff",
+                    weight: 2,
+                    fillOpacity: 0.9
+                });
+
+                const content = `
+                    <div class="bento-popup">
+                        <h3 style="margin:0; color:var(--primary); font-size:16px;">${item.Name || item.Nom}</h3>
+                        <div class="popup-grid">
+                            <div class="popup-tile"><span class="tile-label">RÉFÉRENT</span><span class="val">${item.ATT || 'N/A'}</span></div>
+                            <div class="popup-tile"><span class="tile-label">CODE</span><span class="val">${item.TMS || 'N/A'}</span></div>
+                        </div>
+                        <p style="font-size:11px; margin-bottom:12px;">📍 ${item.Address || item.Adresse}</p>
+                        <a href="tel:${item.Phone || item.Tel}" style="display:block; text-align:center; background:var(--primary); color:white; padding:10px; border-radius:10px; text-decoration:none; font-weight:800;">📞 Appeler</a>
+                    </div>`;
+
+                marker.bindPopup(content);
+                allMarkers.push({ marker, status: item.Statut });
+                
+                if (statusSettings[item.Statut]?.checked) marker.addTo(map);
+            }
+        });
+
+        genererFiltres();
+    } catch (e) { console.error("Erreur de chargement", e); }
+}
+
+function genererFiltres() {
+    const list = document.getElementById('filter-list');
+    list.innerHTML = Object.keys(statusSettings).map(key => `
+        <label class="filter-card">
+            <input type="checkbox" ${statusSettings[key].checked ? 'checked' : ''} onchange="toggleStatus('${key}', this.checked)">
+            <span class="dot" style="background:${statusSettings[key].color}"></span>
+            <span class="label" style="font-size:12px; font-weight:600;">${statusSettings[key].label}</span>
+        </label>
+    `).join('');
+    updateStats();
+}
+
+window.toggleStatus = (status, isChecked) => {
+    statusSettings[status].checked = isChecked;
+    allMarkers.forEach(m => {
+        if (m.status === status) isChecked ? m.marker.addTo(map) : map.removeLayer(m.marker);
+    });
+    updateStats();
+}
+
+function updateStats() {
+    document.getElementById('site-count').innerText = allMarkers.filter(m => map.hasLayer(m.marker)).length;
+}
+
+function toggleMenu() { document.getElementById('side-menu').classList.toggle('open'); }
+
+async function rechercheEtZoom() {
+    const q = document.getElementById('query').value;
+    const r = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${q}&limit=1`).then(res => res.json());
+    if (r.features.length) {
+        const [lon, lat] = r.features[0].geometry.coordinates;
+        map.flyTo([lat, lon], 13);
     }
 }
 
-function updateDisplay() {
-    markersLayer.clearLayers();
-    const filteredData = allData.filter(item => activeFilters.size === 0 || activeFilters.has(item.Statut));
-
-    filteredData.forEach(item => {
-        // --- CONVERSION CRITIQUE ---
-        // On prend Lat ou lat, on transforme en texte, on remplace , par . et on transforme en chiffre
-        const lat = parseFloat(String(item.Lat || item.lat || "").replace(',', '.'));
-        const lng = parseFloat(String(item.Lng || item.lng || "").replace(',', '.'));
-
-        if (!isNaN(lat) && !isNaN(lng)) {
-            const marker = L.circleMarker([lat, lng], {
-                radius: 8,
-                fillColor: getStatusColor(item.Statut),
-                color: '#ffffff',
-                weight: 2,
-                fillOpacity: 0.9
-            });
-
-            // Popup Design Bento
-            const popupContent = `
-                <div class="bento-popup" style="min-width:200px">
-                    <h2 style="color:#009597; font-size:16px; margin:0 0 10px 0;">${item.Nom}</h2>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px;">
-                        <div style="background:#f1f5f9; padding:8px; border-radius:10px;">
-                            <small style="font-size:8px; color:#64748b; font-weight:800; display:block;">ATT</small>
-                            <span style="font-size:11px; font-weight:700;">${item.ATT || 'N/A'}</span>
-                        </div>
-                        <div style="background:#f1f5f9; padding:8px; border-radius:10px;">
-                            <small style="font-size:8px; color:#64748b; font-weight:800; display:block;">CODE</small>
-                            <span style="font-size:11px; font-weight:700;">${formatTMS(item.TMS || item.Tms)}</span>
-                        </div>
-                    </div>
-                    <p style="font-size:11px;">📍 ${item.Adresse || 'N/A'}</p>
-                    <a href="tel:${item.Tel}" style="display:block; text-align:center; background:#e0fcf9; color:#009597; padding:10px; border-radius:10px; text-decoration:none; font-weight:800; margin-top:10px;">📞 Appeler</a>
-                </div>`;
-
-            marker.bindPopup(popupContent);
-            markersLayer.addLayer(marker);
-        }
-    });
-
-    if(document.getElementById('site-count')) {
-        document.getElementById('site-count').innerText = filteredData.length;
-    }
-}
-
-function getStatusColor(status) {
-    const colors = { 'Actif': '#009597', 'En attente': '#f59e0b', 'Projet': '#6366f1', 'Maintenance': '#ef4444' };
-    return colors[status] || '#94a3b8';
-}
-
-function createFilters(data) {
-    const statuses = [...new Set(data.map(item => item.Statut))].filter(s => s);
-    const filterList = document.getElementById('filter-list');
-    if (!filterList) return;
-    filterList.innerHTML = '';
-    statuses.forEach(status => {
-        const color = getStatusColor(status);
-        filterList.innerHTML += `
-            <label class="filter-card" style="--status-color: ${color}; display:flex; align-items:center; margin-bottom:8px; cursor:pointer;">
-                <input type="checkbox" onchange="toggleFilter('${status}')" style="display:none;">
-                <span style="width:10px; height:10px; border-radius:50%; background:${color}; margin-right:10px;"></span>
-                <span style="font-size:13px;">${status}</span>
-            </label>`;
-    });
-}
-
-function toggleFilter(status) {
-    activeFilters.has(status) ? activeFilters.delete(status) : activeFilters.add(status);
-    updateDisplay();
-}
-
-function toggleMenu() { document.getElementById('menuWrapper').classList.toggle('open'); }
-
-loadData();
+chargerDonnees();

@@ -1,3 +1,4 @@
+// Initialisation de la carte
 const map = L.map('map', { zoomControl: false }).setView([46.603354, 1.888334], 6);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -21,20 +22,20 @@ async function loadData() {
             fetch('cabinet.json').then(r => r.json())
         ]);
 
-        // Extraction selon ta structure réelle [{ "data": [...] }]
+        // Extraction selon ta structure [{ "data": [...] }]
         const listSalles = (resSalles[0] && resSalles[0].data) ? resSalles[0].data : [];
         const listCabinet = (resCabinet[0] && resCabinet[0].data) ? resCabinet[0].data : [];
 
         allData = [...listSalles, ...listCabinet];
-        console.log("Données fusionnées :", allData.length);
+        console.log("Analyse profonde : " + allData.length + " sites identifiés.");
 
         createFilters(allData);
         updateDisplay();
         
-        // Force Leaflet à recalculer sa taille pour afficher les points
+        // Force le rendu visuel
         setTimeout(() => { map.invalidateSize(); }, 500);
     } catch (e) {
-        console.error("Erreur de chargement :", e);
+        console.error("Erreur de lecture :", e);
     }
 }
 
@@ -43,28 +44,24 @@ function updateDisplay() {
     const filteredData = allData.filter(item => activeFilters.size === 0 || activeFilters.has(item.Statut));
 
     filteredData.forEach(item => {
-        // --- NETTOYAGE DES COORDONNÉES (CRITIQUE) ---
-        const rawLat = item.Lat || item.lat;
-        const rawLng = item.Lng || item.lng;
-
-        if (!rawLat || !rawLng) return;
-
-        // On transforme "47,123" en 47.123
-        const lat = parseFloat(String(rawLat).replace(',', '.'));
-        const lng = parseFloat(String(rawLng).replace(',', '.'));
+        // --- CONVERSION CRITIQUE ---
+        // On prend Lat ou lat, on transforme en texte, on remplace , par . et on transforme en chiffre
+        const lat = parseFloat(String(item.Lat || item.lat || "").replace(',', '.'));
+        const lng = parseFloat(String(item.Lng || item.lng || "").replace(',', '.'));
 
         if (!isNaN(lat) && !isNaN(lng)) {
             const marker = L.circleMarker([lat, lng], {
                 radius: 8,
                 fillColor: getStatusColor(item.Statut),
-                color: '#fff',
+                color: '#ffffff',
                 weight: 2,
                 fillOpacity: 0.9
             });
 
+            // Popup Design Bento
             const popupContent = `
                 <div class="bento-popup" style="min-width:200px">
-                    <h2 style="color:#009597; font-size:16px; margin-bottom:10px;">${item.Nom}</h2>
+                    <h2 style="color:#009597; font-size:16px; margin:0 0 10px 0;">${item.Nom}</h2>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px;">
                         <div style="background:#f1f5f9; padding:8px; border-radius:10px;">
                             <small style="font-size:8px; color:#64748b; font-weight:800; display:block;">ATT</small>

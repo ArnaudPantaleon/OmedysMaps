@@ -12,7 +12,6 @@ const statusSettings = {
 let map = L.map('map', { zoomControl: false }).setView([46.6033, 1.8883], 6);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-// Force le rendu si la carte est mal calculée au chargement
 setTimeout(() => map.invalidateSize(), 400);
 
 let allMarkers = [];
@@ -23,75 +22,66 @@ async function chargerDonnees() {
             fetch('salles.json').then(r => r.json()),
             fetch('cabinet.json').then(r => r.json())
         ]);
-        const data = [...(resSalles[0]?.data || []), ...(resCabinets[0]?.data || [])];
-        creerMarqueurs(data);
-    } catch (err) { console.error("Erreur de chargement JSON:", err); }
-}
 
-function creerMarqueurs(data) {
-    allMarkers.forEach(m => map.removeLayer(m.marker));
-    allMarkers = [];
+        const dataSalles = resSalles[0]?.data || [];
+        const dataCabinets = resCabinets[0]?.data || [];
+        const combined = [...dataSalles, ...dataCabinets];
+        
+        combined.forEach(item => {
+            const lat = parseFloat(String(item.Latitude || item.Lat || "").replace(',', '.'));
+            const lng = parseFloat(String(item.Longitude || item.Lng || "").replace(',', '.'));
 
-    data.forEach(item => {
-        const lat = parseFloat(item.Latitude);
-        const lng = parseFloat(item.Longitude);
-        if (isNaN(lat) || isNaN(lng)) return;
+            if (!isNaN(lat) && !isNaN(lng)) {
+                const isESMS = ["EHPAD", "Foyer d'accueil", "FAM-MAS"].some(type => 
+                    (item.Type || "").includes(type)
+                );
 
-        const status = (item.Statut || "Inconnu").trim();
-        const typeRaw = (item.Type || "").trim();
-        const typeUpper = typeRaw.toUpperCase();
-        const isESMS = typeUpper.includes("ESMS") || typeUpper.includes("EHPAD");
-        const config = statusSettings[status] || { color: "#7f8c8d", checked: true };
-        const color = config.color;
+                const marker = L.circleMarker([lat, lng], {
+                    radius: item.Type === "CABINET" ? 10 : 7,
+                    fillColor: statusSettings[item.Statut]?.color || "#95a5a6",
+                    color: "#fff",
+                    weight: 2,
+                    fillOpacity: 0.9
+                });
 
-        const marker = L.circleMarker([lat, lng], {
-            radius: typeUpper === "CABINET" ? 10 : 7,
-            fillColor: color, color: "#fff", weight: 2, fillOpacity: 0.9
-        });
-
-        if (config.checked && (!isESMS || statusSettings["TYPE_ESMS"].checked)) marker.addTo(map);
-
-        // --- TON DESIGN DE POPUP CONSERVÉ ---
-        const tmsHtml = typeUpper !== "CABINET" ? `
-            <div style="flex: 1;">
-                <span style="font-size: 10px; color: #a0aec0; text-transform: uppercase; font-weight: bold; display: block;">TMS</span>
-                <span style="font-size: 11px; color: #2d3748; font-weight: 600;">${item.TMS || "—"}</span>
-            </div>` : '';
-
-        marker.bindPopup(`
-                <div style="min-width:250px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <span style="background: #edf2f7; color: #4a5568; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 800;">${typeRaw}</span>
-                        <span style="color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; background:${color}">${status}</span>
-                    </div>
-                    <b style="color:#009597; font-size:15px; display:block; margin-bottom:4px;">${item.Name}</b>
-                    <div style="color: #718096; font-size: 11px; margin: 8px 0;">📍 ${item.Address || "—"}</div>
-                    <div style="display: flex; gap: 15px; border-top: 1px dashed #e2e8f0; padding-top: 10px; margin-top: 10px;">
-                        <div style="flex: 1;">
-                            <span style="font-size: 10px; color: #a0aec0; font-weight: bold; display: block;">ATT</span>
-                            <span style="font-size: 11px; color: #2d3748; font-weight: 600;">${item.ATT || "—"}</span>
+                const content = `
+                    <div class="bento-popup">
+                        <h3 style="margin:0; color:#009597; font-size:16px; font-weight:800;">${item.Name || item.Nom}</h3>
+                        <div class="popup-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:10px 0;">
+                            <div style="background:#f1f5f9; padding:8px; border-radius:10px;">
+                                <small style="font-size:8px; color:#64748b; font-weight:800; display:block;">ATT</small>
+                                <span style="font-size:11px; font-weight:700;">${item.ATT || 'N/A'}</span>
+                            </div>
+                            <div style="background:#f1f5f9; padding:8px; border-radius:10px;">
+                                <small style="font-size:8px; color:#64748b; font-weight:800; display:block;">TMS</small>
+                                <span style="font-size:11px; font-weight:700;">${item.TMS || 'N/A'}</span>
+                            </div>
                         </div>
-                        ${tmsHtml}
-                    </div>
-                </div>
-            `);
-        // --- FIN DE TON DESIGN ---
+                        <p style="font-size:11px; color:#475569; margin:0 0 12px 0;">📍 ${item.Address || item.Adresse}</p>
+                        <a href="tel:${item.Phone || item.Tel}" style="display:block; text-align:center; background:#009597; color:white; padding:10px; border-radius:10px; text-decoration:none; font-weight:800; font-size:13px;">Appeler</a>
+                    </div>`;
 
-        allMarkers.push({ marker, status, isESMS });
-    });
-    renderFilters();
+                marker.bindPopup(content);
+                allMarkers.push({ marker, status: item.Statut, isESMS });
+                
+                if (statusSettings[item.Statut]?.checked && (!isESMS || statusSettings["TYPE_ESMS"].checked)) {
+                    marker.addTo(map);
+                }
+            }
+        });
+        genererFiltres();
+    } catch (e) { console.error("Erreur", e); }
 }
 
-function renderFilters() {
+function genererFiltres() {
     const list = document.getElementById('filter-list');
-    list.innerHTML = Object.keys(statusSettings).map(key => {
-        const s = statusSettings[key];
-        return `<label class="filter-card">
-            <input type="checkbox" ${s.checked ? 'checked' : ''} onclick="toggleStatus('${key}', this.checked)">
-            <span class="dot" style="background:${s.color}"></span>
-            <span class="label">${s.label}</span>
-        </label>`;
-    }).join('');
+    list.innerHTML = Object.keys(statusSettings).map(key => `
+        <label class="filter-card">
+            <input type="checkbox" ${statusSettings[key].checked ? 'checked' : ''} onchange="toggleStatus('${key}', this.checked)">
+            <span class="dot" style="background:${statusSettings[key].color}"></span>
+            <span class="label">${statusSettings[key].label}</span>
+        </label>
+    `).join('');
     updateStats();
 }
 
@@ -108,6 +98,8 @@ function updateStats() {
     document.getElementById('site-count').innerText = allMarkers.filter(m => map.hasLayer(m.marker)).length;
 }
 
+function toggleMenu() { document.getElementById('side-menu').classList.toggle('open'); }
+
 function rechercheEtZoom() {
     const q = document.getElementById('query').value;
     fetch(`https://api-adresse.data.gouv.fr/search/?q=${q}&limit=1`)
@@ -117,11 +109,6 @@ function rechercheEtZoom() {
                 map.flyTo([lat, lon], 12);
             }
         });
-}
-
-function toggleMenu() {
-    const menu = document.getElementById('side-menu');
-    menu.classList.toggle('open');
 }
 
 chargerDonnees();

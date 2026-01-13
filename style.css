@@ -41,70 +41,53 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'Plus Jakarta San
 .bento-stats small { font-size: 10px; font-weight: 800; color: #64748b; letter-spacing: 1px; }
 #site-count { display: block; font-size: 32px; font-weight: 800; color: var(--primary); }
 
-/* Filtres Bento */
-.bento-filters {
-    max-height: 0; padding-top: 0; padding-bottom: 0; opacity: 0; overflow: hidden;
-    transform: translateY(-10px);
-}
-.bento-filters.open {
-    max-height: 500px; padding: 20px; opacity: 1; transform: translateY(0);
-}
-/* Styles de la Popup Bento */
+/* Custom Popup Leaflet */
 .custom-bento-popup .leaflet-popup-content-wrapper {
     padding: 0;
     overflow: hidden;
-    border-radius: 18px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
 }
 
 .custom-bento-popup .leaflet-popup-content {
     margin: 0;
-    width: 250px !important;
+    width: 260px !important;
+    font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 .bento-popup .popup-header {
-    padding: 12px 15px;
+    padding: 15px;
     color: white;
     font-weight: 800;
     font-size: 14px;
+    letter-spacing: -0.3px;
 }
 
 .bento-popup .popup-body {
     padding: 15px;
     background: white;
-    font-size: 12px;
 }
 
 .info-row {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 6px;
+    align-items: center;
+    padding: 8px 0;
     border-bottom: 1px solid #f1f5f9;
-    padding-bottom: 4px;
 }
 
-.info-row.addr {
-    display: block;
-    border: none;
-    margin-top: 10px;
-    color: #64748b;
-}
+.info-row b { color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+.info-row span { color: #1e293b; font-weight: 600; font-size: 12px; text-align: right; }
 
-.info-row b { color: #1e293b; font-weight: 700; }
+.addr-block { margin-top: 12px; }
+.addr-block b { color: #64748b; font-size: 11px; text-transform: uppercase; }
+.addr-block p { margin: 5px 0 0 0; color: #1e293b; font-size: 12px; line-height: 1.4; font-weight: 500; }
 
-/* Checkbox style bento */
-.checkbox-box {
-    width: 14px; height: 14px; border: 2px solid #cbd5e1;
-    border-radius: 4px; margin-right: 10px; transition: 0.3s;
-}
-.checkbox-box.active {
-    background: var(--primary);
-    border-color: var(--primary);
-}
+/* Filter Items Bento */
 .filter-item {
-    display: flex; align-items: center; padding: 10px; border-radius: 12px;
-    margin-bottom: 6px; cursor: pointer; transition: 0.2s; border: 1px solid #f1f5f9;
+    display: flex; align-items: center; padding: 12px; border-radius: 12px;
+    margin-bottom: 6px; cursor: pointer; border: 1.5px solid transparent;
+    background: #f8fafc; transition: 0.2s;
 }
-.filter-item:hover { background: #f8fafc; border-color: var(--primary); }
-.dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 12px; }
-.filter-label { font-size: 13px; font-weight: 600; color: #334155; }
+.filter-item.active { border-color: var(--primary); background: #fff; }
+.filter-label { font-size: 13px; font-weight: 700; color: #334155; }

@@ -12,34 +12,36 @@ function toggleMenu() {
     document.getElementById('menuWrapper').classList.toggle('open');
 }
 
+// Nettoyage pour éviter le bug "TMS TMS"
 function formatTMS(val) {
     if (!val) return "N/A";
     let clean = val.toString().toUpperCase().replace("TMS", "").trim();
     return "TMS " + clean;
 }
 
-// --- CHARGEMENT ET FUSION ---
 async function loadData() {
     try {
         const [resSalle, resCabinet] = await Promise.all([
-            fetch('salles.json'),
+            fetch('salle.json'),
             fetch('cabinet.json')
         ]);
 
         const jsonSalle = await resSalle.json();
         const jsonCabinet = await resCabinet.json();
 
-        // On extrait les tableaux "data" de chaque objet de la liste
-        // Structure: [{data:[]}] -> on prend le premier élément [0].data
-        const listSalle = jsonSalle[0].data || [];
-        const listCabinet = jsonCabinet[0].data || [];
+        // --- EXTRACTION DE LA STRUCTURE [{ "data": [...] }] ---
+        // On prend le premier élément du tableau [0], puis la clé .data
+        const listSalle = (jsonSalle[0] && jsonSalle[0].data) ? jsonSalle[0].data : [];
+        const listCabinet = (jsonCabinet[0] && jsonCabinet[0].data) ? jsonCabinet[0].data : [];
 
         allData = [...listSalle, ...listCabinet];
+        
+        console.log("Données chargées :", allData.length); // Debug console
         
         createFilters(allData);
         updateDisplay();
     } catch (error) {
-        console.error("Erreur de lecture des fichiers JSON :", error);
+        console.error("Erreur de chargement JSON:", error);
     }
 }
 
@@ -74,7 +76,7 @@ function updateDisplay() {
     filteredData.forEach(item => {
         if (!item.Lat || !item.Lng) return;
 
-        const marker = L.circleMarker([item.Lat, item.Lng], {
+        const marker = L.circleMarker([parseFloat(item.Lat), parseFloat(item.Lng)], {
             radius: 9,
             fillColor: getStatusColor(item.Statut),
             color: '#fff',
@@ -114,9 +116,7 @@ async function rechercheEtZoom() {
     try {
         const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}`);
         const data = await res.json();
-        if (data.length > 0) {
-            map.flyTo([data[0].lat, data[0].lon], 12);
-        }
+        if (data.length > 0) map.flyTo([data[0].lat, data[0].lon], 12);
     } catch(e) {}
 }
 

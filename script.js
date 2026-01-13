@@ -12,7 +12,7 @@ function toggleMenu() {
     document.getElementById('menuWrapper').classList.toggle('open');
 }
 
-// Nettoyage pour éviter le bug "TMS TMS"
+// Nettoyage pour éviter le bug "TMS 18 TMS 18"
 function formatTMS(val) {
     if (!val) return "N/A";
     let clean = val.toString().toUpperCase().replace("TMS", "").trim();
@@ -21,27 +21,34 @@ function formatTMS(val) {
 
 async function loadData() {
     try {
-        const [resSalle, resCabinet] = await Promise.all([
-            fetch('salle.json'),
-            fetch('cabinet.json')
+        // Chargement simultané des deux fichiers
+        const [resSalles, resCabinet] = await Promise.all([
+            fetch('salles.json').then(r => r.ok ? r.json() : null),
+            fetch('cabinet.json').then(r => r.ok ? r.json() : null)
         ]);
 
-        const jsonSalle = await resSalle.json();
-        const jsonCabinet = await resCabinet.json();
+        let listSalles = [];
+        let listCabinet = [];
 
-        // --- EXTRACTION DE LA STRUCTURE [{ "data": [...] }] ---
-        // On prend le premier élément du tableau [0], puis la clé .data
-        const listSalle = (jsonSalle[0] && jsonSalle[0].data) ? jsonSalle[0].data : [];
-        const listCabinet = (jsonCabinet[0] && jsonCabinet[0].data) ? jsonCabinet[0].data : [];
+        // Extraction pour salles.json (Structure [{ "data": [...] }])
+        if (resSalles && Array.isArray(resSalles) && resSalles[0].data) {
+            listSalles = resSalles[0].data;
+        }
 
-        allData = [...listSalle, ...listCabinet];
+        // Extraction pour cabinet.json (Structure [{ "data": [...] }])
+        if (resCabinet && Array.isArray(resCabinet) && resCabinet[0].data) {
+            listCabinet = resCabinet[0].data;
+        }
+
+        // Fusion complète
+        allData = [...listSalles, ...listCabinet];
         
-        console.log("Données chargées :", allData.length); // Debug console
+        console.log("Succès ! Total de sites chargés :", allData.length);
         
         createFilters(allData);
         updateDisplay();
     } catch (error) {
-        console.error("Erreur de chargement JSON:", error);
+        console.error("Erreur fatale de lecture :", error);
     }
 }
 
@@ -74,9 +81,13 @@ function updateDisplay() {
     const filteredData = allData.filter(item => activeFilters.size === 0 || activeFilters.has(item.Statut));
 
     filteredData.forEach(item => {
-        if (!item.Lat || !item.Lng) return;
+        // On s'assure que les coordonnées sont bien des nombres
+        const lat = parseFloat(item.Lat);
+        const lng = parseFloat(item.Lng);
+        
+        if (isNaN(lat) || isNaN(lng)) return;
 
-        const marker = L.circleMarker([parseFloat(item.Lat), parseFloat(item.Lng)], {
+        const marker = L.circleMarker([lat, lng], {
             radius: 9,
             fillColor: getStatusColor(item.Statut),
             color: '#fff',
@@ -107,7 +118,14 @@ function updateDisplay() {
         marker.bindPopup(popupContent);
         markersLayer.addLayer(marker);
     });
-    document.getElementById('site-count').innerText = filteredData.length;
+    
+    const countEl = document.getElementById('site-count');
+    if(countEl) countEl.innerText = filteredData.length;
+}
+
+function getStatusColor(status) {
+    const colors = { 'Actif': '#009597', 'En attente': '#f59e0b', 'Projet': '#6366f1', 'Maintenance': '#ef4444' };
+    return colors[status] || '#94a3b8';
 }
 
 async function rechercheEtZoom() {
@@ -118,11 +136,6 @@ async function rechercheEtZoom() {
         const data = await res.json();
         if (data.length > 0) map.flyTo([data[0].lat, data[0].lon], 12);
     } catch(e) {}
-}
-
-function getStatusColor(status) {
-    const colors = { 'Actif': '#009597', 'En attente': '#f59e0b', 'Projet': '#6366f1', 'Maintenance': '#ef4444' };
-    return colors[status] || '#94a3b8';
 }
 
 loadData();

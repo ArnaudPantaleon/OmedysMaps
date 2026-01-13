@@ -1,8 +1,11 @@
 const statusSettings = {
     "Ouvert": { color: "#009597", label: "Cabinet Omedys", checked: true },
     "Ouvertes": { color: "#2ecc71", label: "Salles Ouvertes", checked: true },
+    "Telesecretariat OMEDYS": { color: "#8956FB", label: "Télésecrétariat OMEDYS", checked: true },
     "Ouverture en cours": { color: "#3498db", label: "En cours", checked: false },
-    "Inactives": { color: "#94a3b8", label: "Inactives", checked: false },
+    "En sourcing": { color: "#f1c40f", label: "En sourcing", checked: false },
+    "Inactives": { color: "#95a5a6", label: "Inactives", checked: false },
+    "Fermees ou refus OTT": { color: "#e74c3c", label: "Fermé / Refus", checked: false },
     "TYPE_ESMS": { color: "#334155", label: "Afficher les ESMS", checked: false }
 };
 
@@ -11,64 +14,67 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
 let allMarkers = [];
 
-async function charger() {
+async function chargerDonnees() {
     try {
-        const [s, c] = await Promise.all([
+        const [resSalles, resCabinets] = await Promise.all([
             fetch('salles.json').then(r => r.json()),
             fetch('cabinet.json').then(r => r.json())
         ]);
-        const data = [...(s[0]?.data || []), ...(c[0]?.data || [])];
+
+        const data = [...(resSalles[0]?.data || []), ...(resCabinets[0]?.data || [])];
         
         data.forEach(item => {
-            const lat = parseFloat(String(item.Latitude || item.Lat).replace(',', '.'));
-            const lng = parseFloat(String(item.Longitude || item.Lng).replace(',', '.'));
+            const lat = parseFloat(String(item.Latitude || item.Lat || "").replace(',', '.'));
+            const lng = parseFloat(String(item.Longitude || item.Lng || "").replace(',', '.'));
 
             if (!isNaN(lat) && !isNaN(lng)) {
-                const isESMS = ["EHPAD", "Foyer", "FAM", "MAS"].some(t => (item.Type || "").includes(t));
+                const isESMS = ["EHPAD", "Foyer d'accueil", "FAM-MAS"].some(type => 
+                    (item.Type || "").includes(type)
+                );
+
                 const marker = L.circleMarker([lat, lng], {
                     radius: item.Type === "CABINET" ? 10 : 7,
-                    fillColor: statusSettings[item.Statut]?.color || "#ccc",
+                    fillColor: statusSettings[item.Statut]?.color || "#95a5a6",
                     color: "#fff", weight: 2, fillOpacity: 0.9
-                });
+                }).bindPopup(`<b>${item.Name || item.Nom}</b>`);
 
-                marker.bindPopup(`<b>${item.Nom || item.Name}</b><br>${item.Adresse || item.Address}`);
                 allMarkers.push({ marker, status: item.Statut, isESMS });
-
                 if (statusSettings[item.Statut]?.checked && (!isESMS || statusSettings["TYPE_ESMS"].checked)) {
                     marker.addTo(map);
                 }
             }
         });
-        renderFiltres();
+        genererFiltres();
     } catch (e) { console.error(e); }
 }
 
-function renderFiltres() {
-    document.getElementById('filter-list').innerHTML = Object.keys(statusSettings).map(k => `
+function genererFiltres() {
+    const list = document.getElementById('filter-list');
+    list.innerHTML = Object.keys(statusSettings).map(key => `
         <label class="filter-card">
-            <input type="checkbox" ${statusSettings[k].checked ? 'checked' : ''} onchange="toggleFilter('${k}', this.checked)">
-            <span class="dot" style="background:${statusSettings[k].color}"></span>${statusSettings[k].label}
+            <input type="checkbox" ${statusSettings[key].checked ? 'checked' : ''} onclick="toggleStatus('${key}', this.checked)">
+            <span class="dot" style="background:${statusSettings[key].color}"></span>
+            <span class="label">${statusSettings[key].label}</span>
         </label>
     `).join('');
-    updateCount();
+    updateStats();
 }
 
-function toggleFilter(key, checked) {
-    statusSettings[key].checked = checked;
+window.toggleStatus = (name, isChecked) => {
+    statusSettings[name].checked = isChecked;
     allMarkers.forEach(m => {
-        const show = statusSettings[m.status].checked && (!m.isESMS || statusSettings["TYPE_ESMS"].checked);
-        show ? m.marker.addTo(map) : map.removeLayer(m.marker);
+        const visible = m.isESMS ? (statusSettings[m.status].checked && statusSettings["TYPE_ESMS"].checked) : statusSettings[m.status].checked;
+        if (visible) m.marker.addTo(map); else map.removeLayer(m.marker);
     });
-    updateCount();
+    updateStats();
+};
+
+function updateStats() {
+    document.getElementById('site-count').innerText = allMarkers.filter(m => map.hasLayer(m.marker)).length;
 }
 
 function toggleMenu() {
-    document.getElementById('menu-btn').classList.toggle('open');
     document.getElementById('side-menu').classList.toggle('open');
-}
-
-function updateCount() {
-    document.getElementById('site-count').innerText = allMarkers.filter(m => map.hasLayer(m.marker)).length;
 }
 
 function rechercheEtZoom() {
@@ -82,4 +88,4 @@ function rechercheEtZoom() {
         });
 }
 
-charger();
+chargerDonnees();

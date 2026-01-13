@@ -13,33 +13,24 @@
 
     <div class="top-controls">
         <button class="menu-trigger" onclick="toggleMenu()">☰</button>
-        
         <div class="search-floating">
-            <input type="text" id="query" placeholder="Chercher une ville..." onkeypress="if(event.key === 'Enter') rechercheEtZoom()">
-            <button onclick="rechercheEtZoom()" class="search-icon">
-                <svg viewBox="0 0 24 24" width="20" height="20" stroke="#64748b" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-            </button>
+            <input type="text" id="query" placeholder="Ville ou Code Postal..." onkeypress="if(event.key === 'Enter') rechercheEtZoom()">
+            <button onclick="rechercheEtZoom()" style="background:none; border:none; cursor:pointer;">🔍</button>
         </div>
     </div>
-    
-    <div id="side-menu" class="floating-panel">
-        <div class="panel-header">
-            <h3>Filtres</h3>
-            <button onclick="toggleMenu()" class="close-btn">
-                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-            </button>
+
+    <div id="side-menu" class="bento-menu">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h2 style="margin:0; font-size:20px; color:var(--primary);">Omedys</h2>
+            <button onclick="toggleMenu()" style="border:none; background:none; cursor:pointer; font-size:20px;">✕</button>
         </div>
-        <div id="filter-list"></div>
-        <div class="stats-card">
+
+        <div class="tile-stats">
+            <span style="font-size:10px; font-weight:800; text-transform:uppercase; opacity:0.8;">Sites Actifs</span>
             <span id="site-count">0</span>
-            <small>SITES AFFICHÉS</small>
         </div>
+
+        <div id="filter-list"></div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>

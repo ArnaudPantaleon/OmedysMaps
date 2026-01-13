@@ -1,59 +1,68 @@
-:root {
-    --primary: #009597;
-    --bg-light: #f8fafc;
-    --white: #ffffff;
-    --shadow: 0 10px 25px rgba(0,0,0,0.08);
-    --radius: 20px;
+/* Header du menu */
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f1f5f9;
 }
 
-body, html { margin: 0; padding: 0; height: 100%; font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; }
-#map { height: 100vh; width: 100vw; z-index: 1; }
-
-/* Conteneur Interface */
-.interface-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1000; }
-
-/* Barre de Recherche */
-.search-bar-container { 
-    pointer-events: auto; display: flex; gap: 10px; padding: 15px; 
-    max-width: 500px; margin: 10px auto; 
+.panel-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #009597;
 }
 
-.search-input-wrapper {
-    background: var(--white); display: flex; flex-grow: 1; 
-    border-radius: 15px; box-shadow: var(--shadow); padding: 5px 15px; align-items: center;
+/* Bouton Close modernisé */
+.close-btn {
+    background: #f1f5f9;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
-.search-input-wrapper input { border: none; flex: 1; outline: none; height: 40px; font-size: 14px; }
-.menu-btn { 
-    background: var(--primary); color: white; border: none; 
-    width: 50px; height: 50px; border-radius: 15px; cursor: pointer; font-size: 20px; 
+.close-btn:hover {
+    background: #fee2e2;
+    color: #ef4444;
 }
 
-/* Menu Bento */
-.bento-menu {
-    position: absolute; left: -350px; top: 0; width: 320px; height: 100vh;
-    background: var(--bg-light); pointer-events: auto; transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 10px 0 30px rgba(0,0,0,0.05); padding: 25px; box-sizing: border-box;
+/* Barre de recherche et Loupe */
+.search-floating {
+    background: white;
+    height: 48px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    width: 260px;
+    border: 1px solid transparent;
+    transition: border-color 0.2s;
 }
 
-.bento-menu.open { left: 0; }
+.search-floating:focus-within {
+    border-color: #009597;
+}
 
-.bento-grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 20px; }
+.search-icon {
+    background: none;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 5px;
+    transition: transform 0.2s;
+}
 
-.bento-tile { background: var(--white); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); border: 1px solid #f1f5f9; }
-
-.stats { text-align: center; background: linear-gradient(135deg, var(--primary), #007678); color: white; }
-#site-count { font-size: 42px; font-weight: 800; display: block; }
-.tile-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; opacity: 0.8; }
-
-/* Popup Bento sur la carte */
-.bento-popup { padding: 5px; width: 240px; }
-.popup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
-.popup-tile { background: #f1f5f9; padding: 10px; border-radius: 12px; }
-.popup-tile span { display: block; }
-.val { font-weight: 700; font-size: 12px; }
-
-/* Checkbox Style */
-.filter-card { display: flex; align-items: center; padding: 12px; margin-bottom: 8px; border-radius: 12px; background: #f8fafc; cursor: pointer; transition: 0.2s; }
-.filter-card:hover { transform: translateX(5px); background: #fff; }
-.dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 12px; }
+.search-icon:hover {
+    transform: scale(1.1);
+}

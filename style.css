@@ -1,57 +1,163 @@
 :root {
     --primary: #009597;
+    --primary-light: #e0fcf9;
     --white: #ffffff;
-    --shadow: 0 10px 30px rgba(0,0,0,0.1);
+    --bg-bento: #f8fafc;
+    --border: #e2e8f0;
+    --text-main: #0f172a;
+    --text-sub: #64748b;
 }
 
-body, html { margin: 0; padding: 0; height: 100%; font-family: sans-serif; overflow: hidden; }
-#map { height: 100vh; width: 100vw; z-index: 1; }
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    font-family: 'Inter', -apple-system, sans-serif;
+    overflow: hidden;
+}
 
+/* Carte en arrière-plan total */
+#map {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    z-index: 1;
+}
+
+/* Conteneur de l'interface flottante */
 .top-interface {
-    position: fixed; top: 15px; left: 15px; right: 15px;
-    display: flex; gap: 10px; z-index: 5000; pointer-events: none;
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    display: flex;
+    gap: 12px;
+    z-index: 1000;
+    pointer-events: none; /* Permet de cliquer sur la carte entre les boutons */
 }
 
-.menu-wrapper { 
-    pointer-events: auto; background: var(--white); width: 50px; height: 50px; 
-    border-radius: 16px; box-shadow: var(--shadow); 
-    transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1); position: relative; overflow: hidden; flex-shrink: 0;
+/* Menu Wrapper (Bento) */
+.menu-wrapper {
+    pointer-events: auto;
+    background: var(--white);
+    width: 54px;
+    height: 54px;
+    border-radius: 18px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
 }
-.menu-wrapper.open { width: 320px; height: auto; max-height: 85vh; border-radius: 24px; }
 
-.menu-toggle { width: 50px; height: 50px; background: none; border: none; cursor: pointer; position: absolute; top: 0; left: 0; z-index: 5001; }
-.burger-icon { width: 20px; height: 14px; position: relative; margin: 18px auto; }
-.burger-icon span { display: block; position: absolute; height: 2px; width: 100%; background: var(--primary); transition: .3s; left: 0; }
-.burger-icon span:nth-child(1) { top: 0; } .burger-icon span:nth-child(2) { top: 6px; } .burger-icon span:nth-child(3) { top: 12px; }
-
-.menu-content { opacity: 0; padding: 65px 20px 20px; transition: 0.3s; pointer-events: none; }
-.menu-wrapper.open .menu-content { opacity: 1; pointer-events: all; }
-
-.search-floating { 
-    pointer-events: auto; background: var(--white); height: 50px; 
-    flex-grow: 1; max-width: 400px; border-radius: 16px; 
-    box-shadow: var(--shadow); display: flex; align-items: center; 
-    padding: 0 15px; border: 1px solid #e2e8f0;
+.menu-wrapper.open {
+    width: 320px;
+    height: auto;
+    max-height: 80vh;
+    border-radius: 24px;
 }
-.search-floating input { border: none; flex: 1; outline: none; font-size: 14px; background: transparent; width: 100%; }
 
-.filter-card { display: flex; align-items: center; padding: 12px; background: #fff; border: 2px solid #f1f5f9; border-radius: 14px; cursor: pointer; opacity: 0.5; margin-bottom: 8px; }
-.filter-card:has(input:checked) { opacity: 1; border-color: var(--status-color); }
-.filter-card input { display: none; }
-.dot { width: 8px; height: 8px; border-radius: 50%; margin-right: 10px; background: var(--status-color); }
+.menu-toggle {
+    width: 54px;
+    height: 54px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
-.stat-bento-tile { margin-top: 15px; padding: 20px; background: #f8fafc; border-radius: 20px; border: 1px solid #e2e8f0; }
-#site-count { font-size: 34px; font-weight: 900; color: #0f172a; display: block; }
-.stat-unit { font-size: 10px; font-weight: 800; color: var(--primary); }
+/* Barre de recherche flottante */
+.search-floating {
+    pointer-events: auto;
+    background: var(--white);
+    height: 54px;
+    flex-grow: 1;
+    max-width: 400px;
+    border-radius: 18px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    border: 1px solid var(--border);
+}
 
-.bento-popup { padding: 10px; width: 250px; }
-.bento-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; }
-.info-tile { background: #f8fafc; padding: 8px; border-radius: 10px; border: 1px solid #f1f5f9; }
-.tile-label { font-size: 8px; font-weight: 800; color: #64748b; text-transform: uppercase; display: block; }
-.tile-value { font-size: 11px; font-weight: 700; color: #0f172a; }
-.call-btn { display: block; width: 100%; padding: 10px; background: #e0fcf9; color: var(--primary); border-radius: 10px; text-align: center; text-decoration: none; font-weight: 800; }
+.search-floating input {
+    border: none;
+    width: 100%;
+    outline: none;
+    font-size: 15px;
+    color: var(--text-main);
+}
 
-@media (max-width: 480px) {
-    .menu-wrapper.open ~ .search-floating { visibility: hidden; }
-    .menu-wrapper.open { width: calc(100vw - 30px); }
+/* Contenu du menu (Filtres & Stats) */
+.menu-content {
+    opacity: 0;
+    padding: 20px;
+    transition: opacity 0.3s;
+    display: none;
+}
+
+.menu-wrapper.open .menu-content {
+    display: block;
+    opacity: 1;
+}
+
+.filter-list {
+    margin-top: 15px;
+}
+
+.filter-card {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-card:hover { background: var(--bg-bento); }
+
+.stat-tile {
+    background: var(--bg-bento);
+    padding: 20px;
+    border-radius: 20px;
+    text-align: center;
+    border: 1px solid var(--border);
+    margin-bottom: 20px;
+}
+
+.stat-tile span {
+    display: block;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-sub);
+    font-weight: 800;
+}
+
+#site-count {
+    font-size: 38px;
+    font-weight: 900;
+    color: var(--primary);
+}
+
+/* Design des popups Leaflet */
+.leaflet-popup-content-wrapper {
+    border-radius: 20px;
+    padding: 5px;
+}
+
+@media (max-width: 600px) {
+    .menu-wrapper.open {
+        width: calc(100vw - 40px);
+    }
+    .search-floating {
+        display: none; /* Cache la recherche quand le menu est ouvert sur mobile */
+    }
 }

@@ -1,4 +1,4 @@
-// Initialisation standard
+// Initialisation de la carte
 const map = L.map('map', { zoomControl: false }).setView([46.603354, 1.888334], 6);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -9,13 +9,14 @@ let markersLayer = L.layerGroup().addTo(map);
 let allData = [];
 let activeFilters = new Set();
 
-// Analyse et formatage du code TMS
+// Nettoyage des TMS pour éviter les doublons
 function formatTMS(val) {
     if (!val) return "N/A";
     let clean = val.toString().toUpperCase().replace("TMS", "").trim();
     return "TMS " + clean;
 }
 
+// Chargement des données avec fusion et détection de structure
 async function loadData() {
     try {
         const [resSalles, resCabinet] = await Promise.all([
@@ -23,23 +24,24 @@ async function loadData() {
             fetch('cabinet.json').then(r => r.json())
         ]);
 
-        // Extraction stricte de ta structure [{ "data": [...] }]
+        // Extraction selon ta structure [{ "data": [...] }]
         const listSalles = (resSalles[0] && resSalles[0].data) ? resSalles[0].data : [];
         const listCabinet = (resCabinet[0] && resCabinet[0].data) ? resCabinet[0].data : [];
 
         allData = [...listSalles, ...listCabinet];
-        console.log("Analyse : " + allData.length + " sites chargés en mémoire.");
+        console.log("Analyse : " + allData.length + " sites chargés.");
 
         createFilters(allData);
         updateDisplay();
         
-        // Indispensable : force le moteur de rendu à se caler sur le conteneur HTML
+        // Force le rafraîchissement du moteur Leaflet
         setTimeout(() => { map.invalidateSize(); }, 500);
     } catch (e) {
-        console.error("Erreur lecture JSON :", e);
+        console.error("Erreur d'analyse JSON :", e);
     }
 }
 
+// Affichage avec conversion forcée des virgules en points
 function updateDisplay() {
     markersLayer.clearLayers();
     
@@ -48,18 +50,15 @@ function updateDisplay() {
     );
 
     filteredData.forEach(item => {
-        // --- NETTOYAGE CRITIQUE DES COORDONNÉES ---
-        // 1. On récupère la valeur (Lat ou lat)
-        // 2. On transforme en texte .toString()
-        // 3. On remplace la virgule par un point .replace(',', '.')
-        // 4. On transforme en nombre décimal parseFloat()
-        const lat = parseFloat((item.Lat || item.lat || "").toString().replace(',', '.'));
-        const lng = parseFloat((item.Lng || item.lng || "").toString().replace(',', '.'));
+        // --- CORRECTION CRITIQUE ---
+        // On récupère Lat/Lng, on force en texte, on remplace la virgule par le point, 
+        // puis on transforme en nombre flottant.
+        const lat = parseFloat(String(item.Lat || item.lat || "").replace(',', '.'));
+        const lng = parseFloat(String(item.Lng || item.lng || "").replace(',', '.'));
 
-        // On ne dessine que si les deux sont des nombres valides
         if (!isNaN(lat) && !isNaN(lng)) {
             const marker = L.circleMarker([lat, lng], {
-                radius: 9,
+                radius: 8,
                 fillColor: getStatusColor(item.Statut),
                 color: '#ffffff',
                 weight: 2,
@@ -67,20 +66,23 @@ function updateDisplay() {
             });
 
             const popupContent = `
-                <div class="bento-popup" style="width:220px;">
-                    <h2 style="color:#009597; font-size:16px; margin:0 0 10px 0;">${item.Nom || 'Site Omedys'}</h2>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px;">
-                        <div style="background:#f1f5f9; padding:8px; border-radius:10px;">
-                            <span style="font-size:8px; color:#64748b; font-weight:800; display:block;">ATT</span>
-                            <span style="font-size:11px; font-weight:700;">${item.ATT || 'N/A'}</span>
+                <div class="bento-popup" style="width:230px; font-family:sans-serif;">
+                    <h2 style="margin:0 0 10px 0; color:#009597; font-size:16px; font-weight:800;">${item.Nom || 'Site Omedys'}</h2>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px;">
+                        <div style="background:#f1f5f9; padding:10px; border-radius:12px; border:1px solid #e2e8f0;">
+                            <span style="font-size:8px; color:#64748b; font-weight:800; display:block; text-transform:uppercase;">Référent</span>
+                            <span style="font-size:11px; font-weight:700; color:#0f172a;">${item.ATT || 'N/A'}</span>
                         </div>
-                        <div style="background:#f1f5f9; padding:8px; border-radius:10px;">
-                            <span style="font-size:8px; color:#64748b; font-weight:800; display:block;">CODE</span>
-                            <span style="font-size:11px; font-weight:700;">${formatTMS(item.TMS || item.Tms)}</span>
+                        <div style="background:#f1f5f9; padding:10px; border-radius:12px; border:1px solid #e2e8f0;">
+                            <span style="font-size:8px; color:#64748b; font-weight:800; display:block; text-transform:uppercase;">Code</span>
+                            <span style="font-size:11px; font-weight:700; color:#0f172a;">${formatTMS(item.TMS || item.Tms)}</span>
                         </div>
                     </div>
-                    <p style="font-size:11px; margin:0 0 10px 0;">📍 ${item.Adresse || 'N/A'}</p>
-                    <a href="tel:${item.Tel}" style="display:block; text-align:center; background:#e0fcf9; color:#009597; padding:10px; border-radius:10px; text-decoration:none; font-weight:800;">📞 Appeler</a>
+                    <div style="background:#f8fafc; padding:10px; border-radius:12px; margin-bottom:12px; border:1px solid #e2e8f0;">
+                        <span style="font-size:8px; color:#64748b; font-weight:800; display:block; text-transform:uppercase;">Adresse</span>
+                        <span style="font-size:11px; color:#0f172a;">${item.Adresse || 'N/A'}</span>
+                    </div>
+                    <a href="tel:${item.Tel}" style="display:block; text-align:center; background:#e0fcf9; color:#009597; padding:12px; border-radius:12px; text-decoration:none; font-weight:800; font-size:14px;">📞 Appeler le site</a>
                 </div>`;
 
             marker.bindPopup(popupContent);
@@ -102,14 +104,18 @@ function createFilters(data) {
     const filterList = document.getElementById('filter-list');
     if (!filterList) return;
     filterList.innerHTML = '';
+
     statuses.forEach(status => {
         const color = getStatusColor(status);
-        filterList.innerHTML += `
-            <label class="filter-card" style="--status-color: ${color}; display:flex; align-items:center; padding:10px; cursor:pointer;">
-                <input type="checkbox" onchange="toggleFilter('${status}')" style="display:none;">
-                <span style="width:10px; height:10px; border-radius:50%; background:${color}; margin-right:10px;"></span>
-                <span style="font-size:13px;">${status}</span>
-            </label>`;
+        const card = document.createElement('label');
+        card.className = 'filter-card';
+        card.style.setProperty('--status-color', color);
+        card.innerHTML = `
+            <input type="checkbox" onchange="toggleFilter('${status}')">
+            <span class="dot" style="background:${color};"></span>
+            <span class="label">${status}</span>
+        `;
+        filterList.appendChild(card);
     });
 }
 
@@ -118,6 +124,18 @@ function toggleFilter(status) {
     updateDisplay();
 }
 
-function toggleMenu() { document.getElementById('menuWrapper').classList.toggle('open'); }
+function toggleMenu() {
+    document.getElementById('menuWrapper').classList.toggle('open');
+}
+
+async function rechercheEtZoom() {
+    const query = document.getElementById('query').value;
+    if (!query) return;
+    try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}`);
+        const data = await res.json();
+        if (data.length > 0) map.flyTo([data[0].lat, data[0].lon], 12);
+    } catch(e) {}
+}
 
 loadData();

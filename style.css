@@ -1,36 +1,35 @@
 :root { --primary: #009597; }
-body, html { margin: 0; padding: 0; height: 100%; font-family: sans-serif; overflow: hidden; }
+body, html { margin: 0; padding: 0; height: 100%; font-family: 'Inter', sans-serif; overflow: hidden; }
 #map { height: 100vh; width: 100vw; z-index: 1; }
 
-.top-controls {
-    position: fixed; top: 20px; left: 20px; z-index: 1000;
-    display: flex; gap: 10px; pointer-events: none;
+.top-controls { position: fixed; top: 20px; left: 20px; z-index: 1000; display: flex; gap: 15px; pointer-events: none; }
+
+/* Bouton Morphing */
+.menu-btn {
+    width: 50px; height: 50px; background: var(--primary); border: none; border-radius: 15px;
+    cursor: pointer; pointer-events: auto; display: flex; flex-direction: column;
+    justify-content: center; align-items: center; gap: 5px; transition: 0.3s;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
-.menu-trigger {
-    background: var(--primary); color: white; border: none; width: 50px; height: 50px;
-    border-radius: 12px; cursor: pointer; font-size: 20px; pointer-events: auto;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-}
+.bar { width: 22px; height: 3px; background: white; border-radius: 2px; transition: 0.4s; }
 
-/* Le menu flottant */
-.side-menu {
+/* Transformation en CROIX */
+.menu-btn.open .bar:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+.menu-btn.open .bar:nth-child(2) { opacity: 0; }
+.menu-btn.open .bar:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+
+/* Panel Flottant */
+.floating-panel {
     position: fixed; left: -340px; top: 20px; bottom: 20px; width: 300px;
-    background: white; z-index: 2000; border-radius: 20px;
-    box-shadow: 10px 0 40px rgba(0,0,0,0.1); padding: 25px;
-    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    background: white; z-index: 999; border-radius: 20px; padding: 25px;
+    box-shadow: 10px 0 40px rgba(0,0,0,0.1); transition: 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.side-menu.open { transform: translateX(360px); } /* Glisse vers la droite */
+.floating-panel.open { left: 85px; } /* Se décale à côté du bouton */
 
-.stats-box {
-    background: #f1f5f9; padding: 20px; border-radius: 15px;
-    text-align: center; margin-bottom: 20px;
-}
-#site-count { font-size: 38px; font-weight: 800; color: var(--primary); display: block; }
+.stats-card { background: #f1f5f9; padding: 15px; border-radius: 15px; text-align: center; margin-bottom: 20px; }
+#site-count { font-size: 32px; font-weight: 800; color: var(--primary); display: block; }
 
-.filter-card {
-    display: flex; align-items: center; padding: 12px; border-radius: 10px;
-    margin-bottom: 8px; cursor: pointer; background: #fff; border: 1px solid #eee;
-}
+.filter-card { display: flex; align-items: center; padding: 10px; margin-bottom: 5px; cursor: pointer; }
 .dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 12px; }

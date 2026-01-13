@@ -22,7 +22,7 @@ function formatTMS(val) {
 async function loadData() {
     try {
         const [resSalle, resCabinet] = await Promise.all([
-            fetch('salle.json'),
+            fetch('salles.json'),
             fetch('cabinet.json')
         ]);
 

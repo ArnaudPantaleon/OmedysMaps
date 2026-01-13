@@ -1,163 +1,59 @@
 :root {
     --primary: #009597;
-    --primary-light: #e0fcf9;
+    --bg-light: #f8fafc;
     --white: #ffffff;
-    --bg-bento: #f8fafc;
-    --border: #e2e8f0;
-    --text-main: #0f172a;
-    --text-sub: #64748b;
+    --shadow: 0 10px 25px rgba(0,0,0,0.08);
+    --radius: 20px;
 }
 
-body, html {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    width: 100%;
-    font-family: 'Inter', -apple-system, sans-serif;
-    overflow: hidden;
+body, html { margin: 0; padding: 0; height: 100%; font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; }
+#map { height: 100vh; width: 100vw; z-index: 1; }
+
+/* Conteneur Interface */
+.interface-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1000; }
+
+/* Barre de Recherche */
+.search-bar-container { 
+    pointer-events: auto; display: flex; gap: 10px; padding: 15px; 
+    max-width: 500px; margin: 10px auto; 
 }
 
-/* Carte en arrière-plan total */
-#map {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 100%;
-    z-index: 1;
+.search-input-wrapper {
+    background: var(--white); display: flex; flex-grow: 1; 
+    border-radius: 15px; box-shadow: var(--shadow); padding: 5px 15px; align-items: center;
 }
 
-/* Conteneur de l'interface flottante */
-.top-interface {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    right: 20px;
-    display: flex;
-    gap: 12px;
-    z-index: 1000;
-    pointer-events: none; /* Permet de cliquer sur la carte entre les boutons */
+.search-input-wrapper input { border: none; flex: 1; outline: none; height: 40px; font-size: 14px; }
+.menu-btn { 
+    background: var(--primary); color: white; border: none; 
+    width: 50px; height: 50px; border-radius: 15px; cursor: pointer; font-size: 20px; 
 }
 
-/* Menu Wrapper (Bento) */
-.menu-wrapper {
-    pointer-events: auto;
-    background: var(--white);
-    width: 54px;
-    height: 54px;
-    border-radius: 18px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-    position: relative;
-    overflow: hidden;
+/* Menu Bento */
+.bento-menu {
+    position: absolute; left: -350px; top: 0; width: 320px; height: 100vh;
+    background: var(--bg-light); pointer-events: auto; transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 10px 0 30px rgba(0,0,0,0.05); padding: 25px; box-sizing: border-box;
 }
 
-.menu-wrapper.open {
-    width: 320px;
-    height: auto;
-    max-height: 80vh;
-    border-radius: 24px;
-}
+.bento-menu.open { left: 0; }
 
-.menu-toggle {
-    width: 54px;
-    height: 54px;
-    border: none;
-    background: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+.bento-grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 20px; }
 
-/* Barre de recherche flottante */
-.search-floating {
-    pointer-events: auto;
-    background: var(--white);
-    height: 54px;
-    flex-grow: 1;
-    max-width: 400px;
-    border-radius: 18px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    display: flex;
-    align-items: center;
-    padding: 0 20px;
-    border: 1px solid var(--border);
-}
+.bento-tile { background: var(--white); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); border: 1px solid #f1f5f9; }
 
-.search-floating input {
-    border: none;
-    width: 100%;
-    outline: none;
-    font-size: 15px;
-    color: var(--text-main);
-}
+.stats { text-align: center; background: linear-gradient(135deg, var(--primary), #007678); color: white; }
+#site-count { font-size: 42px; font-weight: 800; display: block; }
+.tile-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; opacity: 0.8; }
 
-/* Contenu du menu (Filtres & Stats) */
-.menu-content {
-    opacity: 0;
-    padding: 20px;
-    transition: opacity 0.3s;
-    display: none;
-}
+/* Popup Bento sur la carte */
+.bento-popup { padding: 5px; width: 240px; }
+.popup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
+.popup-tile { background: #f1f5f9; padding: 10px; border-radius: 12px; }
+.popup-tile span { display: block; }
+.val { font-weight: 700; font-size: 12px; }
 
-.menu-wrapper.open .menu-content {
-    display: block;
-    opacity: 1;
-}
-
-.filter-list {
-    margin-top: 15px;
-}
-
-.filter-card {
-    display: flex;
-    align-items: center;
-    padding: 12px 15px;
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    margin-bottom: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.filter-card:hover { background: var(--bg-bento); }
-
-.stat-tile {
-    background: var(--bg-bento);
-    padding: 20px;
-    border-radius: 20px;
-    text-align: center;
-    border: 1px solid var(--border);
-    margin-bottom: 20px;
-}
-
-.stat-tile span {
-    display: block;
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--text-sub);
-    font-weight: 800;
-}
-
-#site-count {
-    font-size: 38px;
-    font-weight: 900;
-    color: var(--primary);
-}
-
-/* Design des popups Leaflet */
-.leaflet-popup-content-wrapper {
-    border-radius: 20px;
-    padding: 5px;
-}
-
-@media (max-width: 600px) {
-    .menu-wrapper.open {
-        width: calc(100vw - 40px);
-    }
-    .search-floating {
-        display: none; /* Cache la recherche quand le menu est ouvert sur mobile */
-    }
-}
+/* Checkbox Style */
+.filter-card { display: flex; align-items: center; padding: 12px; margin-bottom: 8px; border-radius: 12px; background: #f8fafc; cursor: pointer; transition: 0.2s; }
+.filter-card:hover { transform: translateX(5px); background: #fff; }
+.dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 12px; }

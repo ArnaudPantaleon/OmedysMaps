@@ -2,40 +2,25 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Omedys Maps - Version Flottante</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
     <div id="map"></div>
 
     <div class="top-controls">
         <button class="menu-trigger" onclick="toggleMenu()">☰</button>
-        
-        <div class="search-floating">
-            <input type="text" id="query" placeholder="Chercher une ville..." onkeypress="if(event.key === 'Enter') rechercheEtZoom()">
-            <button onclick="rechercheEtZoom()" class="search-icon">
-                <svg viewBox="0 0 24 24" width="20" height="20" stroke="#64748b" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-            </button>
-        </div>
     </div>
-    
-    <div id="side-menu" class="floating-panel">
-        <div class="panel-header">
-            <h3>Filtres</h3>
-            <button onclick="toggleMenu()" class="close-btn">✕</button>
-        </div>
 
-        <div class="stats-tile">
-            <span class="label">Sites Affichés</span>
+    <div id="side-menu" class="side-menu">
+        <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+            <h3 style="color:var(--primary); margin:0;">Configuration</h3>
+            <button onclick="toggleMenu()" style="border:none; background:none; cursor:pointer;">✕</button>
+        </div>
+        <div class="stats-box">
+            <small>SITES AFFICHÉS</small>
             <span id="site-count">0</span>
         </div>
-
         <div id="filter-list"></div>
     </div>
 

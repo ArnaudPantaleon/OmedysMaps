@@ -13,7 +13,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
 let markersStore = [];
 
-// Fonction pour formater le téléphone en xx xx xx xx xx
+// Formatage téléphone : 0978810038 -> 09 78 81 00 38
 function formatPhone(num) {
     if (!num) return "Non renseigné";
     let cleaned = ('' + num).replace(/\D/g, '');
@@ -37,31 +37,34 @@ async function startApp() {
 
             if (!isNaN(lat) && !isNaN(lng)) {
                 const isESMS = ["EHPAD", "Foyer", "FAM", "MAS"].some(t => (item.Type || "").includes(t));
-                
+                const color = CONFIG.status[item.Statut]?.color || "#94a3b8";
+
                 const marker = L.circleMarker([lat, lng], {
                     radius: item.Type === "CABINET" ? 10 : 7,
-                    fillColor: CONFIG.status[item.Statut]?.color || "#94a3b8",
+                    fillColor: color,
                     color: "#fff", weight: 2, fillOpacity: 0.9
                 });
 
-                // Création de la Popup Style Bento
+                // Popup Bento avec ATT et TMS séparés
                 const popupContent = `
                     <div class="bento-popup">
-                        <div class="popup-header" style="background:${CONFIG.status[item.Statut]?.color || '#94a3b8'}">
-                            <strong>${item.Nom || item.Name || "Sans nom"}</strong>
+                        <div class="popup-header" style="background:${color}">
+                            <strong>${item.Name || item.Nom || "Sans nom"}</strong>
                         </div>
                         <div class="popup-body">
-                            <div class="info-row"><b>Type:</b> <span>${item.Type || "N/C"}</span></div>
-                            <div class="info-row"><b>Statut:</b> <span>${item.Statut || "N/C"}</span></div>
-                            <div class="info-row"><b>Att TMS:</b> <span>${item["Att tms"] || item.Att_tms || "N/C"}</span></div>
-                            <div class="info-row"><b>Tel:</b> <span>${formatPhone(item.Telephone || item.Phone)}</span></div>
-                            <div class="info-row addr"><b>Adresse:</b><br>${item.Adresse || item.Address || "N/C"}</div>
+                            <div class="info-row"><b>Type</b> <span>${item.Type || "N/C"}</span></div>
+                            <div class="info-row"><b>Statut</b> <span>${item.Statut || "N/C"}</span></div>
+                            <div class="info-row"><b>ATT</b> <span>${item.ATT || "N/C"}</span></div>
+                            <div class="info-row"><b>Tel</b> <span>${formatPhone(item.Phone || item.Telephone)}</span></div>
+                            <div class="addr-block">
+                                <b>Adresse</b>
+                                <p>${item.Address || item.Adresse || "N/C"}</p>
+                            </div>
                         </div>
                     </div>
                 `;
 
                 marker.bindPopup(popupContent, { maxWidth: 280, className: 'custom-bento-popup' });
-
                 markersStore.push({ marker, status: item.Statut, isESMS });
                 applyVisibility(markersStore[markersStore.length - 1]);
             }
@@ -80,8 +83,7 @@ function applyVisibility(item) {
 function renderFilters() {
     const container = document.getElementById('filter-list');
     container.innerHTML = Object.keys(CONFIG.status).map(key => `
-        <div class="filter-item" onclick="toggleFilter('${key}')">
-            <div class="checkbox-box ${CONFIG.status[key].checked ? 'active' : ''}"></div>
+        <div class="filter-item ${CONFIG.status[key].checked ? 'active' : ''}" onclick="toggleFilter('${key}')">
             <span class="dot" style="background:${CONFIG.status[key].color}"></span>
             <span class="filter-label">${CONFIG.status[key].label}</span>
         </div>

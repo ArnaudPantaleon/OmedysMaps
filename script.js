@@ -1,4 +1,4 @@
-// 1. Initialisation avec sécurité de rendu
+// Initialisation standard
 const map = L.map('map', { zoomControl: false }).setView([46.603354, 1.888334], 6);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -9,14 +9,13 @@ let markersLayer = L.layerGroup().addTo(map);
 let allData = [];
 let activeFilters = new Set();
 
-// 2. Nettoyage des données (Sécurité totale)
+// Analyse et formatage du code TMS
 function formatTMS(val) {
     if (!val) return "N/A";
     let clean = val.toString().toUpperCase().replace("TMS", "").trim();
     return "TMS " + clean;
 }
 
-// 3. Chargement avec détection de structure
 async function loadData() {
     try {
         const [resSalles, resCabinet] = await Promise.all([
@@ -24,24 +23,23 @@ async function loadData() {
             fetch('cabinet.json').then(r => r.json())
         ]);
 
-        // On gère ta structure [{ "data": [...] }]
+        // Extraction stricte de ta structure [{ "data": [...] }]
         const listSalles = (resSalles[0] && resSalles[0].data) ? resSalles[0].data : [];
         const listCabinet = (resCabinet[0] && resCabinet[0].data) ? resCabinet[0].data : [];
 
         allData = [...listSalles, ...listCabinet];
-        console.log("Analyse profonde : " + allData.length + " sites détectés.");
+        console.log("Analyse : " + allData.length + " sites chargés en mémoire.");
 
         createFilters(allData);
         updateDisplay();
         
-        // Indispensable pour que les points apparaissent sur mobile
+        // Indispensable : force le moteur de rendu à se caler sur le conteneur HTML
         setTimeout(() => { map.invalidateSize(); }, 500);
     } catch (e) {
-        console.error("Erreur d'analyse JSON :", e);
+        console.error("Erreur lecture JSON :", e);
     }
 }
 
-// 4. Affichage avec conversion de type forcée
 function updateDisplay() {
     markersLayer.clearLayers();
     
@@ -50,15 +48,15 @@ function updateDisplay() {
     );
 
     filteredData.forEach(item => {
-        // On récupère Lat/Lng peu importe la majuscule et on force en nombre
-        let rawLat = item.Lat || item.lat;
-        let rawLng = item.Lng || item.lng;
+        // --- NETTOYAGE CRITIQUE DES COORDONNÉES ---
+        // 1. On récupère la valeur (Lat ou lat)
+        // 2. On transforme en texte .toString()
+        // 3. On remplace la virgule par un point .replace(',', '.')
+        // 4. On transforme en nombre décimal parseFloat()
+        const lat = parseFloat((item.Lat || item.lat || "").toString().replace(',', '.'));
+        const lng = parseFloat((item.Lng || item.lng || "").toString().replace(',', '.'));
 
-        if (!rawLat || !rawLng) return;
-
-        const lat = parseFloat(String(rawLat).replace(',', '.'));
-        const lng = parseFloat(String(rawLng).replace(',', '.'));
-
+        // On ne dessine que si les deux sont des nombres valides
         if (!isNaN(lat) && !isNaN(lng)) {
             const marker = L.circleMarker([lat, lng], {
                 radius: 9,
@@ -68,10 +66,9 @@ function updateDisplay() {
                 fillOpacity: 0.9
             });
 
-            // Design Bento Popup
             const popupContent = `
-                <div class="bento-popup" style="min-width:200px; padding:5px;">
-                    <h2 style="margin:0 0 10px 0; color:#009597; font-size:16px;">${item.Nom || 'Site Omedys'}</h2>
+                <div class="bento-popup" style="width:220px;">
+                    <h2 style="color:#009597; font-size:16px; margin:0 0 10px 0;">${item.Nom || 'Site Omedys'}</h2>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px;">
                         <div style="background:#f1f5f9; padding:8px; border-radius:10px;">
                             <span style="font-size:8px; color:#64748b; font-weight:800; display:block;">ATT</span>
@@ -100,25 +97,19 @@ function getStatusColor(status) {
     return colors[status] || '#94a3b8';
 }
 
-function toggleMenu() { document.getElementById('menuWrapper').classList.toggle('open'); }
-
 function createFilters(data) {
     const statuses = [...new Set(data.map(item => item.Statut))].filter(s => s);
     const filterList = document.getElementById('filter-list');
     if (!filterList) return;
     filterList.innerHTML = '';
-
     statuses.forEach(status => {
         const color = getStatusColor(status);
-        const card = document.createElement('label');
-        card.className = 'filter-card';
-        card.style.setProperty('--status-color', color);
-        card.innerHTML = `
-            <input type="checkbox" onchange="toggleFilter('${status}')">
-            <span class="dot" style="background:${color}; width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:10px;"></span>
-            <span class="label">${status}</span>
-        `;
-        filterList.appendChild(card);
+        filterList.innerHTML += `
+            <label class="filter-card" style="--status-color: ${color}; display:flex; align-items:center; padding:10px; cursor:pointer;">
+                <input type="checkbox" onchange="toggleFilter('${status}')" style="display:none;">
+                <span style="width:10px; height:10px; border-radius:50%; background:${color}; margin-right:10px;"></span>
+                <span style="font-size:13px;">${status}</span>
+            </label>`;
     });
 }
 
@@ -127,12 +118,6 @@ function toggleFilter(status) {
     updateDisplay();
 }
 
-async function rechercheEtZoom() {
-    const query = document.getElementById('query').value;
-    if (!query) return;
-    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}`);
-    const data = await res.json();
-    if (data.length > 0) map.flyTo([data[0].lat, data[0].lon], 12);
-}
+function toggleMenu() { document.getElementById('menuWrapper').classList.toggle('open'); }
 
 loadData();

@@ -173,11 +173,23 @@ function displaySuggestions(data) {
         return;
     }
 
-    // Filtrer uniquement la France + dédupliquer par municipality + postcode
+    // Filtrer uniquement la France + type pertinent + dédupliquer
+    const validOsmKeys = ['place', 'boundary', 'admin_centre']; // Lieux pertinents
+    const validTypes = ['city', 'town', 'village', 'hamlet', 'administrative'];
+    
     const seen = new Set();
     const unique = data.features
-        .filter(feature => feature.properties.countrycode === 'FR') // 🇫🇷 Filtre France uniquement
+        .filter(feature => feature.properties.countrycode === 'FR') // 🇫🇷 France uniquement
         .filter(feature => {
+            // Garder uniquement place, boundary, admin_centre
+            return validOsmKeys.includes(feature.properties.osm_key);
+        })
+        .filter(feature => {
+            // Garder uniquement les villes, villages, communes
+            return validTypes.includes(feature.properties.type);
+        })
+        .filter(feature => {
+            // Dédupliquer par municipality + postcode
             const municipality = feature.properties.city || feature.properties.name;
             const postcode = feature.properties.postcode || '';
             const key = `${municipality}-${postcode}`;

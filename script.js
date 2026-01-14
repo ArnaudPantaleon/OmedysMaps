@@ -180,6 +180,7 @@ function displaySuggestions(data) {
     const seen = new Set();
     const unique = data.features
         .filter(feature => feature.properties.countrycode === 'FR') // 🇫🇷 France uniquement
+        .filter(feature => feature.properties.postcode)
         .filter(feature => {
             // Garder uniquement place, boundary, admin_centre
             return validOsmKeys.includes(feature.properties.osm_key);

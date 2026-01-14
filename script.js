@@ -253,12 +253,14 @@ function fetchSuggestions(query) {
     const controller = new AbortController();
     currentRequest = controller;
 
-    // Bbox France: [minLon, minLat, maxLon, maxLat]
-    const franceBbox = '2.25,42.5,8.23,51.1';
-
     fetch(
-        `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&lang=fr&limit=15&bbox=${franceBbox}`,
-        { signal: controller.signal }
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&countrycodes=fr&limit=15&accept-language=fr`,
+        { 
+            signal: controller.signal,
+            headers: {
+                'User-Agent': 'OmedysMaps/1.0'
+            }
+        }
     )
         .then(r => r.json())
         .then(data => {
@@ -266,7 +268,7 @@ function fetchSuggestions(query) {
         })
         .catch(err => {
             if (err.name !== 'AbortError') {
-                console.error('Erreur recherche Photon:', err);
+                console.error('Erreur recherche Nominatim:', err);
             }
         });
 }

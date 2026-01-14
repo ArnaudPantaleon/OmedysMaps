@@ -771,7 +771,10 @@ body, html {
     font-size: 14px;
     color: #1e293b;
     flex: 1;
-    word-break: break-word;
+    /* AJOUTEZ CES 3 LIGNES */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; 
 }
 
 .suggestion-zip {

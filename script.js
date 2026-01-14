@@ -187,7 +187,14 @@ function rechercheEtZoom() {
         if (e.key === 'Enter') rechercheEtZoom();
     });
 });*/
-
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('query')?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter'){
+            const q = document.getElementById('query').value;
+            geocode(q);
+        }
+    });
+});
 function selectSuggestion(item) {
   // Centrer la carte
   map.setView([item.lat, item.lon], 13);

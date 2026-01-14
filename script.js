@@ -165,7 +165,7 @@ function rechercheEtZoom() {
     const q = document.getElementById('query').value;
     if (!q) return;
     
-    fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(q)}&limit=1`)
+    fetch(`https://data.geopf.fr/geocodage/search?q=${encodeURIComponent(q)}`)
         .then(r => r.json())
         .then(res => {
             if (res.features.length) { 

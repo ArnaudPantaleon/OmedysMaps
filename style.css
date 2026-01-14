@@ -713,6 +713,7 @@ body, html {
 
 #suggestions::-webkit-scrollbar-track {
     background: transparent;
+    margin: 10px 0; /* Ajoute une marge en haut et en bas pour que la barre ne touche pas les coins arrondis */
 }
 
 #suggestions::-webkit-scrollbar-thumb {

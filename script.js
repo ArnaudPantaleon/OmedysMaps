@@ -10,8 +10,12 @@ const CONFIG = {
 
 let map = L.map('map', { zoomControl: false }).setView([46.6033, 1.8883], 6);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-const searchInput = document.getElementById('query'); // adapte selon ton HTML
-const suggestionList = document.getElementById('suggestions'); // un élément <ul> ou <div> pour la liste
+// === GESTION DES SUGGESTIONS AMÉLIORÉE ===
+const searchInput = document.getElementById('query');
+const suggestionBox = document.getElementById('suggestions');
+
+let debounceTimer = null;
+let currentRequest = null;
 let markersStore = [];
 
 function formatPhone(num) {
@@ -188,12 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });*/
 
-// === GESTION DES SUGGESTIONS AMÉLIORÉE ===
-const searchInput = document.getElementById('query');
-const suggestionBox = document.getElementById('suggestions');
 
-let debounceTimer = null;
-let currentRequest = null;
 
 // Afficher les suggestions
 function displaySuggestions(data) {

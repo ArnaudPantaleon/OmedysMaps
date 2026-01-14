@@ -167,70 +167,35 @@ function toggleMenu() {
 }
 
 // Afficher les suggestions
-function displaySuggestions(data) {
-    if (!Array.isArray(data) || data.length === 0) {
+function displaySuggestions(features) {
+    if (!features || features.length === 0) {
         suggestionBox.innerHTML = '<div class="suggestion-item empty">Aucun lieu trouvé</div>';
         return;
     }
 
-    // Debug
-    console.log('Nominatim raw data:', data);
-
-    // Filtrer uniquement la France + type pertinent + avec code postal + dédupliquer
-    const validTypes = ['city', 'town', 'village']; // Types pertinents
-    
-    const seen = new Set();
-    const unique = data
-    .filter(feature => {
-        // L'API garantit déjà la France grâce à l'URL
-        // On garde les types que vous avez définis
-        return validTypes.includes(feature.type) || validTypes.includes(feature.addresstype);
-    })
-    .filter(feature => {
-        const addr = feature.address;
-        const municipality = addr.city || addr.town || addr.village || addr.municipality || feature.name;
-        const postcode = addr.postcode || '';
+    suggestionBox.innerHTML = features.map((feature, idx) => {
+        // L'API Gouv structure ses données dans "properties"
+        const prop = feature.properties;
+        const geometry = feature.geometry;
         
-        const key = `${municipality}-${postcode}`.toLowerCase();
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-    })
-    .slice(0, 10);
-    
-    console.log('Filtered results:', unique);
-
-    if (unique.length === 0) {
-        suggestionBox.innerHTML = '<div class="suggestion-item empty">Aucun résultat en France</div>';
-        return;
-    }
-
-    suggestionBox.innerHTML = unique.map((feature, idx) => {
-        const addr = feature.address;
+        const municipality = prop.city;
+        const postcode = prop.postcode;
+        const context = prop.context; // Contient "Département, Région"
         
-        // 1. Déterminer le nom de la commune ou de l'arrondissement
-        // On cherche d'abord s'il y a un quartier (suburb) qui contient souvent "Paris 15e"
-        const displayCity = addr.suburb || addr.city || addr.town || addr.village || feature.name;
+        // Attention : l'API Gouv inverse souvent Lon et Lat dans geometry.coordinates [lon, lat]
+        const lon = geometry.coordinates[0];
+        const lat = geometry.coordinates[1];
         
-        // 2. Récupérer le code postal
-        const postcode = addr.postcode || "";
-    
-        // 3. Gérer le nom de la ville parente pour la "meta" (province/département)
-        // Si c'est un arrondissement, on affiche "Paris" en dessous, sinon le département
-        const parentCity = (addr.suburb && addr.city) ? addr.city : (addr.state || addr.county || "");
-    
-        const lat = parseFloat(feature.lat);
-        const lon = parseFloat(feature.lon);
-        const safeName = displayCity.replace(/'/g, "\\'");
-    
+        const safeName = municipality.replace(/'/g, "\\'");
+
         return `
             <div class="suggestion-item" onclick="selectSuggestion('${safeName}', ${lat}, ${lon}, ${idx})">
                 <div class="suggestion-header">
-                    <span class="suggestion-city"><strong>${displayCity}</strong></span>
+                    <span class="suggestion-city"><strong>${municipality}</strong></span>
                     <span class="suggestion-zip">${postcode}</span>
                 </div>
                 <div class="suggestion-meta">
-                    <span class="suggestion-province">${parentCity}</span>
+                    <span class="suggestion-province">${context}</span>
                 </div>
             </div>
         `;
@@ -251,37 +216,9 @@ window.selectSuggestion = (city, lat, lon, idx) => {
 
 // Récupérer les suggestions avec débounce
 function fetchSuggestions(query) {
-    if (query.trim().length < 2) {
-        hideSuggestions();
-        return;
-    }
-
-    // Annuler la requête précédente
-    if (currentRequest) {
-        currentRequest.abort?.();
-    }
-
-    const controller = new AbortController();
-    currentRequest = controller;
-
-    fetch(
-        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&countrycodes=fr&limit=15&accept-language=fr&addressdetails=1&featuretype=settlement`,
-        { 
-            signal: controller.signal,
-            headers: {
-                'User-Agent': 'OmedysMaps/1.0'
-            }
-        }
-    )
-        .then(r => r.json())
-        .then(data => {
-            displaySuggestions(data);
-        })
-        .catch(err => {
-            if (err.name !== 'AbortError') {
-                console.error('Erreur recherche Nominatim:', err);
-            }
-        });
+    const response = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${query}&limit=15&type=municipality`);
+    const data = await response.json();
+    displaySuggestions(data.features); // Attention : on passe data.features
 }
 
 

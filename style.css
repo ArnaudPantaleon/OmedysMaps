@@ -162,21 +162,6 @@ body, html {
     max-height: 500px;
 }
 
-.suggestion-box {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: #1f2937; /* Couleur sombre comme sur votre image */
-    border-radius: 12px;
-    max-height: 400px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    z-index: 1000;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    box-sizing: border-box;
-}
-
 /* Chaque ligne de résultat (ville) à l'intérieur de la boîte */
 .filter-item {
     display: flex;
@@ -693,7 +678,13 @@ body, html {
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.5);
     z-index: 2000;
+    
+    /* CORRECTIONS ICI */
     overflow-y: auto;
+    overflow-x: hidden; /* Empêche tout décalage horizontal */
+    box-sizing: border-box; /* Force le calcul interne */
+    padding-right: 2px; /* Laisse un micro-espace pour la scrollbar */
+    
     animation: slideDown 0.2s ease-out;
 }
 

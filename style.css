@@ -410,8 +410,8 @@ body, html {
     display: flex;
     gap: 8px;
     padding: 16px 20px;
-    background: white;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid transparent;
+    background: none;
 }
 
 .popup-btn-copy,
@@ -602,8 +602,7 @@ body, html {
         background: #0f172a;
     }
 
-    .info-card,
-    .popup-footer {
+    .info-card {
         background: #1e293b;
         border-color: #334155;
     }

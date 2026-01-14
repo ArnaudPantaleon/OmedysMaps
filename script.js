@@ -166,63 +166,51 @@ function toggleMenu() {
     document.getElementById('side-menu').classList.toggle('open'); 
 }
 
-function rechercheEtZoom() {
-    const q = document.getElementById('query').value;
-    if (!q) return;
-    
-    fetch(`https://free.bedrijfsdata.nl/v1.1/geocoding?country_code=fr&q=${encodeURIComponent(q)}`)
-        .then(r => r.json())
-        .then(res => {
-            if (res.geocoding.length) { 
-                const lat = res.geocoding[0].lat; 
-                const lon = res.geocoding[0].lon; 
-                map.flyTo([lat, lon], 12); 
-                document.getElementById('query').value = '';
-            } else {
-                alert('⚠️ Aucun lieu trouvé');
-            }
-        })
-        .catch(err => console.error('Erreur recherche:', err));
-}
-
-/*// Lancer recherche avec Entrée
-document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('query')?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') rechercheEtZoom();
-    });
-});*/
-
-
-
 // Afficher les suggestions
 function displaySuggestions(data) {
-    if (!data.geocoding || data.geocoding.length === 0) {
+    if (!data.features || data.features.length === 0) {
         suggestionBox.innerHTML = '<div class="suggestion-item empty">Aucun lieu trouvé</div>';
         return;
     }
 
     // Filtrer uniquement la France + dédupliquer par municipality + postcode
     const seen = new Set();
-    const unique = data.geocoding
-        .filter(item => item.country_code === 'FR') // 🇫🇷 Filtre France uniquement
-        .filter(item => {
-            const key = `${item.municipality}-${item.postcode}`;
+    const unique = data.features
+        .filter(feature => feature.properties.country_code === 'fr') // 🇫🇷 Filtre France uniquement
+        .filter(feature => {
+            const municipality = feature.properties.city || feature.properties.town || feature.properties.name;
+            const postcode = feature.properties.postcode || '';
+            const key = `${municipality}-${postcode}`;
             if (seen.has(key)) return false;
             seen.add(key);
             return true;
-        });
+        })
+        .slice(0, 10); // Limiter à 10 résultats
 
-    suggestionBox.innerHTML = unique.map((item, idx) => `
-        <div class="suggestion-item" onclick="selectSuggestion('${item.municipality}', ${item.lat}, ${item.lon}, ${idx})">
-            <div class="suggestion-header">
-                <span class="suggestion-city">${item.municipality}</span>
-                <span class="suggestion-zip">${item.postcode || ''}</span>
+    if (unique.length === 0) {
+        suggestionBox.innerHTML = '<div class="suggestion-item empty">Aucun résultat en France</div>';
+        return;
+    }
+
+    suggestionBox.innerHTML = unique.map((feature, idx) => {
+        const municipality = feature.properties.city || feature.properties.town || feature.properties.name;
+        const postcode = feature.properties.postcode || '';
+        const province = feature.properties.state || '';
+        const lat = feature.geometry.coordinates[1];
+        const lon = feature.geometry.coordinates[0];
+
+        return `
+            <div class="suggestion-item" onclick="selectSuggestion('${municipality.replace(/'/g, "\\'")}', ${lat}, ${lon}, ${idx})">
+                <div class="suggestion-header">
+                    <span class="suggestion-city">${municipality}</span>
+                    <span class="suggestion-zip">${postcode}</span>
+                </div>
+                <div class="suggestion-meta">
+                    <span class="suggestion-province">${province}</span>
+                </div>
             </div>
-            <div class="suggestion-meta">
-                <span class="suggestion-province">${item.province || ''}</span>
-            </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 // Cacher les suggestions
@@ -252,8 +240,11 @@ function fetchSuggestions(query) {
     const controller = new AbortController();
     currentRequest = controller;
 
+    // Bbox France: [minLon, minLat, maxLon, maxLat]
+    const franceBbox = '2.25,42.5,8.23,51.1';
+
     fetch(
-        `https://free.bedrijfsdata.nl/v1.1/geocoding?country_code=fr&q=${encodeURIComponent(query)}`,
+        `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&lang=fr&limit=15&bbox=${franceBbox}`,
         { signal: controller.signal }
     )
         .then(r => r.json())
@@ -262,7 +253,7 @@ function fetchSuggestions(query) {
         })
         .catch(err => {
             if (err.name !== 'AbortError') {
-                console.error('Erreur recherche:', err);
+                console.error('Erreur recherche Photon:', err);
             }
         });
 }

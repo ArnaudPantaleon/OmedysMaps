@@ -165,7 +165,7 @@ function rechercheEtZoom() {
     const q = document.getElementById('query').value;
     if (!q) return;
     
-    fetch(`https://data.geopf.fr/geocodage/search?q=${encodeURIComponent(q)}`)
+    fetch(`https://free.bedrijfsdata.nl/v1.1/geocoding?country_code=fr&q=${encodeURIComponent(q)}`)
         .then(r => r.json())
         .then(res => {
             if (res.features.length) { 

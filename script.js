@@ -83,7 +83,7 @@ async function startApp() {
                         <div class="popup-body-v2">
                             <div class="popup-section">
                                 <div class="info-card">
-                                    <div class="info-icon">👤</div>
+                                    <div class="info-icon">🧑‍💻</div>
                                     <div class="info-content">
                                         <span class="info-label">Responsable</span>
                                         <span class="info-value">${item.ATT || "Non assigné"}</span>

@@ -173,12 +173,18 @@ function displaySuggestions(data) {
         return;
     }
 
+    // Debug
+    console.log('Nominatim raw data:', data);
+
     // Filtrer uniquement la France + type pertinent + avec code postal + dédupliquer
     const validTypes = ['city', 'town', 'village']; // Types pertinents
     
     const seen = new Set();
     const unique = data
-        .filter(feature => feature.address?.country_code === 'fr') // 🇫🇷 France uniquement
+        .filter(feature => {
+            console.log('Checking:', feature.address?.city, 'country_code:', feature.address?.country_code);
+            return feature.address?.country_code?.toLowerCase() === 'fr'; // 🇫🇷 France uniquement
+        })
         .filter(feature => feature.address?.postcode) // ✅ Avoir un code postal
         .filter(feature => {
             // Garder uniquement les villes, villages, communes
@@ -194,6 +200,8 @@ function displaySuggestions(data) {
             return true;
         })
         .slice(0, 10); // Limiter à 10 résultats
+
+    console.log('Filtered results:', unique);
 
     if (unique.length === 0) {
         suggestionBox.innerHTML = '<div class="suggestion-item empty">Aucun résultat en France</div>';
@@ -267,6 +275,7 @@ function fetchSuggestions(query) {
             }
         });
 }
+
 
 // Écouter les modifications de l'input
 searchInput?.addEventListener('input', (e) => {

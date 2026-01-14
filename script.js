@@ -181,25 +181,23 @@ function displaySuggestions(data) {
     
     const seen = new Set();
     const unique = data
-        .filter(feature => {
-            console.log('Checking:', feature.address?.city, 'country_code:', feature.address?.country_code);
-            return feature.address; // 🇫🇷 France uniquement
-        })
-        .filter(feature => {
-            // Garder uniquement les villes, villages, communes
-            return validTypes.includes(feature.type);
-        })
-        .filter(feature => {
-            // Dédupliquer par municipality + postcode
-            const municipality = feature.address?.city || feature.address?.town || feature.name;
-            const postcode = feature.address?.postcode;
-            const key = `${municipality}-${postcode}`;
-            if (seen.has(key)) return false;
-            seen.add(key);
-            return true;
-        })
-        .slice(0, 10); // Limiter à 10 résultats
-
+    .filter(feature => {
+        // L'API garantit déjà la France grâce à l'URL
+        // On garde les types que vous avez définis
+        return validTypes.includes(feature.type) || validTypes.includes(feature.addresstype);
+    })
+    .filter(feature => {
+        const addr = feature.address;
+        const municipality = addr.city || addr.town || addr.village || addr.municipality || feature.name;
+        const postcode = addr.postcode || '';
+        
+        const key = `${municipality}-${postcode}`.toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    })
+    .slice(0, 10);
+    
     console.log('Filtered results:', unique);
 
     if (unique.length === 0) {
@@ -256,7 +254,7 @@ function fetchSuggestions(query) {
     currentRequest = controller;
 
     fetch(
-        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&countrycodes=fr&limit=15&accept-language=fr`,
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&countrycodes=fr&limit=15&accept-language=fr`,
         { 
             signal: controller.signal,
             headers: {

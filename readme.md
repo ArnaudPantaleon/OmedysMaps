@@ -1,8 +1,8 @@
-# 🗺️ Omedys Maps - Bento Edition
+# 🗺️ Omedys Maps
 
 Application interactive de cartographie pour visualiser et explorer tous les cabinets, salles et établissements du réseau Omedys en France.
 
-**Démo en ligne :** https://maps.support-omedys.fr/
+
 
 ---
 

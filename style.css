@@ -607,7 +607,42 @@ body, html {
         background: #1e293b;
         border-color: #334155;
     }
-
+    .address-card {
+        display: flex;
+        gap: 12px;
+        padding: 14px;
+        background: linear-gradient(135deg, #005d4f 0%, #093a5b 100%);
+        border-radius: 16px;
+        border: 1px solid #04693a;
+    }
+    .address-text {
+        font-size: 13px;
+        color: #00c5b6;
+        line-height: 1.5;
+        margin: 0;
+        font-weight: 500;
+    }
+    .filter-item {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        border-radius: 12px;
+        margin-bottom: 6px;
+        cursor: pointer;
+        border: 1.5px solid transparent;
+        background: #0000006e;
+        transition: all 0.2s ease;
+        user-select: none;
+    }
+    .filter-item.active {
+        border-color: var(--primary);
+        background: #009597;
+    }
+    .filter-label {
+        font-size: 13px;
+        font-weight: 700;
+        color: #ffffffbd;
+    }
     .popup-title,
     .info-value {
         color: #f1f5f9;

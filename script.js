@@ -254,7 +254,7 @@ function fetchSuggestions(query) {
     currentRequest = controller;
 
     fetch(
-        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&countrycodes=fr&limit=15&accept-language=fr`,
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&countrycodes=fr&limit=15&accept-language=fr&addressdetails=1&featuretype=settlement`,
         { 
             signal: controller.signal,
             headers: {

@@ -265,7 +265,7 @@ python3 validate_data.py
 - ✅ HTTPS obligatoire sur production
 - ✅ Pas de tracking utilisateur
 - ✅ Pas de authentification (accès libre)
-- ⚠️ API adresse.gouv.fr log les recherches (légal en FR)
+- ✅ api free.bedrijfsdata.nl (accès libre)
 
 ---
 
@@ -300,20 +300,18 @@ Voir le fichier [LICENSE](LICENSE) pour les détails complets.
 - [x] Recherche par ville
 - [ ] Clustering des marqueurs
 - [ ] Données GPS complètes (500 sites manquants)
+- [ ] Filtrage par région/département
 
 ### Phase 2 (Moyen terme)
+- [ ] Backend pour mise à jour auto des données
 - [ ] Filtrage par type (EHPAD, Pharmacie...)
-- [ ] Filtrage par région/département
-- [ ] Export données (CSV, GeoJSON)
 - [ ] Système de favoris
 - [ ] localStorage pour persistance filtres
 
 ### Phase 3 (Long terme)
-- [ ] Backend pour mise à jour auto des données
+- [ ] Système de favoris
 - [ ] Authentification (pour données privées)
 - [ ] Historique des changements de statut
-- [ ] API REST pour intégration externe
-- [ ] App mobile native
 
 ---
 
@@ -339,8 +337,7 @@ Voir le fichier [LICENSE](LICENSE) pour les détails complets.
 
 - [Documentation Leaflet.js](https://leafletjs.com/reference.html)
 - [OpenStreetMap](https://www.openstreetmap.org/)
-- [API adresse.gouv.fr](https://adresse.data.gouv.fr/)
-- [Déployer sur Netlify](https://www.netlify.com/)
+- [API geocoding](httpd://free.bedrijfsdata.nl)
 - [Déployer sur GitHub Pages](https://pages.github.com/)
 
 ---

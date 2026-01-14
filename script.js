@@ -215,7 +215,7 @@ window.selectSuggestion = (city, lat, lon, idx) => {
 };
 
 // Récupérer les suggestions avec débounce
-function fetchSuggestions(query) {
+async function fetchSuggestions(query) {
     const response = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${query}&limit=15&type=municipality`);
     const data = await response.json();
     displaySuggestions(data.features); // Attention : on passe data.features

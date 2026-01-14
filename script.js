@@ -182,50 +182,10 @@ function rechercheEtZoom() {
 }
 
 // Lancer recherche avec Entrée
-/*document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('query')?.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') rechercheEtZoom();
     });
-});*/
-document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('query')?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter'){
-            const q = document.getElementById('query').value;
-            geocode(q);
-        }
-    });
 });
-function selectSuggestion(item) {
-  // Centrer la carte
-  map.setView([item.lat, item.lon], 13);
-
-  // Masquer la liste de suggestions
-  suggestionList.innerHTML = '';
-  suggestionList.style.display = 'none';
-}
-async function geocode(query) {
-  if (query.length < 3) return;
-
-  const url = `https://free.bedrijfsdata.nl/v1.1/geocoding?country_code=fr&q=${encodeURIComponent(query)}`;
-  const response = await fetch(url);
-  const data = await response.json();
-
-  showSuggestions(data);
-}
-function showSuggestions(results) {
-  suggestionList.innerHTML = '';
-
-  results.slice(0, 6).forEach(item => {
-    const entry = document.createElement('div');
-    entry.className = 'suggestion-item';
-    entry.textContent = item.display_name;
-    entry.addEventListener('click', () => {
-      selectSuggestion(item);
-    });
-    suggestionList.appendChild(entry);
-  });
-
-  suggestionList.style.display = 'block';
-}
 
 startApp();

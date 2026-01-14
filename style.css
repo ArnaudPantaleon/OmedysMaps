@@ -716,9 +716,17 @@ body, html {
     margin: 10px 0; /* Ajoute une marge en haut et en bas pour que la barre ne touche pas les coins arrondis */
 }
 
+/* La barre qui bouge */
 #suggestions::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 3px;
+    background: #cbd5e1; /* Couleur claire pour le thème light */
+    border-radius: 10px;
+}
+
+/* Adaptation automatique pour le mode sombre de votre projet */
+@media (prefers-color-scheme: dark) {
+    #suggestions::-webkit-scrollbar-thumb {
+        background: #4b5563; /* Couleur plus sombre pour ne pas jurer avec le fond #1e293b */
+    }
 }
 
 #suggestions::-webkit-scrollbar-thumb:hover {

@@ -678,12 +678,14 @@ body, html {
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.5);
     z-index: 2000;
-    display: block !important;
-    overflow-y: scroll; /* Force la présence de la barre pour éviter les sauts */
+    
+    /* AJOUTS CRITIQUES */
+    overflow-y: auto;
     overflow-x: hidden;
-    box-sizing: border-box !important;
-    contain: paint; /* Force l'affichage à rester strictement dans les limites du cadre */
-    animation: slideDown 0.2s ease-out;
+    display: block; 
+    box-sizing: border-box;
+    /* Empêche le contenu de toucher le bord droit où se trouve la barre */
+    padding-right: 5px; 
 }
 
 /* Masquer la boîte quand vide */
@@ -725,11 +727,14 @@ body, html {
 /* Items */
 .suggestion-item {
     padding: 12px 16px;
-    padding-right: 20px; /* Augmenter un peu ici pour dégager la scrollbar */
+    /* On augmente le padding à droite pour que la scrollbar ne cache pas le texte */
+    padding-right: 30px !important; 
+    
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     cursor: pointer;
     transition: all 0.15s ease;
     user-select: none;
+    box-sizing: border-box; /* Indispensable */
 }
 
 .suggestion-item:last-child {

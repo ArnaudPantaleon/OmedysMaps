@@ -201,14 +201,16 @@ function displaySuggestions(data) {
         return;
     }
 
-    // Dédupliquer par municipality + postcode
+    // Filtrer uniquement la France + dédupliquer par municipality + postcode
     const seen = new Set();
-    const unique = data.geocoding.filter(item => {
-        const key = `${item.municipality}-${item.postcode}`;
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-    });
+    const unique = data.geocoding
+        .filter(item => item.country_code === 'FR') // 🇫🇷 Filtre France uniquement
+        .filter(item => {
+            const key = `${item.municipality}-${item.postcode}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
 
     suggestionBox.innerHTML = unique.map((item, idx) => `
         <div class="suggestion-item" onclick="selectSuggestion('${item.municipality}', ${item.lat}, ${item.lon}, ${idx})">
@@ -218,7 +220,6 @@ function displaySuggestions(data) {
             </div>
             <div class="suggestion-meta">
                 <span class="suggestion-province">${item.province || ''}</span>
-                <span class="suggestion-country">${item.country_code}</span>
             </div>
         </div>
     `).join('');

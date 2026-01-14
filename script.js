@@ -206,20 +206,31 @@ function displaySuggestions(data) {
     }
 
     suggestionBox.innerHTML = unique.map((feature, idx) => {
-        const municipality = feature.address?.city || feature.address?.town || feature.name;
-        const postcode = feature.address?.postcode || '';
-        const province = feature.address?.state || '';
+        const addr = feature.address;
+        
+        // 1. Déterminer le nom de la commune ou de l'arrondissement
+        // On cherche d'abord s'il y a un quartier (suburb) qui contient souvent "Paris 15e"
+        const displayCity = addr.suburb || addr.city || addr.town || addr.village || feature.name;
+        
+        // 2. Récupérer le code postal
+        const postcode = addr.postcode || "";
+    
+        // 3. Gérer le nom de la ville parente pour la "meta" (province/département)
+        // Si c'est un arrondissement, on affiche "Paris" en dessous, sinon le département
+        const parentCity = (addr.suburb && addr.city) ? addr.city : (addr.state || addr.county || "");
+    
         const lat = parseFloat(feature.lat);
         const lon = parseFloat(feature.lon);
-
+        const safeName = displayCity.replace(/'/g, "\\'");
+    
         return `
-            <div class="suggestion-item" onclick="selectSuggestion('${municipality.replace(/'/g, "\\'")}', ${lat}, ${lon}, ${idx})">
+            <div class="suggestion-item" onclick="selectSuggestion('${safeName}', ${lat}, ${lon}, ${idx})">
                 <div class="suggestion-header">
-                    <span class="suggestion-city">${municipality}</span>
+                    <span class="suggestion-city"><strong>${displayCity}</strong></span>
                     <span class="suggestion-zip">${postcode}</span>
                 </div>
                 <div class="suggestion-meta">
-                    <span class="suggestion-province">${province}</span>
+                    <span class="suggestion-province">${parentCity}</span>
                 </div>
             </div>
         `;

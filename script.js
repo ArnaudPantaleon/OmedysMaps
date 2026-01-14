@@ -174,32 +174,32 @@ function displaySuggestions(features) {
     }
 
     suggestionBox.innerHTML = features.map((feature, idx) => {
-        // L'API Gouv structure ses données dans "properties"
-        const prop = feature.properties;
-        const geometry = feature.geometry;
-        
-        const municipality = prop.city;
-        const postcode = prop.postcode;
-        const context = prop.context; // Contient "Département, Région"
-        
-        // Attention : l'API Gouv inverse souvent Lon et Lat dans geometry.coordinates [lon, lat]
-        const lon = geometry.coordinates[0];
-        const lat = geometry.coordinates[1];
-        
-        const safeName = municipality.replace(/'/g, "\\'");
+    const prop = feature.properties;
+    const geometry = feature.geometry;
 
-        return `
-            <div class="suggestion-item" onclick="selectSuggestion('${safeName}', ${lat}, ${lon}, ${idx})">
-                <div class="suggestion-header">
-                    <span class="suggestion-city"><strong>${municipality}</strong></span>
-                    <span class="suggestion-zip">${postcode}</span>
-                </div>
-                <div class="suggestion-meta">
-                    <span class="suggestion-province">${context}</span>
-                </div>
+    // Nettoyage du contexte
+    const ctx = prop.context.split(', ');
+    const displayContext = ctx.length > 1 ? `${ctx[1]} (${ctx[0]})` : prop.context;
+
+    const municipality = prop.city;
+    const postcode = prop.postcode;
+    const lon = geometry.coordinates[0];
+    const lat = geometry.coordinates[1];
+    
+    const safeName = municipality.replace(/'/g, "\\'");
+
+    return `
+        <div class="suggestion-item" onclick="selectSuggestion('${safeName}', ${lat}, ${lon}, ${idx})">
+            <div class="suggestion-header">
+                <span class="suggestion-city"><strong>${municipality}</strong></span>
+                <span class="suggestion-zip">${postcode}</span>
             </div>
-        `;
-    }).join('');
+            <div class="suggestion-meta">
+                <span class="suggestion-province">${displayContext}</span>
+            </div>
+        </div>
+    `;
+}).join('');
 }
 
 // Cacher les suggestions

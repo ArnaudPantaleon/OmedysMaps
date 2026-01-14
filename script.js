@@ -176,9 +176,9 @@ function displaySuggestions(data) {
     // Filtrer uniquement la France + dédupliquer par municipality + postcode
     const seen = new Set();
     const unique = data.features
-        .filter(feature => feature.properties.country_code === 'fr') // 🇫🇷 Filtre France uniquement
+        .filter(feature => feature.properties.countrycode === 'FR') // 🇫🇷 Filtre France uniquement
         .filter(feature => {
-            const municipality = feature.properties.city || feature.properties.town || feature.properties.name;
+            const municipality = feature.properties.city || feature.properties.name;
             const postcode = feature.properties.postcode || '';
             const key = `${municipality}-${postcode}`;
             if (seen.has(key)) return false;
@@ -193,7 +193,7 @@ function displaySuggestions(data) {
     }
 
     suggestionBox.innerHTML = unique.map((feature, idx) => {
-        const municipality = feature.properties.city || feature.properties.town || feature.properties.name;
+        const municipality = feature.properties.city || feature.properties.name;
         const postcode = feature.properties.postcode || '';
         const province = feature.properties.state || '';
         const lat = feature.geometry.coordinates[1];

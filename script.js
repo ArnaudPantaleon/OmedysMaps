@@ -179,7 +179,7 @@ function displaySuggestions(features) {
 
     // Nettoyage du contexte
     const ctx = prop.context.split(', ');
-    const displayContext = ctx.length > 1 ? `${ctx[1]} (${ctx[0]})` : prop.context;
+    const displayContext = ctx.length > 1 ? `${ctx[1]} (${ctx[0]}), ${ctx[2]}` : prop.context;
 
     const municipality = prop.city;
     const postcode = prop.postcode;

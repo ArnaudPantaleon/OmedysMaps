@@ -4,7 +4,7 @@ const CONFIG = {
         "Ouvertes": { color: "#2ecc71", label: "Salles Ouvertes", checked: true },
         "Telesecretariat OMEDYS": { color: "#8956FB", label: "Télésecrétariat", checked: true },
         "Ouverture en cours": { color: "#3498db", label: "En cours", checked: false },
-        "TYPE_ESMS": { color: "#1e293b", label: "Afficher ESMS", checked: false }
+        "TYPE_ESMS": { color: "#475569", label: "Afficher ESMS", checked: false }
     }
 };
 
@@ -18,6 +18,33 @@ function formatPhone(num) {
     let cleaned = ('' + num).replace(/\D/g, '');
     let match = cleaned.match(/^(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})$/);
     return match ? match.slice(1).join(' ') : num;
+}
+
+// Ajuster la luminosité d'une couleur hex
+function adjustBrightness(color, percent) {
+    let hex = color.replace('#', '');
+    let r = parseInt(hex.substring(0, 2), 16);
+    let g = parseInt(hex.substring(2, 4), 16);
+    let b = parseInt(hex.substring(4, 6), 16);
+    
+    r = Math.min(255, Math.floor(r + (r * percent / 100)));
+    g = Math.min(255, Math.floor(g + (g * percent / 100)));
+    b = Math.min(255, Math.floor(b + (b * percent / 100)));
+    
+    return "#" + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+}
+
+// Copier l'adresse dans le presse-papiers
+function copyAddress(address) {
+    if (!address || address === "Non disponible") {
+        alert('⚠️ Adresse non disponible');
+        return;
+    }
+    navigator.clipboard.writeText(address).then(() => {
+        alert('✓ Adresse copiée !');
+    }).catch(() => {
+        console.error('Erreur copie');
+    });
 }
 
 async function startApp() {
@@ -38,27 +65,75 @@ async function startApp() {
 
                 const marker = L.circleMarker([lat, lng], {
                     radius: item.Type === "CABINET" ? 10 : 7,
-                    fillColor: color, color: "#fff", weight: 2, fillOpacity: 0.9
+                    fillColor: color, 
+                    color: "#fff", 
+                    weight: 2, 
+                    fillOpacity: 0.9
                 });
 
+                // === POPUP BENTO V2 ===
                 const popupContent = `
-                    <div class="bento-popup">
-                        <div class="popup-header" style="background:${color}">${item.Name || item.Nom || "Site"}</div>
-                        <div class="popup-body">
-                            <div class="info-row"><b>Type</b><span>${item.Type || "N/C"}</span></div>
-                            <div class="info-row"><b>ATT</b><span>${item.ATT || "N/C"}</span></div>
-                            <div class="info-row"><b>Tel</b><span>${formatPhone(item.Phone || item.Telephone)}</span></div>
-                            <div class="addr-block"><b>Adresse</b><br>${item.Address || item.Adresse || "N/C"}</div>
+                    <div class="bento-popup-v2">
+                        <div class="popup-header-v2" style="background: linear-gradient(135deg, ${color} 0%, ${adjustBrightness(color, 20)} 100%)">
+                            <div class="popup-badge" style="background:${color}">${item.Type || "N/C"}</div>
+                            <h3 class="popup-title">${item.Name || item.Nom || "Site"}</h3>
+                            <p class="popup-status">${item.Statut || "N/C"}</p>
+                        </div>
+                        
+                        <div class="popup-body-v2">
+                            <div class="popup-section">
+                                <div class="info-card">
+                                    <div class="info-icon">👤</div>
+                                    <div class="info-content">
+                                        <span class="info-label">Responsable</span>
+                                        <span class="info-value">${item.ATT || "Non assigné"}</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="info-card">
+                                    <div class="info-icon">📞</div>
+                                    <div class="info-content">
+                                        <span class="info-label">Téléphone</span>
+                                        <a href="tel:${item.Phone || item.Telephone}" class="info-value link">
+                                            ${formatPhone(item.Phone || item.Telephone)}
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="popup-divider"></div>
+                            
+                            <div class="popup-section">
+                                <div class="address-card">
+                                    <div class="address-icon">📍</div>
+                                    <div class="address-content">
+                                        <span class="info-label">Adresse</span>
+                                        <p class="address-text">${item.Address || item.Adresse || "Non disponible"}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="popup-footer">
+                                <button class="popup-btn-copy" onclick="copyAddress('${(item.Address || item.Adresse || "").replace(/'/g, "\\'")}')">📋 Copier</button>
+                                <a href="https://www.google.com/maps/search/${encodeURIComponent(item.Address || item.Adresse || '')}" target="_blank" class="popup-btn-map">🗺️ Maps</a>
+                            </div>
                         </div>
                     </div>`;
 
-                marker.bindPopup(popupContent, { maxWidth: 260, className: 'custom-bento-popup' });
+                marker.bindPopup(popupContent, { 
+                    maxWidth: 320, 
+                    className: 'custom-bento-popup-v2',
+                    closeButton: true
+                });
+
                 markersStore.push({ marker, status: item.Statut, isESMS });
                 applyVisibility(markersStore[markersStore.length - 1]);
             }
         });
         renderFilters();
-    } catch (err) { console.error(err); }
+    } catch (err) { 
+        console.error('Erreur chargement données:', err); 
+    }
 }
 
 function applyVisibility(item) {
@@ -75,13 +150,44 @@ function renderFilters() {
     updateStats();
 }
 
-window.toggleFilter = (k) => { CONFIG.status[k].checked = !CONFIG.status[k].checked; markersStore.forEach(applyVisibility); renderFilters(); };
-function updateStats() { document.getElementById('site-count').innerText = markersStore.filter(m => map.hasLayer(m.marker)).length; }
-function toggleMenu() { document.getElementById('menu-btn').classList.toggle('active'); document.getElementById('side-menu').classList.toggle('open'); }
+window.toggleFilter = (k) => { 
+    CONFIG.status[k].checked = !CONFIG.status[k].checked; 
+    markersStore.forEach(applyVisibility); 
+    renderFilters(); 
+};
+
+function updateStats() { 
+    document.getElementById('site-count').innerText = markersStore.filter(m => map.hasLayer(m.marker)).length; 
+}
+
+function toggleMenu() { 
+    document.getElementById('menu-btn').classList.toggle('active'); 
+    document.getElementById('side-menu').classList.toggle('open'); 
+}
+
 function rechercheEtZoom() {
     const q = document.getElementById('query').value;
-    fetch(`https://api-adresse.data.gouv.fr/search/?q=${q}&limit=1`).then(r => r.json()).then(res => {
-        if (res.features.length) { const [lon, lat] = res.features[0].geometry.coordinates; map.flyTo([lat, lon], 12); }
-    });
+    if (!q) return;
+    
+    fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(q)}&limit=1`)
+        .then(r => r.json())
+        .then(res => {
+            if (res.features.length) { 
+                const [lon, lat] = res.features[0].geometry.coordinates; 
+                map.flyTo([lat, lon], 12); 
+                document.getElementById('query').value = '';
+            } else {
+                alert('⚠️ Aucun lieu trouvé');
+            }
+        })
+        .catch(err => console.error('Erreur recherche:', err));
 }
+
+// Lancer recherche avec Entrée
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('query')?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') rechercheEtZoom();
+    });
+});
+
 startApp();

@@ -162,19 +162,37 @@ body, html {
     max-height: 500px;
 }
 
-.filter-item {
-    display: flex; 
-    align-items: center; 
-    padding: 10px; 
+.suggestion-box {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #1f2937; /* Couleur sombre comme sur votre image */
     border-radius: 12px;
-    margin-bottom: 6px; 
-    cursor: pointer; 
-    border: 1.5px solid transparent; 
-    background: #f8fafc;
-    transition: all 0.2s ease;
-    user-select: none;
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    z-index: 1000;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
 }
 
+/* Chaque ligne de résultat (ville) à l'intérieur de la boîte */
+.filter-item {
+    display: flex;
+    flex-direction: column; /* Pour empiler Ville et Département */
+    padding: 10px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.2s ease;
+    user-select: none;
+    color: white;
+}
+
+/* Effet au survol d'une ville */
+.filter-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
 .filter-item:active {
     transform: scale(0.98);
 }

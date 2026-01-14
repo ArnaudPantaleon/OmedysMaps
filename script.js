@@ -168,8 +168,9 @@ function rechercheEtZoom() {
     fetch(`https://free.bedrijfsdata.nl/v1.1/geocoding?country_code=fr&q=${encodeURIComponent(q)}`)
         .then(r => r.json())
         .then(res => {
-            if (res.features.length) { 
-                const [lon, lat] = res.features[0].geometry.coordinates; 
+            if (res.geocoding.length) { 
+                const lat = res.geocoding[0].lat; 
+                const lon = res.geocoding[0].lon; 
                 map.flyTo([lat, lon], 12); 
                 document.getElementById('query').value = '';
             } else {

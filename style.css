@@ -633,6 +633,9 @@ body, html {
         transition: all 0.2s ease;
         user-select: none;
     }
+    .bento-search input {
+        color: #ffffffbd;
+    }
     .filter-item.active {
         border-color: var(--primary);
         background: #00959766;

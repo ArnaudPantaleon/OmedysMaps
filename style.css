@@ -674,9 +674,16 @@ body, html {
     box-shadow: var(--shadow);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.5);
-    z-index: 999;
+    z-index: 2000;
     overflow-y: auto;
     animation: slideDown 0.2s ease-out;
+}
+
+/* Masquer la boîte quand vide */
+#suggestions:empty {
+    display: none;
+    border: none;
+    box-shadow: none;
 }
 
 @keyframes slideDown {
@@ -786,11 +793,14 @@ body, html {
 
 .suggestion-country {
     background: #f1f5f9;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-weight: 600;
-    color: #475569;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 10px;
+    color: #009597;
     flex-shrink: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 /* ===== RESPONSIVE ===== */

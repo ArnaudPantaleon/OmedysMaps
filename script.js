@@ -168,31 +168,26 @@ function toggleMenu() {
 
 // Afficher les suggestions
 function displaySuggestions(data) {
-    if (!data.features || data.features.length === 0) {
+    if (!Array.isArray(data) || data.length === 0) {
         suggestionBox.innerHTML = '<div class="suggestion-item empty">Aucun lieu trouvé</div>';
         return;
     }
 
-    // Filtrer uniquement la France + type pertinent + dédupliquer
-    const validOsmKeys = ['place', 'boundary', 'admin_centre']; // Lieux pertinents
-    const validTypes = ['city', 'town', 'village', 'hamlet', 'administrative'];
+    // Filtrer uniquement la France + type pertinent + avec code postal + dédupliquer
+    const validTypes = ['city', 'town', 'village']; // Types pertinents
     
     const seen = new Set();
-    const unique = data.features
-        .filter(feature => feature.properties.countrycode === 'FR') // 🇫🇷 France uniquement
-        .filter(feature => feature.properties.postcode)
-        .filter(feature => {
-            // Garder uniquement place, boundary, admin_centre
-            return validOsmKeys.includes(feature.properties.osm_key);
-        })
+    const unique = data
+        .filter(feature => feature.address?.country_code === 'fr') // 🇫🇷 France uniquement
+        .filter(feature => feature.address?.postcode) // ✅ Avoir un code postal
         .filter(feature => {
             // Garder uniquement les villes, villages, communes
-            return validTypes.includes(feature.properties.type);
+            return validTypes.includes(feature.type);
         })
         .filter(feature => {
             // Dédupliquer par municipality + postcode
-            const municipality = feature.properties.city || feature.properties.name;
-            const postcode = feature.properties.postcode || '';
+            const municipality = feature.address?.city || feature.address?.town || feature.name;
+            const postcode = feature.address?.postcode;
             const key = `${municipality}-${postcode}`;
             if (seen.has(key)) return false;
             seen.add(key);
@@ -206,11 +201,11 @@ function displaySuggestions(data) {
     }
 
     suggestionBox.innerHTML = unique.map((feature, idx) => {
-        const municipality = feature.properties.city || feature.properties.name;
-        const postcode = feature.properties.postcode || '';
-        const province = feature.properties.state || '';
-        const lat = feature.geometry.coordinates[1];
-        const lon = feature.geometry.coordinates[0];
+        const municipality = feature.address?.city || feature.address?.town || feature.name;
+        const postcode = feature.address?.postcode || '';
+        const province = feature.address?.state || '';
+        const lat = parseFloat(feature.lat);
+        const lon = parseFloat(feature.lon);
 
         return `
             <div class="suggestion-item" onclick="selectSuggestion('${municipality.replace(/'/g, "\\'")}', ${lat}, ${lon}, ${idx})">

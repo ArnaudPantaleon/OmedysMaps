@@ -678,13 +678,11 @@ body, html {
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.5);
     z-index: 2000;
-    
-    /* CORRECTIONS ICI */
-    overflow-y: auto;
-    overflow-x: hidden; /* Empêche tout décalage horizontal */
-    box-sizing: border-box; /* Force le calcul interne */
-    padding-right: 2px; /* Laisse un micro-espace pour la scrollbar */
-    
+    display: block !important;
+    overflow-y: scroll; /* Force la présence de la barre pour éviter les sauts */
+    overflow-x: hidden;
+    box-sizing: border-box !important;
+    contain: paint; /* Force l'affichage à rester strictement dans les limites du cadre */
     animation: slideDown 0.2s ease-out;
 }
 

@@ -99,11 +99,7 @@ async function startApp() {
                                         </a>
                                     </div>
                                 </div>
-                            </div>
-                            
-                            <div class="popup-divider"></div>
-                            
-                            <div class="popup-section">
+                                
                                 <div class="address-card">
                                     <div class="address-icon">📍</div>
                                     <div class="address-content">

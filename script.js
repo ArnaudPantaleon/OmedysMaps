@@ -183,9 +183,8 @@ function displaySuggestions(data) {
     const unique = data
         .filter(feature => {
             console.log('Checking:', feature.address?.city, 'country_code:', feature.address?.country_code);
-            return feature.address?.country_code?.toLowerCase() === 'fr'; // 🇫🇷 France uniquement
+            return feature.address; // 🇫🇷 France uniquement
         })
-        .filter(feature => feature.address?.postcode) // ✅ Avoir un code postal
         .filter(feature => {
             // Garder uniquement les villes, villages, communes
             return validTypes.includes(feature.type);

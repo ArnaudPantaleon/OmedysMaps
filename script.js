@@ -10,7 +10,8 @@ const CONFIG = {
 
 let map = L.map('map', { zoomControl: false }).setView([46.6033, 1.8883], 6);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-
+const searchInput = document.getElementById('query'); // adapte selon ton HTML
+const suggestionList = document.getElementById('suggestions'); // un élément <ul> ou <div> pour la liste
 let markersStore = [];
 
 function formatPhone(num) {
@@ -186,5 +187,38 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'Enter') rechercheEtZoom();
     });
 });
+
+function selectSuggestion(item) {
+  // Centrer la carte
+  map.setView([item.lat, item.lon], 13);
+
+  // Masquer la liste de suggestions
+  suggestionList.innerHTML = '';
+  suggestionList.style.display = 'none';
+}
+async function geocode(query) {
+  if (query.length < 3) return;
+
+  const url = `https://free.bedrijfsdata.nl/v1.1/geocoding?country_code=fr&q=${encodeURIComponent(query)}`;
+  const response = await fetch(url);
+  const data = await response.json();
+
+  showSuggestions(data);
+}
+function showSuggestions(results) {
+  suggestionList.innerHTML = '';
+
+  results.slice(0, 6).forEach(item => {
+    const entry = document.createElement('div');
+    entry.className = 'suggestion-item';
+    entry.textContent = item.display_name;
+    entry.addEventListener('click', () => {
+      selectSuggestion(item);
+    });
+    suggestionList.appendChild(entry);
+  });
+
+  suggestionList.style.display = 'block';
+}
 
 startApp();

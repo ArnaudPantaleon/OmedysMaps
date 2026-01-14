@@ -636,7 +636,7 @@ body, html {
     }
     .filter-item.active {
         border-color: var(--primary);
-        background: #009597;
+        background: #00959766;
     }
     .filter-label {
         font-size: 13px;

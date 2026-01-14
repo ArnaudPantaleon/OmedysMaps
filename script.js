@@ -182,11 +182,11 @@ function rechercheEtZoom() {
 }
 
 // Lancer recherche avec Entrée
-document.addEventListener('DOMContentLoaded', () => {
+/*document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('query')?.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') rechercheEtZoom();
     });
-});
+});*/
 
 function selectSuggestion(item) {
   // Centrer la carte

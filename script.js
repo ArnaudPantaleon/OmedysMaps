@@ -1,4 +1,4 @@
-
+// === FONCTION MENU (définir d'abord) ===
 const CONFIG = {
     // === FILTRES PAR STATUT (Couleurs) ===
     status: {
@@ -291,6 +291,19 @@ function updateStats() {
     document.getElementById('site-count').innerText = markersStore.filter(m => map.hasLayer(m.marker)).length; 
 }
 
+function toggleMenu() { 
+    const menuBtn = document.getElementById('menu-btn');
+    const sideMenu = document.getElementById('side-menu');
+    
+    if (!menuBtn || !sideMenu) {
+        console.error('Menu elements not found');
+        return;
+    }
+    
+    menuBtn.classList.toggle('active');
+    sideMenu.classList.toggle('open');
+}
+
 function displaySuggestions(features) {
     if (!features || features.length === 0) {
         suggestionBox.innerHTML = '<div class="suggestion-item empty">Aucun lieu trouvé</div>';
@@ -364,26 +377,18 @@ searchInput?.addEventListener('keypress', (e) => {
     }
 });
 
-function toggleMenu() { 
-    const menuBtn = document.getElementById('menu-btn');
-    const sideMenu = document.getElementById('side-menu');
-    
-    if (!menuBtn || !sideMenu) {
-        console.error('Menu elements not found');
-        return;
-    }
-    
-    menuBtn.classList.toggle('active');
-    sideMenu.classList.toggle('open');
-}
 // Fermer le menu au clic en dehors (sauf sur le menu et le bouton)
+document.addEventListener('click', (e) => {
+    const sideMenu = document.getElementById('side-menu');
+    const menuBtn = document.getElementById('menu-btn');
+    
+    if (sideMenu && menuBtn && sideMenu.classList.contains('open')) {
+        // Si le clic est EN DEHORS du menu ET du bouton
+        if (!sideMenu.contains(e.target) && !menuBtn.contains(e.target)) {
+            menuBtn.classList.remove('active');
+            sideMenu.classList.remove('open');
+        }
+    }
+});
 
 startApp();
-
-// Debug menu
-console.log('Script loaded');
-const testBtn = document.getElementById('menu-btn');
-console.log('Menu button found:', testBtn);
-
-
-document.getElementById('menu-btn')?.addEventListener('click', toggleMenu);

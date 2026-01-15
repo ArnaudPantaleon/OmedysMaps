@@ -392,3 +392,15 @@ window.addEventListener('load', () => {
 });
 
 startApp();
+
+// Test direct
+setTimeout(() => {
+    const btn = document.getElementById('menu-btn');
+    console.log('Final check - button:', btn);
+    if (btn) {
+        btn.onclick = function() {
+            console.log('CLICKED');
+            toggleMenu();
+        };
+    }
+}, 500);

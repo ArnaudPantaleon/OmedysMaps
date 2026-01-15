@@ -4,7 +4,7 @@ const CONFIG = {
     status: {
         "Ouvert": { color: "#009597", label: "Cabinets Omedys", description: "Ouverts", checked: true },
         "Ouvertes": { color: "#2ecc71", label: "Salles Ouvertes", description: "485 sites", checked: true },
-        "Telesecretariat OMEDYS": { color: "#8956FB", label: "Télésecrétariat", description: "89 sites", checked: true },
+        "Telesecretariat OMEDYS": { color: "#8956FB", label: "Téléscrétariat", description: "89 sites", checked: true },
         "Ouverture en cours": { color: "#3498db", label: "En cours d'ouverture", description: "142 sites", checked: false },
         "Fermees ou refus OTT": { color: "#f17676", label: "Fermées", description: "89 sites", checked: false },
         "Inactives": { color: "#cbd5e1", label: "Fermées", description: "89 sites", checked: false },
@@ -381,16 +381,6 @@ startApp().then(() => {
         menu.classList.toggle('open');
     }, true);
     
-    // Fermer au clic en dehors
-    document.addEventListener('click', (e) => {
-        const menu = document.getElementById('side-menu');
-        const btn = document.getElementById('menu-btn');
-        
-        if (menu && btn && menu.classList.contains('open')) {
-            if (!menu.contains(e.target) && !btn.contains(e.target)) {
-                btn.classList.remove('active');
-                menu.classList.remove('open');
-            }
-        }
-    });
+    // Le menu reste ouvert jusqu'à ce qu'on clique sur le bouton hamburger
+    // (pas de fermeture automatique au clic externe)
 });

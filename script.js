@@ -393,14 +393,9 @@ window.addEventListener('load', () => {
 
 startApp();
 
-// Test direct
-setTimeout(() => {
-    const btn = document.getElementById('menu-btn');
-    console.log('Final check - button:', btn);
-    if (btn) {
-        btn.onclick = function() {
-            console.log('CLICKED');
-            toggleMenu();
-        };
-    }
-}, 500);
+document.getElementById('menu-btn').addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    this.onclick();
+    return false;
+}, true); // true = capture phase

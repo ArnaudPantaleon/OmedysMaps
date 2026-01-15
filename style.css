@@ -209,7 +209,9 @@ body, html {
 .bento-filters.open::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
 }
-
+.bento-filters.open::-webkit-scrollbar-button {
+    display: none;
+}
 /* Firefox */
 .bento-filters.open {
     scrollbar-width: thin;

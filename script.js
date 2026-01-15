@@ -9,7 +9,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-
+function toggleMenu() { 
+    const menuBtn = document.getElementById('menu-btn');
+    const sideMenu = document.getElementById('side-menu');
+    
+    if (!menuBtn || !sideMenu) {
+        console.error('Menu elements not found');
+        return;
+    }
+    
+    menuBtn.classList.toggle('active');
+    sideMenu.classList.toggle('open');
+}
 
 const CONFIG = {
     // === FILTRES PAR STATUT (Couleurs) ===

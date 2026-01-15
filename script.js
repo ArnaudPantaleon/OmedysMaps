@@ -385,18 +385,7 @@ searchInput?.addEventListener('keypress', (e) => {
 });
 
 // Fermer le menu au clic en dehors (sauf sur le menu et le bouton)
-document.addEventListener('click', (e) => {
-    const sideMenu = document.getElementById('side-menu');
-    const menuBtn = document.getElementById('menu-btn');
-    
-    if (sideMenu && menuBtn && sideMenu.classList.contains('open')) {
-        // Si le clic est EN DEHORS du menu ET du bouton
-        if (!sideMenu.contains(e.target) && !menuBtn.contains(e.target)) {
-            menuBtn.classList.remove('active');
-            sideMenu.classList.remove('open');
-        }
-    }
-});
+document.getElementById('menu-btn')?.addEventListener('click', toggleMenu);
 
 startApp();
 

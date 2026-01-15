@@ -161,13 +161,12 @@ body, html {
     overflow: hidden;
 }
 
-.bento-filters.open { 
-    display: block; 
-    opacity: 1; 
-    transform: translateY(0); 
-    max-height: 600px;
+.bento-filters.open {
+    display: block !important;
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+    max-height: 600px !important;
     overflow-y: auto;
-    padding-right: 5px;
 }
 
 /* Scrollbar custom */

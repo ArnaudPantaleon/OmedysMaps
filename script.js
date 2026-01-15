@@ -1,3 +1,6 @@
+// === FONCTION MENU (définir d'abord) ===
+
+
 const CONFIG = {
     // === FILTRES PAR STATUT (Couleurs) ===
     status: {

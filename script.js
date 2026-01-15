@@ -1,23 +1,3 @@
-// Initialiser le bouton menu au chargement du DOM
-document.body.addEventListener('click', (e) => {
-    if (e.target.closest('#menu-btn')) {
-        console.log('Menu button clicked via delegation');
-        toggleMenu();
-    }
-});
-
-function toggleMenu() { 
-    const menuBtn = document.getElementById('menu-btn');
-    const sideMenu = document.getElementById('side-menu');
-    
-    if (!menuBtn || !sideMenu) {
-        console.error('Menu elements not found');
-        return;
-    }
-    
-    menuBtn.classList.toggle('active');
-    sideMenu.classList.toggle('open');
-}
 
 const CONFIG = {
     // === FILTRES PAR STATUT (Couleurs) ===
@@ -384,6 +364,18 @@ searchInput?.addEventListener('keypress', (e) => {
     }
 });
 
+function toggleMenu() { 
+    const menuBtn = document.getElementById('menu-btn');
+    const sideMenu = document.getElementById('side-menu');
+    
+    if (!menuBtn || !sideMenu) {
+        console.error('Menu elements not found');
+        return;
+    }
+    
+    menuBtn.classList.toggle('active');
+    sideMenu.classList.toggle('open');
+}
 // Fermer le menu au clic en dehors (sauf sur le menu et le bouton)
 
 startApp();

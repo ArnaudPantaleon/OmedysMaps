@@ -182,10 +182,13 @@ body, html {
 }
 
 .bento-filters.open {
-    max-height: 600px;
     overflow-y: auto;
     overflow-x: hidden;
     padding-right: 8px;  /* Ajoute du padding pour la scrollbar */
+     display: block !important;
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+    max-height: 600px !important;
 }
 
 /* Scrollbar custom */

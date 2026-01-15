@@ -201,6 +201,11 @@ body, html {
     margin: 10px 0;
 }
 
+.bento-filters.open::-webkit-scrollbar-track {
+    background: transparent;
+    margin: 0 !important;
+    padding: 0 !important;
+}
 .bento-filters.open::-webkit-scrollbar-thumb {
     background: #cbd5e1;
     border-radius: 10px;

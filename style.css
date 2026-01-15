@@ -182,11 +182,10 @@ body, html {
 }
 
 .bento-filters.open {
-    display: block !important;
-    opacity: 1 !important;
-    transform: translateY(0) !important;
-    max-height: 600px !important;
+    max-height: 600px;
     overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 8px;  /* Ajoute du padding pour la scrollbar */
 }
 
 /* Scrollbar custom */
@@ -196,6 +195,7 @@ body, html {
 
 .bento-filters.open::-webkit-scrollbar-track {
     background: transparent;
+    margin: 10px 0;
 }
 
 .bento-filters.open::-webkit-scrollbar-thumb {
@@ -205,6 +205,12 @@ body, html {
 
 .bento-filters.open::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
+}
+
+/* Firefox */
+.bento-filters.open {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
 }
 
 /* Header du menu */

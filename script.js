@@ -1,3 +1,8 @@
+// Test des éléments
+console.log('menu-btn:', document.getElementById('menu-btn'));
+console.log('side-menu:', document.getElementById('side-menu'));
+console.log('toggleMenu function:', typeof toggleMenu);
+
 const CONFIG = {
     // === FILTRES PAR STATUT (Couleurs) ===
     status: {

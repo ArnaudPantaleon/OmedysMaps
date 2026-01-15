@@ -1,8 +1,3 @@
-// Test des éléments
-console.log('menu-btn:', document.getElementById('menu-btn'));
-console.log('side-menu:', document.getElementById('side-menu'));
-console.log('toggleMenu function:', typeof toggleMenu);
-
 const CONFIG = {
     // === FILTRES PAR STATUT (Couleurs) ===
     status: {
@@ -308,19 +303,6 @@ function toggleMenu() {
     sideMenu.classList.toggle('open');
 }
 
-// Fermer le menu au clic en dehors
-document.addEventListener('click', (e) => {
-    const sideMenu = document.getElementById('side-menu');
-    const menuBtn = document.getElementById('menu-btn');
-    
-    if (sideMenu && menuBtn && sideMenu.classList.contains('open')) {
-        if (!sideMenu.contains(e.target) && !menuBtn.contains(e.target)) {
-            menuBtn.classList.remove('active');
-            sideMenu.classList.remove('open');
-        }
-    }
-});
-
 function displaySuggestions(features) {
     if (!features || features.length === 0) {
         suggestionBox.innerHTML = '<div class="suggestion-item empty">Aucun lieu trouvé</div>';
@@ -391,6 +373,20 @@ document.addEventListener('click', (e) => {
 searchInput?.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
         hideSuggestions();
+    }
+});
+
+// Fermer le menu au clic en dehors (sauf sur le menu et le bouton)
+document.addEventListener('click', (e) => {
+    const sideMenu = document.getElementById('side-menu');
+    const menuBtn = document.getElementById('menu-btn');
+    
+    if (sideMenu && menuBtn && sideMenu.classList.contains('open')) {
+        // Si le clic est EN DEHORS du menu ET du bouton
+        if (!sideMenu.contains(e.target) && !menuBtn.contains(e.target)) {
+            menuBtn.classList.remove('active');
+            sideMenu.classList.remove('open');
+        }
     }
 });
 

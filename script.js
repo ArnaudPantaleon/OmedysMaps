@@ -385,7 +385,6 @@ searchInput?.addEventListener('keypress', (e) => {
 });
 
 // Fermer le menu au clic en dehors (sauf sur le menu et le bouton)
-document.getElementById('menu-btn')?.addEventListener('click', toggleMenu);
 
 startApp();
 
@@ -394,3 +393,5 @@ console.log('Script loaded');
 const testBtn = document.getElementById('menu-btn');
 console.log('Menu button found:', testBtn);
 
+
+document.getElementById('menu-btn')?.addEventListener('click', toggleMenu);

@@ -367,8 +367,6 @@ searchInput?.addEventListener('keypress', (e) => {
 });
 
 startApp().then(() => {
-    console.log('startApp finished');
-    
     const menuBtn = document.getElementById('menu-btn');
     const newMenuBtn = menuBtn.cloneNode(true);
     menuBtn.parentNode.replaceChild(newMenuBtn, menuBtn);
@@ -385,5 +383,16 @@ startApp().then(() => {
         menu.classList.toggle('open');
     }, true);
     
-    console.log('Menu listener attached');
+    // Fermer au clic en dehors
+    document.addEventListener('click', (e) => {
+        const menu = document.getElementById('side-menu');
+        const btn = document.getElementById('menu-btn');
+        
+        if (menu && btn && menu.classList.contains('open')) {
+            if (!menu.contains(e.target) && !btn.contains(e.target)) {
+                btn.classList.remove('active');
+                menu.classList.remove('open');
+            }
+        }
+    });
 });

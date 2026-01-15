@@ -378,18 +378,16 @@ searchInput?.addEventListener('keypress', (e) => {
         hideSuggestions();
     }
 });
+function toggleMenu() { 
+    document.getElementById('menu-btn').classList.toggle('active');
+    document.getElementById('side-menu').classList.toggle('open');
+}
 
-// Fermer le menu au clic en dehors (sauf sur le menu et le bouton)
-document.addEventListener('click', (e) => {
-    const sideMenu = document.getElementById('side-menu');
+// Attendre que le DOM soit complètement chargé
+window.addEventListener('load', () => {
     const menuBtn = document.getElementById('menu-btn');
-    
-    if (sideMenu && menuBtn && sideMenu.classList.contains('open')) {
-        // Si le clic est EN DEHORS du menu ET du bouton
-        if (!sideMenu.contains(e.target) && !menuBtn.contains(e.target)) {
-            menuBtn.classList.remove('active');
-            sideMenu.classList.remove('open');
-        }
+    if (menuBtn) {
+        menuBtn.onclick = toggleMenu;
     }
 });
 

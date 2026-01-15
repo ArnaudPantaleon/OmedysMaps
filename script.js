@@ -203,9 +203,6 @@ function renderFilters() {
                 <span>🎨 Affichage par statut</span>
                 <span class="section-badge">${Object.keys(CONFIG.status).length}</span>
             </div>
-            <div class="filter-info">
-                💡 Les couleurs distinguent les différents statuts des sites
-            </div>
             <div class="filters-grid">
                 ${Object.entries(CONFIG.status).map(([key, config]) => `
                     <div class="filter-item color-filter ${config.checked ? 'active' : ''}" onclick="window.toggleStatusFilter('${key}')">
@@ -227,9 +224,6 @@ function renderFilters() {
             <div class="section-title">
                 <span>⚙️ Interrupteurs</span>
                 <span class="section-badge">${Object.keys(CONFIG.tms.filters).length + 1}</span>
-            </div>
-            <div class="filter-info">
-                💡 Activez/désactivez pour filtrer sans changer les couleurs
             </div>
 
             <!-- TMS -->

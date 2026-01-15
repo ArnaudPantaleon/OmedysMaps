@@ -368,18 +368,11 @@ searchInput?.addEventListener('keypress', (e) => {
 
 startApp().then(() => {
     console.log('startApp finished');
-});
-
-// Attendre un peu et nettoyer tous les listeners
-setTimeout(() => {
-    const menuBtn = document.getElementById('menu-btn');
-    const sideMenu = document.getElementById('side-menu');
     
-    // Cloner le bouton pour supprimer tous les listeners
+    const menuBtn = document.getElementById('menu-btn');
     const newMenuBtn = menuBtn.cloneNode(true);
     menuBtn.parentNode.replaceChild(newMenuBtn, menuBtn);
     
-    // Ajouter UN SEUL listener
     document.getElementById('menu-btn').addEventListener('click', () => {
         const btn = document.getElementById('menu-btn');
         const menu = document.getElementById('side-menu');
@@ -387,17 +380,5 @@ setTimeout(() => {
         menu.classList.toggle('open');
     });
     
-    // Fermer au clic en dehors
-    document.addEventListener('click', (e) => {
-        const menu = document.getElementById('side-menu');
-        const btn = document.getElementById('menu-btn');
-        
-        if (menu && btn && menu.classList.contains('open')) {
-            if (!menu.contains(e.target) && !btn.contains(e.target)) {
-                btn.classList.remove('active');
-                menu.classList.remove('open');
-            }
-        }
-    });
-    
-}, 2000);
+    console.log('Menu listener attached');
+});

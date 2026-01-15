@@ -215,6 +215,12 @@ body, html {
     height: 0 !important;
     width: 0 !important;
 }
+.bento-filters.open::-webkit-scrollbar-button:start:decrement,
+.bento-filters.open::-webkit-scrollbar-button:end:increment {
+    display: none;
+    height: 0 !important;
+    width: 0 !important;
+}
 /* Firefox */
 .bento-filters.open {
     scrollbar-width: thin;

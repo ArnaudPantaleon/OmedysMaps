@@ -290,9 +290,31 @@ function updateStats() {
     document.getElementById('site-count').innerText = markersStore.filter(m => map.hasLayer(m.marker)).length; 
 }
 
-function toggleMenu() { 
-    document.getElementById('menu-btn').classList.toggle('active'); 
-    document.getElementById('side-menu').classList.toggle('open'); 
+window.toggleMenu = function() { 
+    const menuBtn = document.getElementById('menu-btn');
+    const sideMenu = document.getElementById('side-menu');
+    
+    menuBtn.classList.toggle('active');
+    sideMenu.classList.toggle('open');
+    
+    // Fermer le menu au clic en dehors
+    if (sideMenu.classList.contains('open')) {
+        document.addEventListener('click', closeMenuOnClickOutside);
+    } else {
+        document.removeEventListener('click', closeMenuOnClickOutside);
+    }
+};
+
+function closeMenuOnClickOutside(e) {
+    const sideMenu = document.getElementById('side-menu');
+    const menuBtn = document.getElementById('menu-btn');
+    const bento = document.querySelector('.bento-wrapper');
+    
+    if (!sideMenu.contains(e.target) && !menuBtn.contains(e.target) && e.target !== bento) {
+        menuBtn.classList.remove('active');
+        sideMenu.classList.remove('open');
+        document.removeEventListener('click', closeMenuOnClickOutside);
+    }
 }
 
 function displaySuggestions(features) {

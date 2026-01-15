@@ -405,9 +405,3 @@ console.log('Script loaded');
 const testBtn = document.getElementById('menu-btn');
 console.log('Menu button found:', testBtn);
 
-if (testBtn) {
-    testBtn.addEventListener('click', function() {
-        console.log('Button clicked!');
-        toggleMenu();
-    });
-}

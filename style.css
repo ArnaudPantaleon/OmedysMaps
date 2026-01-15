@@ -1317,7 +1317,7 @@ body, html {
     }
 
     .filter-label {
-        color: #f1f5f9;
+        color: #f1f5f9 !important;
     }
 
     .filter-description {

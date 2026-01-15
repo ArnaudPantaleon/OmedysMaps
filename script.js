@@ -393,32 +393,34 @@ window.addEventListener('load', () => {
 
 startApp();
 
-
-// Attacher le listener directement sans passer par onclick
+// Attendre un peu et nettoyer tous les listeners
 setTimeout(() => {
     const menuBtn = document.getElementById('menu-btn');
-    if (menuBtn) {
-        // Vider le onclick existant
-        menuBtn.onclick = null;
-        
-        // Ajouter un vrai listener
-        menuBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            console.log('Menu clicked!');
-            toggleMenu();
-        }, false);
-    }
-}, 100);
-
-// Fermer le menu au clic en dehors
-document.addEventListener('click', (e) => {
     const sideMenu = document.getElementById('side-menu');
-    const menuBtn = document.getElementById('menu-btn');
     
-    if (sideMenu && menuBtn && sideMenu.classList.contains('open')) {
-        if (!sideMenu.contains(e.target) && !menuBtn.contains(e.target)) {
-            menuBtn.classList.remove('active');
-            sideMenu.classList.remove('open');
+    // Cloner le bouton pour supprimer tous les listeners
+    const newMenuBtn = menuBtn.cloneNode(true);
+    menuBtn.parentNode.replaceChild(newMenuBtn, menuBtn);
+    
+    // Ajouter UN SEUL listener
+    document.getElementById('menu-btn').addEventListener('click', () => {
+        const btn = document.getElementById('menu-btn');
+        const menu = document.getElementById('side-menu');
+        btn.classList.toggle('active');
+        menu.classList.toggle('open');
+    });
+    
+    // Fermer au clic en dehors
+    document.addEventListener('click', (e) => {
+        const menu = document.getElementById('side-menu');
+        const btn = document.getElementById('menu-btn');
+        
+        if (menu && btn && menu.classList.contains('open')) {
+            if (!menu.contains(e.target) && !btn.contains(e.target)) {
+                btn.classList.remove('active');
+                menu.classList.remove('open');
+            }
         }
-    }
-});
+    });
+    
+}, 100);

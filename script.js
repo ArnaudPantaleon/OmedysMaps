@@ -102,7 +102,7 @@ async function startApp() {
             const lng = parseFloat(String(item.Longitude || item.Lng || "").replace(',', '.'));
 
             if (!isNaN(lat) && !isNaN(lng)) {
-                const isESMS = ["EHPAD", "Foyer", "FAM", "MAS"].some(t => (item.Type || "").includes(t));
+                const isESMS = ["ESMS","EHPAD", "Foyer", "FAM", "MAS"].some(t => (item.Type || "").includes(t));
                 const color = CONFIG.status[item.Statut]?.color || "#94a3b8";
 
                 const marker = L.circleMarker([lat, lng], {

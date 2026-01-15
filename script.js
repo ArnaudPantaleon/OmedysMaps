@@ -375,16 +375,15 @@ startApp().then(() => {
     
     const btn = document.getElementById('menu-btn');
     
-    btn.addEventListener('click', (e) => {
+    btn.addEventListener('mousedown', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        e.stopImmediatePropagation();
         
         const b = document.getElementById('menu-btn');
         const menu = document.getElementById('side-menu');
         b.classList.toggle('active');
         menu.classList.toggle('open');
-    }, true); // true = capture phase
+    }, true);
     
     console.log('Menu listener attached');
 });

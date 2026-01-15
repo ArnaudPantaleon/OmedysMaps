@@ -6,7 +6,7 @@ const CONFIG = {
         "Ouvertes": { color: "#2ecc71", label: "Salles Ouvertes", description: "485 sites", checked: true },
         "Telesecretariat OMEDYS": { color: "#8956FB", label: "Télésecrétariat", description: "89 sites", checked: true },
         "Ouverture en cours": { color: "#3498db", label: "En cours d'ouverture", description: "142 sites", checked: false },
-        "Fermees ou refus OTT": { color: "#cbd5e1", label: "Fermées", description: "89 sites", checked: false }
+        "Fermees ou refus OTT": { color: "#cbd5e1", label: "Fermées", description: "89 sites", checked: false },
         "En sourcing": { color: "#fdaf00", label: "En sourcing", description: "89 sites", checked: false }
         
     },

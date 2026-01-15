@@ -373,12 +373,18 @@ startApp().then(() => {
     const newMenuBtn = menuBtn.cloneNode(true);
     menuBtn.parentNode.replaceChild(newMenuBtn, menuBtn);
     
-    document.getElementById('menu-btn').addEventListener('click', () => {
-        const btn = document.getElementById('menu-btn');
+    const btn = document.getElementById('menu-btn');
+    
+    btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        
+        const b = document.getElementById('menu-btn');
         const menu = document.getElementById('side-menu');
-        btn.classList.toggle('active');
+        b.classList.toggle('active');
         menu.classList.toggle('open');
-    });
+    }, true); // true = capture phase
     
     console.log('Menu listener attached');
 });

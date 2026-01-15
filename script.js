@@ -5,7 +5,8 @@ const CONFIG = {
         "Ouvert": { color: "#009597", label: "Cabinets Omedys", description: "Ouverts", checked: true },
         "Ouvertes": { color: "#2ecc71", label: "Salles Ouvertes", description: "485 sites", checked: true },
         "Telesecretariat OMEDYS": { color: "#8956FB", label: "Télésecrétariat", description: "89 sites", checked: true },
-        "Ouverture en cours": { color: "#3498db", label: "En cours d'ouverture", description: "142 sites", checked: false }
+        "Ouverture en cours": { color: "#3498db", label: "En cours d'ouverture", description: "142 sites", checked: false },
+        "Fermees ou refus OTT": { color: "#8956FB", label: "Fermées", description: "89 sites", checked: false }
     },
     
     // === FILTRES PAR TMS (Interrupteurs) ===

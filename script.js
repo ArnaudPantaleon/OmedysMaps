@@ -293,19 +293,6 @@ function updateStats() {
     document.getElementById('site-count').innerText = markersStore.filter(m => map.hasLayer(m.marker)).length; 
 }
 
-function toggleMenu() { 
-    const menuBtn = document.getElementById('menu-btn');
-    const sideMenu = document.getElementById('side-menu');
-    
-    if (!menuBtn || !sideMenu) {
-        console.error('Menu elements not found');
-        return;
-    }
-    
-    menuBtn.classList.toggle('active');
-    sideMenu.classList.toggle('open');
-}
-
 function displaySuggestions(features) {
     if (!features || features.length === 0) {
         suggestionBox.innerHTML = '<div class="suggestion-item empty">Aucun lieu trouvé</div>';
@@ -376,18 +363,6 @@ document.addEventListener('click', (e) => {
 searchInput?.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
         hideSuggestions();
-    }
-});
-function toggleMenu() { 
-    document.getElementById('menu-btn').classList.toggle('active');
-    document.getElementById('side-menu').classList.toggle('open');
-}
-
-// Attendre que le DOM soit complètement chargé
-window.addEventListener('load', () => {
-    const menuBtn = document.getElementById('menu-btn');
-    if (menuBtn) {
-        menuBtn.onclick = toggleMenu;
     }
 });
 

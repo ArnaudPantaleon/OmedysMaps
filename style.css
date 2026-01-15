@@ -190,7 +190,12 @@ body, html {
     transform: translateY(0) !important;
     max-height: 600px !important;
 }
-
+.filter-list-wrapper {
+    max-height: 570px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 8px;
+}
 /* Scrollbar custom */
 .bento-filters.open::-webkit-scrollbar {
     width: 6px;

@@ -290,32 +290,31 @@ function updateStats() {
     document.getElementById('site-count').innerText = markersStore.filter(m => map.hasLayer(m.marker)).length; 
 }
 
-window.toggleMenu = function() { 
+function toggleMenu() { 
     const menuBtn = document.getElementById('menu-btn');
     const sideMenu = document.getElementById('side-menu');
+    
+    if (!menuBtn || !sideMenu) {
+        console.error('Menu elements not found');
+        return;
+    }
     
     menuBtn.classList.toggle('active');
     sideMenu.classList.toggle('open');
-    
-    // Fermer le menu au clic en dehors
-    if (sideMenu.classList.contains('open')) {
-        document.addEventListener('click', closeMenuOnClickOutside);
-    } else {
-        document.removeEventListener('click', closeMenuOnClickOutside);
-    }
-};
+}
 
-function closeMenuOnClickOutside(e) {
+// Fermer le menu au clic en dehors
+document.addEventListener('click', (e) => {
     const sideMenu = document.getElementById('side-menu');
     const menuBtn = document.getElementById('menu-btn');
-    const bento = document.querySelector('.bento-wrapper');
     
-    if (!sideMenu.contains(e.target) && !menuBtn.contains(e.target) && e.target !== bento) {
-        menuBtn.classList.remove('active');
-        sideMenu.classList.remove('open');
-        document.removeEventListener('click', closeMenuOnClickOutside);
+    if (sideMenu && menuBtn && sideMenu.classList.contains('open')) {
+        if (!sideMenu.contains(e.target) && !menuBtn.contains(e.target)) {
+            menuBtn.classList.remove('active');
+            sideMenu.classList.remove('open');
+        }
     }
-}
+});
 
 function displaySuggestions(features) {
     if (!features || features.length === 0) {

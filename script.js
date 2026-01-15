@@ -255,7 +255,7 @@ function renderFilters() {
                             <span class="filter-label">${CONFIG.type.ESMS.label}</span>
                             <span class="filter-description">${CONFIG.type.ESMS.description}</span>
                         </div>
-                        <span class="tms-badge">${CONFIG.type.ESMS.count}</span>
+                        <!--span class="tms-badge">${CONFIG.type.ESMS.count}</span-->
                         <div class="toggle-switch"></div>
                     </div>
                 </div>

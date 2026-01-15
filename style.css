@@ -143,7 +143,10 @@ body, html {
     color: var(--text-secondary); 
     letter-spacing: 1px; 
 }
-
+#menu-btn {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+}
 #site-count { 
     display: block; 
     font-size: 32px; 

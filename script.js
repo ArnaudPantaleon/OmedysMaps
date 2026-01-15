@@ -1,16 +1,13 @@
-// === FONCTION MENU (définir d'abord) ===
-function toggleMenu() { 
+// Initialiser le bouton menu au chargement du DOM
+document.addEventListener('DOMContentLoaded', () => {
     const menuBtn = document.getElementById('menu-btn');
-    const sideMenu = document.getElementById('side-menu');
-    
-    if (!menuBtn || !sideMenu) {
-        console.error('Menu elements not found');
-        return;
+    if (menuBtn) {
+        menuBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            toggleMenu();
+        });
     }
-    
-    menuBtn.classList.toggle('active');
-    sideMenu.classList.toggle('open');
-}
+});
 
 
 

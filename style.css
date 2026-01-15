@@ -146,6 +146,23 @@ body, html {
 #menu-btn {
     pointer-events: auto !important;
     cursor: pointer !important;
+    z-index: 1001 !important;
+}
+
+#menu-btn .bar {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+#menu-btn.active .bar:nth-child(1) {
+    transform: translateY(8px) rotate(45deg);
+}
+
+#menu-btn.active .bar:nth-child(2) {
+    opacity: 0;
+}
+
+#menu-btn.active .bar:nth-child(3) {
+    transform: translateY(-8px) rotate(-45deg);
 }
 #site-count { 
     display: block; 

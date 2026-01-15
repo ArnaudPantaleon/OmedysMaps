@@ -965,7 +965,7 @@ body, html {
     }
 
     .bento-filters.open {
-        max-height: 500px;
+        max-height: 90vh;
     }
 
     .filter-item.color-filter,
@@ -1045,7 +1045,7 @@ body, html {
     }
 
     .bento-filters.open {
-        max-height: 450px;
+        max-height: 85vh;
     }
 
     #suggestions {

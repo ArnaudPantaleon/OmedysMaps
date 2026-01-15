@@ -366,7 +366,9 @@ searchInput?.addEventListener('keypress', (e) => {
     }
 });
 
-startApp();
+startApp().then(() => {
+    console.log('startApp finished');
+});
 
 // Attendre un peu et nettoyer tous les listeners
 setTimeout(() => {

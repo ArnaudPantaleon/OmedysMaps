@@ -210,14 +210,21 @@ body, html {
     background: #94a3b8;
 }
 /* Masquer complètement les boutons de scroll (flèches) */
+/* MASQUER COMPLÈTEMENT LES FLÈCHES */
 .bento-filters.open::-webkit-scrollbar-button {
-    display: none;
+    display: none !important;
     height: 0 !important;
     width: 0 !important;
+    background: transparent !important;
+    border: none !important;
 }
+
+/* Cibler spécifiquement les boutons haut/bas */
 .bento-filters.open::-webkit-scrollbar-button:start:decrement,
-.bento-filters.open::-webkit-scrollbar-button:end:increment {
-    display: none;
+.bento-filters.open::-webkit-scrollbar-button:end:increment,
+.bento-filters.open::-webkit-scrollbar-button:horizontal:increment,
+.bento-filters.open::-webkit-scrollbar-button:horizontal:decrement {
+    display: none !important;
     height: 0 !important;
     width: 0 !important;
 }

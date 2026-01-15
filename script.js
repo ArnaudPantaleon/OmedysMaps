@@ -173,8 +173,10 @@ async function startApp() {
         });
         
         renderFilters();
+        return true;
     } catch (err) { 
-        console.error('Erreur chargement données:', err); 
+        console.error('Erreur chargement données:', err);
+        return false;
     }
 }
 

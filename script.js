@@ -1,11 +1,8 @@
 // Initialiser le bouton menu au chargement du DOM
-document.addEventListener('DOMContentLoaded', () => {
-    const menuBtn = document.getElementById('menu-btn');
-    if (menuBtn) {
-        menuBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            toggleMenu();
-        });
+document.body.addEventListener('click', (e) => {
+    if (e.target.closest('#menu-btn')) {
+        console.log('Menu button clicked via delegation');
+        toggleMenu();
     }
 });
 

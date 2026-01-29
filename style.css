@@ -240,7 +240,7 @@ body, html {
 }
 /* Firefox */
 .bento-filters.open {
-    scrollbar-width: thin;
+    scrollbar-width: none;
     scrollbar-color: #cbd5e1 transparent;
 }
 

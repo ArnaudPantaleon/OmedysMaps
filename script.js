@@ -85,97 +85,106 @@ async function startApp() {
             fetch('salles.json').then(r => r.json()),
             fetch('cabinet.json').then(r => r.json())
         ]);
+
+        // Fusion des données : on extrait le tableau "data" de chaque fichier
         const rawData = [...(salles[0]?.data || []), ...(cabinets[0]?.data || [])];
         
-        // Compter les sites par TMS
+        // 1. Initialisation des compteurs
+        Object.keys(CONFIG.tms.filters).forEach(k => CONFIG.tms.filters[k].count = 0);
+        CONFIG.type.ESMS.count = 0;
+
         rawData.forEach(item => {
-            if (item.TMS && CONFIG.tms.filters[item.TMS]) {
-                CONFIG.tms.filters[item.TMS].count++;
+            let lat, lng;
+
+            // 2. Gestion hybride des coordonnées (Ancien format vs Nouveau format Location JSON)
+            if (item.Location && typeof item.Location === 'string' && item.Location.startsWith('{')) {
+                try {
+                    const loc = JSON.parse(item.Location);
+                    lat = parseFloat(loc.lat);
+                    lng = parseFloat(loc.lng);
+                } catch (e) { console.error("Erreur parsing Location", item.Name); }
+            } else {
+                lat = parseFloat(String(item.Latitude || item.Lat || "").replace(',', '.'));
+                lng = parseFloat(String(item.Longitude || item.Lng || "").replace(',', '.'));
             }
-        });
-        
-        // Compter les ESMS
-        rawData.forEach(item => {
-            const isESMS = ["EHPAD", "Foyer", "FAM", "MAS"].some(t => (item.Type || "").includes(t));
-            if (isESMS) CONFIG.type.ESMS.count++;
-        });
-        
-        rawData.forEach(item => {
-            const lat = parseFloat(String(item.Latitude || item.Lat || "").replace(',', '.'));
-            const lng = parseFloat(String(item.Longitude || item.Lng || "").replace(',', '.'));
 
             if (!isNaN(lat) && !isNaN(lng)) {
-                const isESMS = ["ESMS","EHPAD", "Foyer", "FAM", "MAS"].some(t => (item.Type || "").includes(t));
-                const color = CONFIG.status[item.Statut]?.color || "#94a3b8";
+                // 3. Identification du type et du TMS (pour les filtres)
+                // On cherche "TMS XX" dans le nom si le champ item.TMS n'existe pas
+                const tmsKey = item.TMS || (item.Name && item.Name.match(/TMS \d+/)?.[0]);
+                const isESMS = ["ESMS", "EHPAD", "Foyer", "FAM", "MAS"].some(t => 
+                    (item.Type || item.Name || "").toUpperCase().includes(t)
+                );
 
+                // Mise à jour des compteurs CONFIG
+                if (tmsKey && CONFIG.tms.filters[tmsKey]) CONFIG.tms.filters[tmsKey].count++;
+                if (isESMS) CONFIG.type.ESMS.count++;
+
+                // 4. Style du marqueur
+                const color = CONFIG.status[item.Statut]?.color || "#94a3b8";
                 const marker = L.circleMarker([lat, lng], {
-                    radius: item.Type === "CABINET" ? 10 : 7,
+                    radius: (item.Type === "CABINET" || (item.Name && item.Name.includes("TMS"))) ? 10 : 7,
                     fillColor: color, 
                     color: "#fff", 
                     weight: 2, 
                     fillOpacity: 0.9
                 });
 
+                // 5. Contenu de la Popup (Adapté aux nouveaux champs ATT_Name, ATT_Phone...)
                 const popupContent = `
                     <div class="bento-popup-v2">
                         <div class="popup-header-v2" style="background: linear-gradient(135deg, ${color} 0%, ${adjustBrightness(color, 20)} 100%)">
-                            <div class="popup-badge" style="background:${color}">${item.Type || "N/C"}</div>
+                            <div class="popup-badge" style="background:${color}">${item.Type || (isESMS ? "ESMS" : "TMS")}</div>
                             <h3 class="popup-title">${item.Name || item.Nom || "Site"}</h3>
                             <p class="popup-status">${item.Statut || "N/C"}</p>
                         </div>
-                        
                         <div class="popup-body-v2">
                             <div class="popup-section">
                                 <div class="info-card">
                                     <div class="info-icon">👤</div>
                                     <div class="info-content">
                                         <span class="info-label">Responsable</span>
-                                        <span class="info-value">${item.ATT || "Non assigné"}</span>
+                                        <span class="info-value">${item.ATT_Name || item.ATT || "Non assigné"}</span>
                                     </div>
                                 </div>
-                                
                                 <div class="info-card">
                                     <div class="info-icon">☎️</div>
                                     <div class="info-content">
                                         <span class="info-label">Téléphone</span>
-                                        <a href="tel:${item.Phone || item.Telephone}" class="info-value link">
-                                            ${formatPhone(item.Phone || item.Telephone)}
+                                        <a href="tel:${item.ATT_Phone || item.Phone || item.Telephone}" class="info-value link">
+                                            ${formatPhone(item.ATT_Phone || item.Phone || item.Telephone)}
                                         </a>
                                     </div>
                                 </div>
-                                
                                 <div class="address-card">
                                     <div class="address-icon">📍</div>
                                     <div class="address-content">
                                         <span class="info-label">Adresse</span>
-                                        <p class="address-text">${item.Address || item.Adresse || "Non disponible"}</p>
+                                        <p class="address-text">${item.Address || item.Adresse || (item.Location ? JSON.parse(item.Location).address : "Non disponible")}</p>
                                     </div>
                                 </div>
                             </div>
-                            
                             <div class="popup-footer">
                                 <button class="popup-btn-copy" onclick="copyAddress('${(item.Address || item.Adresse || "").replace(/'/g, "\\'")}')">📋 Copier</button>
-                                <a href="https://www.google.com/maps/search/${encodeURIComponent(item.Address || item.Adresse || '')}" target="_blank" class="popup-btn-map">🗺️ Maps</a>
+                                <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.Address || item.Adresse || '')}" target="_blank" class="popup-btn-map">🗺️ Maps</a>
                             </div>
                         </div>
                     </div>`;
 
-                marker.bindPopup(popupContent, { 
-                    maxWidth: 320, 
-                    className: 'custom-bento-popup-v2',
-                    closeButton: true
-                });
+                marker.bindPopup(popupContent, { maxWidth: 320, className: 'custom-bento-popup-v2' });
 
+                // 6. Stockage pour les filtres
                 markersStore.push({ 
                     marker, 
                     status: item.Statut, 
-                    tms: item.TMS,
+                    tms: tmsKey,
                     isESMS 
                 });
+
                 applyVisibility(markersStore[markersStore.length - 1]);
             }
         });
-        
+
         renderFilters();
         return true;
     } catch (err) { 

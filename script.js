@@ -94,18 +94,22 @@ async function startApp() {
         CONFIG.type.ESMS.count = 0;
 
         rawData.forEach(item => {
+            let address = "Non disponible"; // On définit une valeur par défaut
             let lat, lng;
-
-            // 2. Gestion hybride des coordonnées (Ancien format vs Nouveau format Location JSON)
+            
             if (item.Location && typeof item.Location === 'string' && item.Location.startsWith('{')) {
                 try {
                     const loc = JSON.parse(item.Location);
+                    address = loc.address || "Non disponible"; // Correction : ; au lieu de :
                     lat = parseFloat(loc.lat);
                     lng = parseFloat(loc.lng);
-                } catch (e) { console.error("Erreur parsing Location", item.Name); }
+                } catch (e) { 
+                    console.error("Erreur parsing Location pour :", item.Name); 
+                }
             } else {
                 lat = parseFloat(String(item.Latitude || item.Lat || "").replace(',', '.'));
                 lng = parseFloat(String(item.Longitude || item.Lng || "").replace(',', '.'));
+                address = item.Address || item.Adresse || "Non disponible"; // Correction : ; au lieu de :
             }
 
             if (!isNaN(lat) && !isNaN(lng)) {
@@ -160,13 +164,13 @@ async function startApp() {
                                     <div class="address-icon">📍</div>
                                     <div class="address-content">
                                         <span class="info-label">Adresse</span>
-                                        <p class="address-text">${item.Address || item.Adresse || (item.Location ? JSON.parse(item.Location).address : "Non disponible")}</p>
+                                        <p class="address-text">${address}</p>
                                     </div>
                                 </div>
                             </div>
                             <div class="popup-footer">
-                                <button class="popup-btn-copy" onclick="copyAddress('${(item.Address || item.Adresse || "").replace(/'/g, "\\'")}')">📋 Copier</button>
-                                <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.Address || item.Adresse || '')}" target="_blank" class="popup-btn-map">🗺️ Maps</a>
+                                <button class="popup-btn-copy" onclick="copyAddress('${address.replace(/'/g, "\\'")}')">📋 Copier</button>
+                                <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}" target="_blank" class="popup-btn-map">🗺️ Maps</a>
                             </div>
                         </div>
                     </div>`;

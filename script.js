@@ -144,13 +144,25 @@ async function startApp() {
                         </div>
                         <div class="popup-body-v2">
                             <div class="popup-section">
-                                <div class="info-card">
-                                    <div class="info-icon">👤</div>
-                                    <div class="info-content">
-                                        <span class="info-label">Responsable</span>
-                                        <span class="info-value">${item.ATT_Name || item.ATT || "Non assigné"}</span>
+                                
+                                ${item.Type === "CABINET" ? `
+                                    <div class="info-card">
+                                        <div class="info-icon">👤</div>
+                                        <div class="info-content">
+                                            <span class="info-label">Responsable</span>
+                                            <span class="info-value">${item.ATT_Name || item.ATT || "Non assigné"}</span>
+                                        </div>
                                     </div>
-                                </div>
+                                ` : (item.Type === "SALLE" || item.TMS) ? `
+                                    <div class="info-card">
+                                        <div class="info-icon">🏢</div>
+                                        <div class="info-content">
+                                            <span class="info-label">Cabinet de rattachement</span>
+                                            <span class="info-value">${item.TMS || "Omedys"}</span>
+                                        </div>
+                                    </div>
+                                ` : ''}
+                
                                 <div class="info-card">
                                     <div class="info-icon">☎️</div>
                                     <div class="info-content">
@@ -160,6 +172,7 @@ async function startApp() {
                                         </a>
                                     </div>
                                 </div>
+                
                                 <div class="address-card">
                                     <div class="address-icon">📍</div>
                                     <div class="address-content">

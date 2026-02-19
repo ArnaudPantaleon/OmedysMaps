@@ -183,30 +183,30 @@ async function startApp() {
                             ${item.Type === "CABINET" ? `
                             <div class="bp3-tile bp3-wide">
                                 <span class="bp3-tile-icon">👤</span>
+                                <span class="bp3-tile-label">Responsable</span>
                                 <div class="bp3-tile-body">
-                                    <div class="bp3-tile-label">Responsable</div>
                                     <div class="bp3-tile-value">${attName}</div>
                                 </div>
                             </div>` : item.TMS ? `
                             <div class="bp3-tile">
                                 <span class="bp3-tile-icon">🩺</span>
+                                <span class="bp3-tile-label">Cabinet TMS</span>
                                 <div class="bp3-tile-body">
-                                    <div class="bp3-tile-label">Cabinet TMS</div>
                                     <div class="bp3-tile-value">${item.TMS}</div>
                                 </div>
                             </div>
                             <div class="bp3-tile">
                                 <span class="bp3-tile-icon">👤</span>
+                                <span class="bp3-tile-label">ATT</span>
                                 <div class="bp3-tile-body">
-                                    <div class="bp3-tile-label">ATT</div>
                                     <div class="bp3-tile-value">${attName}</div>
                                 </div>
                             </div>` : ''}
 
                             <div class="bp3-tile">
                                 <span class="bp3-tile-icon">☎️</span>
+                                <span class="bp3-tile-label">Téléphone</span>
                                 <div class="bp3-tile-body">
-                                    <div class="bp3-tile-label">Téléphone</div>
                                     <a href="tel:${phoneRaw}" class="bp3-tile-value bp3-link">${formatPhone(phoneRaw)}</a>
                                 </div>
                             </div>
@@ -214,16 +214,17 @@ async function startApp() {
                             ${item.MSS ? `
                             <div class="bp3-tile">
                                 <span class="bp3-tile-icon">📨</span>
+                                <span class="bp3-tile-label">MSS</span>
                                 <div class="bp3-tile-body">
-                                    <div class="bp3-tile-label">MSS</div>
+                                    
                                     <div class="bp3-tile-value bp3-mss">${item.MSS}</div>
                                 </div>
                             </div>` : ''}
 
                             <div class="bp3-tile bp3-wide">
                                 <span class="bp3-tile-icon">📍</span>
+                                <span class="bp3-tile-label">Adresse</span>
                                 <div class="bp3-tile-body">
-                                    <div class="bp3-tile-label">Adresse</div>
                                     <div class="bp3-tile-value">${address}</div>
                                 </div>
                             </div>

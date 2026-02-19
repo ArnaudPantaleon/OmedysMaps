@@ -131,7 +131,7 @@ async function startApp() {
                 if (isCabinet) {
                     const pinIcon = L.divIcon({
                         className: '',
-                        html: `<div style="position:relative;width:34px;height:34px;background:${color};border-radius:50%;border:3px solid #fff;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 6px rgba(0,0,0,0.4);">🏥</div>`,
+                        html: `<div style="position:relative;width:34px;height:34px;background:#fff;border-radius:50%;border:3px solid #009597;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 6px rgba(0,0,0,0.4);">🩺</div>`,
                         iconSize: [34, 34],
                         iconAnchor: [17, 17],
                         popupAnchor: [0, -20]

@@ -303,7 +303,7 @@ body, html {
 .bp3-tile-value {
     font-size: 12px; font-weight: 600;
     color: rgba(0,0,0,0.82);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    white-space: pre-line; overflow: hidden; text-overflow: ellipsis;
     max-width: 100%; display: block;
 }
 .bp3-tile.bp3-wide .bp3-tile-value { white-space: normal; font-size: 11px; }

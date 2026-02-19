@@ -241,7 +241,7 @@ body, html {
     pointer-events: none;
 }
 
-.bp3-hd-top { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; flex-wrap: wrap; }
+.bp3-hd-top { display: inline-grid; align-items: center; gap: 7px; margin-bottom: 8px; flex-wrap: wrap; }
 
 .bp3-badge {
     font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
@@ -257,7 +257,7 @@ body, html {
 }
 .bp3-pill-ouvert     { background: rgba(0,200,117,0.15); color: #00c875; }
 .bp3-pill-encours    { background: rgba(46,204,113,0.13); color: #2ecc71; }
-.bp3-pill-tele       { background: rgba(137,86,251,0.18); color: #b085f5; }
+.bp3-pill-tele       { background: rgb(137 86 251 / 77%); color: #ffffff8f; }
 .bp3-pill-default    { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.6); }
 
 .bp3-sdot {

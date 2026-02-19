@@ -31,7 +31,7 @@ const CONFIG = {
     },
 
     type: {
-        ESMS: { label: "Afficher les ESMS", description: "EHPAD, Foyers, FAM...", count: 0, checked: true }
+        ESMS: { label: "Afficher les ESMS", description: "EHPAD, Foyers, FAM...", count: 0, checked: false }
     }
 };
 
@@ -78,12 +78,10 @@ function copyAddress(address) {
 // === CHARGEMENT ET RENDU ===
 async function startApp() {
     try {
-        const [salles, cabinets] = await Promise.all([
-            fetch('salles.json').then(r => r.json()),
-            fetch('cabinet.json').then(r => r.json())
-        ]);
-
-        const rawData = [...(salles[0]?.data || []), ...(cabinets[0]?.data || [])];
+        const index = await fetch('index.json').then(r => r.json());
+        const visibleFiles = index.filter(entry => entry.visible);
+        const datasets = await Promise.all(visibleFiles.map(entry => fetch(entry.file).then(r => r.json())));
+        const rawData = datasets.flatMap(d => d[0]?.data || []);
 
         // Initialisation des compteurs
         Object.keys(CONFIG.tms.filters).forEach(k => CONFIG.tms.filters[k].count = 0);
@@ -114,7 +112,7 @@ async function startApp() {
                 if (tmsKey && CONFIG.tms.filters[tmsKey]) CONFIG.tms.filters[tmsKey].count++;
 
                 // ESMS
-                const isESMS = ["ESMS", "EHPAD", "Foyer", "FAM", "MAS"].some(t =>
+                const isESMS = ["ESMS", "EHPAD"].some(t =>
                     (item.Type || "").toUpperCase().includes(t.toUpperCase())
                 );
                 if (isESMS) CONFIG.type.ESMS.count++;

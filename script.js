@@ -31,7 +31,7 @@ const CONFIG = {
     },
 
     type: {
-        ESMS: { label: "Afficher les ESMS", description: "EHPAD, Foyers, FAM...", count: 0, checked: true }
+        ESMS: { label: "Afficher les ESMS", description: "EHPAD, Foyers, FAM...", count: 0, checked: false }
     }
 };
 

@@ -131,10 +131,10 @@ async function startApp() {
                 if (isCabinet) {
                     const pinIcon = L.divIcon({
                         className: '',
-                        html: `<div style="font-size:26px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.35));">🏥</div>`,
-                        iconSize: [28, 28],
-                        iconAnchor: [14, 28],
-                        popupAnchor: [0, -32]
+                        html: `<div style="position:relative;width:34px;height:34px;background:${color};border-radius:50%;border:3px solid #fff;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 6px rgba(0,0,0,0.4);">🏥</div>`,
+                        iconSize: [34, 34],
+                        iconAnchor: [17, 17],
+                        popupAnchor: [0, -20]
                     });
                     marker = L.marker([lat, lng], { icon: pinIcon });
                 } else {

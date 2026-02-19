@@ -31,7 +31,7 @@ const CONFIG = {
     },
 
     type: {
-        ESMS: { label: "Afficher les ESMS", description: "EHPAD, Foyers, FAM...", count: 0, checked: true }
+        ESMS: { label: "Afficher les ESMS", description: "EHPAD, Foyers, FAM...", count: 0, checked: false }
     }
 };
 
@@ -48,6 +48,10 @@ let markersStore = [];
 function formatPhone(num) {
     if (!num) return "N/C";
     let cleaned = ('' + num).replace(/\D/g, '');
+    // +33XXXXXXXXX → 0XXXXXXXXX
+    if (cleaned.startsWith('33') && cleaned.length === 11) {
+        cleaned = '0' + cleaned.slice(2);
+    }
     let match = cleaned.match(/^(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})$/);
     return match ? match.slice(1).join(' ') : num;
 }

@@ -31,7 +31,7 @@ const CONFIG = {
     },
 
     type: {
-        ESMS: { label: "Afficher les ESMS", description: "EHPAD, Foyers, FAM...", count: 0, checked: false }
+        ESMS: { label: "Afficher les ESMS", description: "EHPAD, Foyers, FAM...", count: 0, checked: true }
     }
 };
 
@@ -116,7 +116,7 @@ async function startApp() {
                 if (tmsKey && CONFIG.tms.filters[tmsKey]) CONFIG.tms.filters[tmsKey].count++;
 
                 // ESMS
-                const isESMS = ["ESMS", "EHPAD"].some(t =>
+                const isESMS = ["ESMS", "EHPAD", "Foyer", "FAM", "MAS"].some(t =>
                     (item.Type || "").toUpperCase().includes(t.toUpperCase())
                 );
                 if (isESMS) CONFIG.type.ESMS.count++;
@@ -124,17 +124,28 @@ async function startApp() {
                 // Couleur selon statut
                 const color = CONFIG.status[statut]?.color || "#94a3b8";
 
-                // Taille du marqueur
-                const isCabinet = item.Type === "CABINET" || (item.Name && item.Name.match(/^TMS \d+/));
-                const radius = isCabinet ? 10 : 7;
+                // Marqueur selon type
+                const isCabinet = item.Type === "CABINET";
 
-                const marker = L.circleMarker([lat, lng], {
-                    radius,
-                    fillColor: color,
-                    color: "#fff",
-                    weight: 2,
-                    fillOpacity: 0.9
-                });
+                let marker;
+                if (isCabinet) {
+                    const pinIcon = L.divIcon({
+                        className: '',
+                        html: `<div style="font-size:26px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.35));">🏥</div>`,
+                        iconSize: [28, 28],
+                        iconAnchor: [14, 28],
+                        popupAnchor: [0, -32]
+                    });
+                    marker = L.marker([lat, lng], { icon: pinIcon });
+                } else {
+                    marker = L.circleMarker([lat, lng], {
+                        radius: 7,
+                        fillColor: color,
+                        color: "#fff",
+                        weight: 2,
+                        fillOpacity: 0.9
+                    });
+                }
 
                 // Popup
                 const typeLabel = item.Type || (isESMS ? "ESMS" : "Site");

@@ -52,6 +52,10 @@ function formatPhone(num) {
     if (cleaned.startsWith('33') && cleaned.length === 11) {
         cleaned = '0' + cleaned.slice(2);
     }
+    // 9 chiffres sans le 0 initial → on le rajoute
+    if (cleaned.length === 9) {
+        cleaned = '0' + cleaned;
+    }
     let match = cleaned.match(/^(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})$/);
     return match ? match.slice(1).join(' ') : num;
 }

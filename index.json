@@ -1,0 +1,12 @@
+[
+  {
+    "file": "salles.json",
+    "label": "Salles de télémédecine",
+    "visible": true
+  },
+  {
+    "file": "cabinet.json",
+    "label": "Cabinets TMS",
+    "visible": true
+  }
+]

@@ -1,18 +1,15 @@
-// === FONCTION MENU (définir d'abord) ===
+// === CONFIG ===
 const CONFIG = {
-    // === FILTRES PAR STATUT (Couleurs) ===
     status: {
         "Ouvert": { color: "#009597", label: "Cabinets Omedys", description: "Ouverts", checked: true },
-        "Ouvertes": { color: "#3498db", label: "Salles Ouvertes", description: "485 sites", checked: true },
-        "Telesecretariat OMEDYS": { color: "#8956FB", label: "Téléscrétariat", description: "89 sites", checked: true },
-        "Ouverture en cours": { color: "#2ecc71", label: "En cours d'ouverture", description: "142 sites", checked: false },
-        /*"Fermees ou refus OTT": { color: "#f17676", label: "Fermées", description: "89 sites", checked: false },
-        "Inactives": { color: "#cbd5e1", label: "Fermées", description: "89 sites", checked: false },
-        "En sourcing": { color: "#fdaf00", label: "En sourcing", description: "89 sites", checked: false }*/
-        
+        "Ouvertes": { color: "#3498db", label: "Salles Ouvertes", description: "", checked: true },
+        "Telesecretariat OMEDYS": { color: "#8956FB", label: "Télésecretariat", description: "", checked: true },
+        "Ouverture en cours": { color: "#2ecc71", label: "En cours d'ouverture", description: "", checked: false },
+        /*"Fermees ou refus OTT": { color: "#f17676", label: "Fermées", description: "", checked: false },
+        "Inactives": { color: "#cbd5e1", label: "Inactives", description: "", checked: false },
+        "En sourcing": { color: "#fdaf00", label: "En sourcing", description: "", checked: false }*/
     },
-    
-    // === FILTRES PAR TMS (Interrupteurs) ===
+
     tms: {
         isActive: false,
         filters: {
@@ -28,13 +25,13 @@ const CONFIG = {
             "TMS 54": { label: "TMS 54 - Nancy", location: "Meurthe-et-Moselle", count: 0, checked: false },
             "TMS 55": { label: "TMS 55 - Verdun", location: "Meuse", count: 0, checked: false },
             "TMS 59": { label: "TMS 59 - Lille", location: "Nord", count: 0, checked: false },
-            "TMS 72": { label: "TMS 72 - Le Mans", location: "Sarthe", count: 0, checked: false }
+            "TMS 72": { label: "TMS 72 - Le Mans", location: "Sarthe", count: 0, checked: false },
+            "TMS ESMS Emeis": { label: "TMS ESMS Emeis", location: "National", count: 0, checked: false }
         }
     },
-    
-    // === FILTRE PAR TYPE (Interrupteur) ===
+
     type: {
-        ESMS: { label: "Afficher les ESMS", description: "EHPAD, Foyers, FAM...", count: 0, checked: false }
+        ESMS: { label: "Afficher les ESMS", description: "EHPAD, Foyers, FAM...", count: 0, checked: true }
     }
 };
 
@@ -47,6 +44,7 @@ const suggestionBox = document.getElementById('suggestions');
 let debounceTimer = null;
 let markersStore = [];
 
+// === UTILITAIRES ===
 function formatPhone(num) {
     if (!num) return "N/C";
     let cleaned = ('' + num).replace(/\D/g, '');
@@ -59,11 +57,9 @@ function adjustBrightness(color, percent) {
     let r = parseInt(hex.substring(0, 2), 16);
     let g = parseInt(hex.substring(2, 4), 16);
     let b = parseInt(hex.substring(4, 6), 16);
-    
     r = Math.min(255, Math.floor(r + (r * percent / 100)));
     g = Math.min(255, Math.floor(g + (g * percent / 100)));
     b = Math.min(255, Math.floor(b + (b * percent / 100)));
-    
     return "#" + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
 }
 
@@ -79,6 +75,7 @@ function copyAddress(address) {
     });
 }
 
+// === CHARGEMENT ET RENDU ===
 async function startApp() {
     try {
         const [salles, cabinets] = await Promise.all([
@@ -86,65 +83,69 @@ async function startApp() {
             fetch('cabinet.json').then(r => r.json())
         ]);
 
-        // Fusion des données : on extrait le tableau "data" de chaque fichier
         const rawData = [...(salles[0]?.data || []), ...(cabinets[0]?.data || [])];
-        console.log(rawData);
-        // 1. Initialisation des compteurs
+
+        // Initialisation des compteurs
         Object.keys(CONFIG.tms.filters).forEach(k => CONFIG.tms.filters[k].count = 0);
         CONFIG.type.ESMS.count = 0;
 
         rawData.forEach(item => {
-            let address = "Non disponible"; // On définit une valeur par défaut
+            let address = "Non disponible";
             let lat, lng;
-            
-            if (item.Location && typeof item.Location === 'string' && item.Location.startsWith('{')) {
-                try {
-                    const loc = JSON.parse(item.Location);
-                    address = loc.address || "Non disponible"; // Correction : ; au lieu de :
-                    lat = parseFloat(loc.lat);
-                    lng = parseFloat(loc.lng);
-                } catch (e) { 
-                    console.error("Erreur parsing Location pour :", item.Name); 
-                }
+
+            // ✅ Location est maintenant un objet direct (plus une string JSON)
+            if (item.Location && typeof item.Location === 'object' && item.Location.lat) {
+                lat = parseFloat(item.Location.lat);
+                lng = parseFloat(item.Location.lng);
+                address = item.Location.address || "Non disponible";
             } else {
+                // Fallback pour cabinet.json qui peut avoir un format différent
                 lat = parseFloat(String(item.Latitude || item.Lat || "").replace(',', '.'));
                 lng = parseFloat(String(item.Longitude || item.Lng || "").replace(',', '.'));
-                address = item.Address || item.Adresse || "Non disponible"; // Correction : ; au lieu de :
+                address = item.Address || item.Adresse || "Non disponible";
             }
 
             if (!isNaN(lat) && !isNaN(lng)) {
-                // 3. Identification du type et du TMS (pour les filtres)
-                // On cherche "TMS XX" dans le nom si le champ item.TMS n'existe pas
-                const tmsKey = item.TMS || (item.Name && item.Name.match(/TMS \d+/)?.[0]);
-                const isESMS = ["ESMS", "EHPAD", "Foyer", "FAM", "MAS"].some(t => 
-                    (item.Type || item.Name || "").toUpperCase().includes(t)
-                );
+                // ✅ Statut correct : Statut_Salle pour les salles, Statut pour les cabinets
+                const statut = item.Statut_Salle || item.Statut || "";
 
-                // Mise à jour des compteurs CONFIG
+                // TMS
+                const tmsKey = item.TMS || "";
                 if (tmsKey && CONFIG.tms.filters[tmsKey]) CONFIG.tms.filters[tmsKey].count++;
+
+                // ESMS
+                const isESMS = ["ESMS", "EHPAD", "Foyer", "FAM", "MAS"].some(t =>
+                    (item.Type || "").toUpperCase().includes(t.toUpperCase())
+                );
                 if (isESMS) CONFIG.type.ESMS.count++;
 
-                // 4. Style du marqueur
-                const color = CONFIG.status[item.Statut]?.color || "#94a3b8";
+                // Couleur selon statut
+                const color = CONFIG.status[statut]?.color || "#94a3b8";
+
+                // Taille du marqueur
+                const isCabinet = item.Type === "CABINET" || (item.Name && item.Name.match(/^TMS \d+/));
+                const radius = isCabinet ? 10 : 7;
+
                 const marker = L.circleMarker([lat, lng], {
-                    radius: (item.Type === "CABINET" || (item.Name && item.Name.includes("TMS"))) ? 10 : 7,
-                    fillColor: color, 
-                    color: "#fff", 
-                    weight: 2, 
+                    radius,
+                    fillColor: color,
+                    color: "#fff",
+                    weight: 2,
                     fillOpacity: 0.9
                 });
 
-                // 5. Contenu de la Popup (Adapté aux nouveaux champs ATT_Name, ATT_Phone...)
+                // Popup
+                const typeLabel = item.Type || (isESMS ? "ESMS" : "Site");
                 const popupContent = `
                     <div class="bento-popup-v2">
                         <div class="popup-header-v2" style="background: linear-gradient(135deg, ${color} 0%, ${adjustBrightness(color, 20)} 100%)">
-                            <div class="popup-badge" style="background:${color}">${item.Type || (isESMS ? "ESMS" : "TMS")}</div>
-                            <h3 class="popup-title">${item.Name || item.Nom || "Site"}</h3>
-                            <p class="popup-status">${item.Statut || "N/C"}</p>
+                            <div class="popup-badge" style="background:${color}">${typeLabel}</div>
+                            <h3 class="popup-title">${item.Name || "Site"}</h3>
+                            <p class="popup-status">${statut || "N/C"}</p>
                         </div>
                         <div class="popup-body-v2">
                             <div class="popup-section">
-                                
+
                                 ${item.Type === "CABINET" ? `
                                     <div class="info-card">
                                         <div class="info-icon">👤</div>
@@ -153,26 +154,43 @@ async function startApp() {
                                             <span class="info-value">${item.ATT_Name || item.ATT || "Non assigné"}</span>
                                         </div>
                                     </div>
-                                ` : (item.Type === "SALLE" || item.TMS) ? `
+                                ` : item.TMS ? `
                                     <div class="info-card">
                                         <div class="info-icon">🏢</div>
                                         <div class="info-content">
                                             <span class="info-label">Cabinet de rattachement</span>
-                                            <span class="info-value">${item.TMS || "Omedys"}</span>
+                                            <span class="info-value">${item.TMS}</span>
+                                        </div>
+                                    </div>
+                                    <div class="info-card">
+                                        <div class="info-icon">👤</div>
+                                        <div class="info-content">
+                                            <span class="info-label">ATT</span>
+                                            <span class="info-value">${item.ATT || "Non assigné"}</span>
                                         </div>
                                     </div>
                                 ` : ''}
-                
+
+                                ${item.MSS ? `
+                                    <div class="info-card">
+                                        <div class="info-icon">📧</div>
+                                        <div class="info-content">
+                                            <span class="info-label">MSS</span>
+                                            <span class="info-value">${item.MSS}</span>
+                                        </div>
+                                    </div>
+                                ` : ''}
+
                                 <div class="info-card">
                                     <div class="info-icon">☎️</div>
                                     <div class="info-content">
                                         <span class="info-label">Téléphone</span>
-                                        <a href="tel:${item.ATT_Phone || item.Phone || item.Telephone}" class="info-value link">
-                                            ${formatPhone(item.ATT_Phone || item.Phone || item.Telephone)}
+                                        <a href="tel:${item.Phone || item.ATT_Phone || item.Telephone || ''}" class="info-value link">
+                                            ${formatPhone(item.Phone || item.ATT_Phone || item.Telephone)}
                                         </a>
                                     </div>
                                 </div>
-                
+
                                 <div class="address-card">
                                     <div class="address-icon">📍</div>
                                     <div class="address-content">
@@ -190,12 +208,11 @@ async function startApp() {
 
                 marker.bindPopup(popupContent, { maxWidth: 320, className: 'custom-bento-popup-v2' });
 
-                // 6. Stockage pour les filtres
-                markersStore.push({ 
-                    marker, 
-                    status: item.Statut, 
+                markersStore.push({
+                    marker,
+                    status: statut,
                     tms: tmsKey,
-                    isESMS 
+                    isESMS
                 });
 
                 applyVisibility(markersStore[markersStore.length - 1]);
@@ -204,29 +221,30 @@ async function startApp() {
 
         renderFilters();
         return true;
-    } catch (err) { 
+    } catch (err) {
         console.error('Erreur chargement données:', err);
         return false;
     }
 }
 
+// === VISIBILITÉ ===
 function applyVisibility(item) {
-    // Filtre statut
     const statusOk = CONFIG.status[item.status]?.checked !== false;
-    
-    // Filtre TMS (si actif)
-    const tmsOk = !CONFIG.tms.isActive || (item.tms && CONFIG.tms.filters[item.tms]?.checked !== false);
-    
-    // Filtre ESMS
+    const tmsOk = !CONFIG.tms.isActive || (item.tms && CONFIG.tms.filters[item.tms]?.checked);
     const esmsOk = !item.isESMS || CONFIG.type.ESMS.checked;
-    
     const show = statusOk && tmsOk && esmsOk;
     show ? item.marker.addTo(map) : map.removeLayer(item.marker);
 }
 
+// === RENDU FILTRES ===
 function renderFilters() {
+    // Mise à jour des descriptions avec les vrais compteurs
+    Object.keys(CONFIG.status).forEach(key => {
+        const count = markersStore.filter(m => m.status === key).length;
+        CONFIG.status[key].description = `${count} site${count > 1 ? 's' : ''}`;
+    });
+
     const filtersHtml = `
-        <!-- SECTION STATUT -->
         <div class="filter-section">
             <div class="section-title">
                 <span>🎨 Affichage par statut</span>
@@ -248,14 +266,12 @@ function renderFilters() {
 
         <div class="filters-divider"></div>
 
-        <!-- SECTION INTERRUPTEURS -->
         <div class="filter-section">
             <div class="section-title">
                 <span>⚙️ Interrupteurs</span>
                 <span class="section-badge">${Object.keys(CONFIG.tms.filters).length + 1}</span>
             </div>
 
-            <!-- TMS -->
             <div style="margin-bottom: 14px;">
                 <div style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; padding-left: 4px;">🎯 Centres TMS</div>
                 <div class="filters-grid">
@@ -272,7 +288,6 @@ function renderFilters() {
                 </div>
             </div>
 
-            <!-- ESMS -->
             <div>
                 <div style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; padding-left: 4px;">🏥 Type d'établissement</div>
                 <div class="filters-grid">
@@ -281,18 +296,19 @@ function renderFilters() {
                             <span class="filter-label">${CONFIG.type.ESMS.label}</span>
                             <span class="filter-description">${CONFIG.type.ESMS.description}</span>
                         </div>
-                        <!--span class="tms-badge">${CONFIG.type.ESMS.count}</span-->
+                        <span class="tms-badge">${CONFIG.type.ESMS.count}</span>
                         <div class="toggle-switch"></div>
                     </div>
                 </div>
             </div>
         </div>
     `;
-    
+
     document.getElementById('filter-list').innerHTML = filtersHtml;
     updateStats();
 }
 
+// === TOGGLES ===
 window.toggleStatusFilter = (key) => {
     CONFIG.status[key].checked = !CONFIG.status[key].checked;
     markersStore.forEach(applyVisibility);
@@ -300,7 +316,6 @@ window.toggleStatusFilter = (key) => {
 };
 
 window.toggleTmsFilter = (key) => {
-    CONFIG.tms.isActive = Object.values(CONFIG.tms.filters).some(f => f.checked);
     CONFIG.tms.filters[key].checked = !CONFIG.tms.filters[key].checked;
     CONFIG.tms.isActive = Object.values(CONFIG.tms.filters).some(f => f.checked);
     markersStore.forEach(applyVisibility);
@@ -313,16 +328,16 @@ window.toggleEsmsFilter = () => {
     renderFilters();
 };
 
-function updateStats() { 
-    document.getElementById('site-count').innerText = markersStore.filter(m => map.hasLayer(m.marker)).length; 
+function updateStats() {
+    document.getElementById('site-count').innerText = markersStore.filter(m => map.hasLayer(m.marker)).length;
 }
 
+// === RECHERCHE ===
 function displaySuggestions(features) {
     if (!features || features.length === 0) {
         suggestionBox.innerHTML = '<div class="suggestion-item empty">Aucun lieu trouvé</div>';
         return;
     }
-
     suggestionBox.innerHTML = features.map((feature, idx) => {
         const prop = feature.properties;
         const geometry = feature.geometry;
@@ -333,7 +348,6 @@ function displaySuggestions(features) {
         const lon = geometry.coordinates[0];
         const lat = geometry.coordinates[1];
         const safeName = municipality.replace(/'/g, "\\'");
-
         return `
             <div class="suggestion-item" onclick="window.selectSuggestion('${safeName}', ${lat}, ${lon}, ${idx})">
                 <div class="suggestion-header">
@@ -352,7 +366,7 @@ function hideSuggestions() {
     suggestionBox.innerHTML = '';
 }
 
-window.selectSuggestion = (city, lat, lon, idx) => {
+window.selectSuggestion = (city, lat, lon) => {
     searchInput.value = city;
     hideSuggestions();
     map.flyTo([lat, lon], 13);
@@ -367,46 +381,31 @@ async function fetchSuggestions(query) {
 searchInput?.addEventListener('input', (e) => {
     clearTimeout(debounceTimer);
     const query = e.target.value;
-
-    if (query.trim().length === 0) {
-        hideSuggestions();
-        return;
-    }
-
-    debounceTimer = setTimeout(() => {
-        fetchSuggestions(query);
-    }, 300);
+    if (query.trim().length === 0) { hideSuggestions(); return; }
+    debounceTimer = setTimeout(() => fetchSuggestions(query), 300);
 });
 
 document.addEventListener('click', (e) => {
-    if (!e.target.closest('.bento-search') && !e.target.closest('#suggestions')) {
-        hideSuggestions();
-    }
+    if (!e.target.closest('.bento-search') && !e.target.closest('#suggestions')) hideSuggestions();
 });
 
 searchInput?.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        hideSuggestions();
-    }
+    if (e.key === 'Enter') hideSuggestions();
 });
 
+// === INIT ===
 startApp().then(() => {
     const menuBtn = document.getElementById('menu-btn');
     const newMenuBtn = menuBtn.cloneNode(true);
     menuBtn.parentNode.replaceChild(newMenuBtn, menuBtn);
-    
+
     const btn = document.getElementById('menu-btn');
-    
     btn.addEventListener('mousedown', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        
         const b = document.getElementById('menu-btn');
         const menu = document.getElementById('side-menu');
         b.classList.toggle('active');
         menu.classList.toggle('open');
     }, true);
-    
-    // Le menu reste ouvert jusqu'à ce qu'on clique sur le bouton hamburger
-    // (pas de fermeture automatique au clic externe)
 });

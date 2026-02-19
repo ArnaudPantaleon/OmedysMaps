@@ -245,8 +245,8 @@ body, html {
 
 .bp3-badge {
     font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
-    color: rgba(255,255,255,0.65);
-    background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.12);
+    color: rgba(0,0,0,0.65);
+    background: rgba(255,255,255,0.39); border: 1px solid rgba(255,255,255,0.12);
     padding: 3px 8px; border-radius: 20px;
 }
 
@@ -271,7 +271,7 @@ body, html {
 .bp3-title {
     font-family: 'Syne', 'DM Sans', sans-serif;
     font-size: 14px; font-weight: 700;
-    color: rgba(255,255,255,0.92); line-height: 1.3;
+    color: rgba(0,0,0,0.92); line-height: 1.3;
 }
 
 /* Grid */

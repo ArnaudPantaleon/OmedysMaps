@@ -31,7 +31,7 @@ const CONFIG = {
     },
 
     type: {
-        ESMS: { label: "Afficher les ESMS", description: "EHPAD, Foyers, FAM...", count: 0, checked: true }
+        ESMS: { label: "Afficher les ESMS", description: "EHPAD, Foyers, FAM...", count: 0, checked: false }
     }
 };
 
@@ -116,7 +116,7 @@ async function startApp() {
                 if (tmsKey && CONFIG.tms.filters[tmsKey]) CONFIG.tms.filters[tmsKey].count++;
 
                 // ESMS
-                const isESMS = ["ESMS", "EHPAD", "Foyer", "FAM", "MAS"].some(t =>
+                const isESMS = ["ESMS", "EHPAD"].some(t =>
                     (item.Type || "").toUpperCase().includes(t.toUpperCase())
                 );
                 if (isESMS) CONFIG.type.ESMS.count++;

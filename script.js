@@ -6,9 +6,9 @@ const CONFIG = {
         "Ouvertes": { color: "#3498db", label: "Salles Ouvertes", description: "485 sites", checked: true },
         "Telesecretariat OMEDYS": { color: "#8956FB", label: "Téléscrétariat", description: "89 sites", checked: true },
         "Ouverture en cours": { color: "#2ecc71", label: "En cours d'ouverture", description: "142 sites", checked: false },
-        "Fermees ou refus OTT": { color: "#f17676", label: "Fermées", description: "89 sites", checked: false },
+        /*"Fermees ou refus OTT": { color: "#f17676", label: "Fermées", description: "89 sites", checked: false },
         "Inactives": { color: "#cbd5e1", label: "Fermées", description: "89 sites", checked: false },
-        "En sourcing": { color: "#fdaf00", label: "En sourcing", description: "89 sites", checked: false }
+        "En sourcing": { color: "#fdaf00", label: "En sourcing", description: "89 sites", checked: false }*/
         
     },
     
@@ -88,7 +88,7 @@ async function startApp() {
 
         // Fusion des données : on extrait le tableau "data" de chaque fichier
         const rawData = [...(salles[0]?.data || []), ...(cabinets[0]?.data || [])];
-        
+        console.log(rawData);
         // 1. Initialisation des compteurs
         Object.keys(CONFIG.tms.filters).forEach(k => CONFIG.tms.filters[k].count = 0);
         CONFIG.type.ESMS.count = 0;

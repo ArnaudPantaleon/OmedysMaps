@@ -233,7 +233,6 @@ async function startApp() {
                             <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}" target="_blank" class="bp3-btn bp3-btn--maps">🗺️ Maps</a>
                         </div>
                     </div>`;
-                    </div>`;
 
                 marker.bindPopup(popupContent, { maxWidth: 340, className: 'bp3-popup' });
 

@@ -333,7 +333,7 @@ body, html {
     border: 1px solid rgba(255,255,255,0.1);
     color: rgba(0,0,0,0.65);
 }
-.bp3-btn--copy:hover { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.85); }
+.bp3-btn--copy:hover { background: #7adedf59; color: rgba(0,0,0,0.65); }
 
 .bp3-btn--maps { background: #009597; color: #fff; }
 .bp3-btn--maps:hover { background: #007a7c; }

@@ -31,7 +31,7 @@ const CONFIG = {
     },
 
     type: {
-        ESMS: { label: "Afficher les ESMS", description: "EHPAD, Foyers, FAM...", count: 0, checked: false }
+        ESMS: { label: "Afficher les ESMS", description: "EHPAD, Foyers, FAM...", count: 0, checked: true }
     }
 };
 
@@ -157,77 +157,85 @@ async function startApp() {
 
                 // Popup
                 const typeLabel = item.Type || (isESMS ? "ESMS" : "Site");
+                const phoneRaw = item.Phone || item.ATT_Phone || item.Telephone || '';
+                const attName = item.Type === "CABINET"
+                    ? (item.ATT_Name || item.ATT || "Non assigné")
+                    : (item.ATT || "Non assigné");
+
+                // Classe pill selon statut
+                const pillClass = statut === "Ouvert" || statut === "Ouvertes" ? "bp3-pill-ouvert"
+                    : statut === "Ouverture en cours" ? "bp3-pill-encours"
+                    : statut === "Telesecretariat OMEDYS" ? "bp3-pill-tele"
+                    : "bp3-pill-default";
+
                 const popupContent = `
-                    <div class="bento-popup-v2">
-                        <div class="popup-header-v2" style="background: linear-gradient(135deg, ${color} 0%, ${adjustBrightness(color, 20)} 100%)">
-                            <div class="popup-badge" style="background:${color}">${typeLabel}</div>
-                            <h3 class="popup-title">${item.Name || "Site"}</h3>
-                            <p class="popup-status">${statut || "N/C"}</p>
+                    <div class="bp3">
+                        <div class="bp3-header" style="--bp3-accent-glow:${color}40">
+                            <div class="bp3-hd-top">
+                                <div class="bp3-badge">${typeLabel}</div>
+                                <div class="bp3-statut-pill ${pillClass}">
+                                    <span class="bp3-sdot"></span>${statut || "N/C"}
+                                </div>
+                            </div>
+                            <div class="bp3-title">${item.Name || "Site"}</div>
                         </div>
-                        <div class="popup-body-v2">
-                            <div class="popup-section">
-
-                                ${item.Type === "CABINET" ? `
-                                    <div class="info-card">
-                                        <div class="info-icon">👤</div>
-                                        <div class="info-content">
-                                            <span class="info-label">Responsable</span>
-                                            <span class="info-value">${item.ATT_Name || item.ATT || "Non assigné"}</span>
-                                        </div>
-                                    </div>
-                                ` : item.TMS ? `
-                                    <div class="info-card">
-                                        <div class="info-icon">🏢</div>
-                                        <div class="info-content">
-                                            <span class="info-label">Cabinet de rattachement</span>
-                                            <span class="info-value">${item.TMS}</span>
-                                        </div>
-                                    </div>
-                                    <div class="info-card">
-                                        <div class="info-icon">👤</div>
-                                        <div class="info-content">
-                                            <span class="info-label">ATT</span>
-                                            <span class="info-value">${item.ATT || "Non assigné"}</span>
-                                        </div>
-                                    </div>
-                                ` : ''}
-
-                                ${item.MSS ? `
-                                    <div class="info-card">
-                                        <div class="info-icon">📧</div>
-                                        <div class="info-content">
-                                            <span class="info-label">MSS</span>
-                                            <span class="info-value">${item.MSS}</span>
-                                        </div>
-                                    </div>
-                                ` : ''}
-
-                                <div class="info-card">
-                                    <div class="info-icon">☎️</div>
-                                    <div class="info-content">
-                                        <span class="info-label">Téléphone</span>
-                                        <a href="tel:${item.Phone || item.ATT_Phone || item.Telephone || ''}" class="info-value link">
-                                            ${formatPhone(item.Phone || item.ATT_Phone || item.Telephone)}
-                                        </a>
-                                    </div>
+                        <div class="bp3-grid">
+                            ${item.Type === "CABINET" ? `
+                            <div class="bp3-tile bp3-wide">
+                                <span class="bp3-tile-icon">👤</span>
+                                <div class="bp3-tile-body">
+                                    <div class="bp3-tile-label">Responsable</div>
+                                    <div class="bp3-tile-value">${attName}</div>
                                 </div>
-
-                                <div class="address-card">
-                                    <div class="address-icon">📍</div>
-                                    <div class="address-content">
-                                        <span class="info-label">Adresse</span>
-                                        <p class="address-text">${address}</p>
-                                    </div>
+                            </div>` : item.TMS ? `
+                            <div class="bp3-tile">
+                                <span class="bp3-tile-icon">🩺</span>
+                                <div class="bp3-tile-body">
+                                    <div class="bp3-tile-label">Cabinet TMS</div>
+                                    <div class="bp3-tile-value">${item.TMS}</div>
                                 </div>
                             </div>
-                            <div class="popup-footer">
-                                <button class="popup-btn-copy" onclick="copyAddress('${address.replace(/'/g, "\\'")}')">📋 Copier</button>
-                                <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}" target="_blank" class="popup-btn-map">🗺️ Maps</a>
+                            <div class="bp3-tile">
+                                <span class="bp3-tile-icon">👤</span>
+                                <div class="bp3-tile-body">
+                                    <div class="bp3-tile-label">ATT</div>
+                                    <div class="bp3-tile-value">${attName}</div>
+                                </div>
+                            </div>` : ''}
+
+                            <div class="bp3-tile">
+                                <span class="bp3-tile-icon">☎️</span>
+                                <div class="bp3-tile-body">
+                                    <div class="bp3-tile-label">Téléphone</div>
+                                    <a href="tel:${phoneRaw}" class="bp3-tile-value bp3-link">${formatPhone(phoneRaw)}</a>
+                                </div>
                             </div>
+
+                            ${item.MSS ? `
+                            <div class="bp3-tile">
+                                <span class="bp3-tile-icon">📨</span>
+                                <div class="bp3-tile-body">
+                                    <div class="bp3-tile-label">MSS</div>
+                                    <div class="bp3-tile-value bp3-mss">${item.MSS}</div>
+                                </div>
+                            </div>` : ''}
+
+                            <div class="bp3-tile bp3-wide">
+                                <span class="bp3-tile-icon">📍</span>
+                                <div class="bp3-tile-body">
+                                    <div class="bp3-tile-label">Adresse</div>
+                                    <div class="bp3-tile-value">${address}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bp3-footer">
+                            <button class="bp3-btn bp3-btn--copy" onclick="copyAddress('${address.replace(/'/g, "\\'")}')">📋 Copier</button>
+                            <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}" target="_blank" class="bp3-btn bp3-btn--maps">🗺️ Maps</a>
                         </div>
                     </div>`;
+                    </div>`;
 
-                marker.bindPopup(popupContent, { maxWidth: 320, className: 'custom-bento-popup-v2' });
+                marker.bindPopup(popupContent, { maxWidth: 340, className: 'bp3-popup' });
 
                 markersStore.push({
                     marker,

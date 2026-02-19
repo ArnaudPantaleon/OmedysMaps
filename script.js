@@ -31,7 +31,7 @@ const CONFIG = {
     },
 
     type: {
-        ESMS: { label: "Afficher les ESMS", description: "EHPAD, Foyers, FAM...", count: 0, checked: false }
+        ESMS: { label: "Afficher les ESMS", description: "EHPAD, Foyers, FAM...", count: 0, checked: true }
     }
 };
 
@@ -91,16 +91,20 @@ async function startApp() {
             let address = "Non disponible";
             let lat, lng;
 
-            // ✅ Location est maintenant un objet direct (plus une string JSON)
+            // Location : objet direct (salles.json) ou string JSON (cabinet.json)
             if (item.Location && typeof item.Location === 'object' && item.Location.lat) {
                 lat = parseFloat(item.Location.lat);
                 lng = parseFloat(item.Location.lng);
                 address = item.Location.address || "Non disponible";
-            } else {
-                // Fallback pour cabinet.json qui peut avoir un format différent
-                lat = parseFloat(String(item.Latitude || item.Lat || "").replace(',', '.'));
-                lng = parseFloat(String(item.Longitude || item.Lng || "").replace(',', '.'));
-                address = item.Address || item.Adresse || "Non disponible";
+            } else if (item.Location && typeof item.Location === 'string') {
+                try {
+                    const loc = JSON.parse(item.Location);
+                    if (loc.lat) {
+                        lat = parseFloat(loc.lat);
+                        lng = parseFloat(loc.lng);
+                        address = loc.address || "Non disponible";
+                    }
+                } catch(e) {}
             }
 
             if (!isNaN(lat) && !isNaN(lng)) {
@@ -112,7 +116,7 @@ async function startApp() {
                 if (tmsKey && CONFIG.tms.filters[tmsKey]) CONFIG.tms.filters[tmsKey].count++;
 
                 // ESMS
-                const isESMS = ["ESMS", "EHPAD"].some(t =>
+                const isESMS = ["ESMS", "EHPAD", "Foyer", "FAM", "MAS"].some(t =>
                     (item.Type || "").toUpperCase().includes(t.toUpperCase())
                 );
                 if (isESMS) CONFIG.type.ESMS.count++;
@@ -210,7 +214,8 @@ async function startApp() {
                     marker,
                     status: statut,
                     tms: tmsKey,
-                    isESMS
+                    isESMS,
+                    type: item.Type || ""
                 });
 
                 applyVisibility(markersStore[markersStore.length - 1]);
@@ -228,7 +233,7 @@ async function startApp() {
 // === VISIBILITÉ ===
 function applyVisibility(item) {
     const statusOk = CONFIG.status[item.status]?.checked !== false;
-    const tmsOk = !CONFIG.tms.isActive || (item.tms && CONFIG.tms.filters[item.tms]?.checked);
+    const tmsOk = !CONFIG.tms.isActive || item.type === "CABINET" || (item.tms && CONFIG.tms.filters[item.tms]?.checked);
     const esmsOk = !item.isESMS || CONFIG.type.ESMS.checked;
     const show = statusOk && tmsOk && esmsOk;
     show ? item.marker.addTo(map) : map.removeLayer(item.marker);

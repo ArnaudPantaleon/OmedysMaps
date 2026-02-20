@@ -257,7 +257,7 @@ body, html {
 }
 .bp3-pill-ouvert     { background: rgba(0,172,200,0.15); color: #0050c8; }
 .bp3-pill-encours    { background: rgba(46,204,113,0.13); color: #2ecc71; }
-.bp3-pill-tele       { background: rgb(137 86 251 / 77%); color: #ffffff8f; }
+.bp3-pill-tele       { background: rgba(153,127,209,0.37); color: #6636db; }
 .bp3-pill-default    { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.6); }
 
 .bp3-sdot {

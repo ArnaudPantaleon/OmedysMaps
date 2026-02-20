@@ -97,6 +97,7 @@ select option{background:var(--surface2)}
 .src-badge.ameli{background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.2)}
 .src-badge.demo{background:rgba(255,166,87,.08);color:var(--warn);border:1px solid rgba(255,166,87,.2)}
 .src-badge.ednh_fcpts{background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.2)}
+.src-badge.atlasante{background:rgba(0,212,170,.08);color:#00b894;border:1px solid rgba(0,200,150,.25)}
 
 /* Cards */
 .cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(305px,1fr));gap:.9rem}
@@ -206,6 +207,7 @@ select option{background:var(--surface2)}
       <span class="src-pill pend" id="src-finess"><span class="sdot"></span>FINESS (data.gouv.fr)</span>
       <span class="src-pill pend" id="src-ameli"><span class="sdot"></span>data.ameli.fr</span>
       <span class="src-pill pend" id="src-datagouv"><span class="sdot"></span>data.gouv.fr datasets</span>
+      <span class="src-pill pend" id="src-atlasante"><span class="sdot"></span>AtlaSanté WFS</span>
     </div>
   </div>
 </div>
@@ -255,6 +257,7 @@ select option{background:var(--surface2)}
       • <a href="https://www.data.gouv.fr/fr/datasets/finess-extraction-du-fichier-des-etablissements/" target="_blank">FINESS data.gouv.fr</a><br>
       • <a href="https://www.data.gouv.fr/fr/datasets/maisons-de-sante-pluriprofessionnelles/" target="_blank">MSP — data.gouv.fr</a><br>
       • <a href="https://www.data.gouv.fr/fr/datasets/communautes-professionnelles-territoriales-de-sante-cpts/" target="_blank">CPTS — data.gouv.fr</a>
+      • <a href="https://datacarto.atlasante.fr" target="_blank">CPTS — AtlaSanté WFS</a>
     </div>
   </aside>
 
@@ -334,6 +337,12 @@ const APIS = {
     base: 'https://geo.api.gouv.fr/communes',
     name: 'API Géo (data.gouv.fr)',
     id: 'src-datagouv',
+  },
+  // AtlaSanté — CPTS via WFS datacarto
+  ATLASANTE_CPTS: {
+    base: 'https://datacarto.atlasante.fr/wfs',
+    name: 'AtlaSanté WFS',
+    id: 'src-atlasante',
   },
 };
 
@@ -455,8 +464,118 @@ function searchCPTSLocal(dept, commune, nom, page) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// CACHE & STATE
+// ATLASANTE WFS — CPTS temps réel
+// Endpoint : https://datacarto.atlasante.fr/wfs?service=WFS&version=2.0.0
+//   &request=GetFeature&typeName=ms:dgos_france_cpts_z
+//   &outputFormat=application/json
+//   &propertyName=cpts,gid,statut,nb_com,pop_tot
 // ═══════════════════════════════════════════════════════════════════
+
+let _atlasanteCache = null; // cache global (toutes les CPTS)
+let _atlasanteFetching = null; // promise en cours
+
+async function fetchAtlaSanteCPTS() {
+  if (_atlasanteCache) return _atlasanteCache;
+  if (_atlasanteFetching) return _atlasanteFetching;
+
+  const url = 'https://datacarto.atlasante.fr/wfs?service=WFS&version=2.0.0' +
+    '&request=GetFeature&typeName=ms:dgos_france_cpts_z' +
+    '&outputFormat=application/json' +
+    '&propertyName=cpts,gid,statut,nb_com,pop_tot';
+
+  _atlasanteFetching = (async () => {
+    try {
+      const r = await fetch(url, { signal: AbortSignal.timeout(10000) });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const geojson = await r.json();
+      setSourceStatus('atlasante', 'live');
+
+      // Indexer les CPTS locales par nom normalisé pour enrichissement
+      const localByName = {};
+      CPTS_DATA.forEach(c => {
+        const key = c.nom.toLowerCase().replace(/\s+/g, ' ').trim();
+        localByName[key] = c;
+      });
+
+      // Transformer les features GeoJSON en objets structure
+      const results = (geojson.features || []).map((f, i) => {
+        const p = f.properties || {};
+        const nomCpts = p.cpts || `CPTS #${p.gid || i}`;
+        const key = nomCpts.toLowerCase().replace(/\s+/g, ' ').trim();
+        const local = localByName[key] || {};
+
+        // Extraire le département depuis le nom ou les données locales
+        const dept = local.departement || local.codePostal?.slice(0, 2) || '';
+
+        return {
+          id: `atlasante_${p.gid || i}`,
+          type: 'structure',
+          _source: 'atlasante',
+          typeStructure: 'CPTS',
+          typeObj: STRUCTURE_TYPES.find(t => t.id === 'CPTS'),
+          nom: nomCpts,
+          adresse: local.adresse || '',
+          commune: local.commune || '',
+          codePostal: local.codePostal || '',
+          departement: dept,
+          region: local.region || '',
+          telephone: local.telephone || '',
+          email: local.email || '',
+          siteWeb: local.siteWeb || null,
+          contact: local.contact || null,
+          dateOuverture: local.dateOuverture || '',
+          taille: local.taille || '',
+          // Champs AtlaSanté
+          statut: p.statut || '',
+          nbCommunes: p.nb_com || null,
+          populationCouverte: p.pop_tot ? p.pop_tot.toLocaleString('fr-FR') : null,
+          gid: p.gid,
+        };
+      });
+
+      _atlasanteCache = results;
+      _atlasanteFetching = null;
+      return results;
+    } catch (e) {
+      _atlasanteFetching = null;
+      setSourceStatus('atlasante', 'fail');
+      throw e;
+    }
+  })();
+
+  return _atlasanteFetching;
+}
+
+// Recherche CPTS via AtlaSanté avec filtre local
+function searchAtlaSante(allCpts, dept, commune, nom, page) {
+  let pool = allCpts;
+  if (dept) {
+    pool = pool.filter(c => {
+      const cp = c.codePostal || '';
+      return cp.startsWith(dept) || c.departement === dept;
+    });
+  }
+  if (commune) {
+    const cv = commune.toLowerCase();
+    pool = pool.filter(c =>
+      c.nom.toLowerCase().includes(cv) ||
+      (c.commune || '').toLowerCase().includes(cv) ||
+      (c.region || '').toLowerCase().includes(cv)
+    );
+  }
+  if (nom) {
+    const nv = nom.toLowerCase();
+    pool = pool.filter(c => c.nom.toLowerCase().includes(nv));
+  }
+  const start = page * PER;
+  return {
+    results: pool.slice(start, start + PER),
+    total: pool.length,
+    source: 'atlasante'
+  };
+}
+
+
 
 const cache = new Map(); // key → {data, ts}
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
@@ -469,7 +588,7 @@ function cacheGet(key) {
 }
 function cacheSet(key, data) { cache.set(key, {data, ts: Date.now()}); }
 
-const sourceStatus = {rpps:'pend', finess:'pend', ameli:'pend', datagouv:'pend'};
+const sourceStatus = {rpps:'pend', finess:'pend', ameli:'pend', datagouv:'pend', atlasante:'pend'};
 
 let state = {
   tab: 'pros',
@@ -786,20 +905,43 @@ async function searchProsAPI(dept, commune, profession, nom, page) {
 }
 
 async function searchStrAPI(dept, commune, typeStr, nom, page) {
-  // Cas CPTS : on utilise les données réelles locales (360 CPTS)
+  // Cas CPTS : on tente d'abord AtlaSanté WFS (données temps réel)
   if (!typeStr || typeStr === 'CPTS') {
+    try {
+      const allCpts = await fetchAtlaSanteCPTS();
+      if (allCpts && allCpts.length > 0) {
+        const atlasResult = searchAtlaSante(allCpts, dept, commune, nom, page);
+        if (atlasResult.results.length > 0) {
+          // Si on cherche toutes les structures, on complète avec FINESS pour MSP
+          if (!typeStr) {
+            try {
+              const finess = await fetchFINESS(dept, commune, 'MSP', nom, 0);
+              if (finess && finess.results.length) {
+                const combined = [
+                  ...atlasResult.results,
+                  ...finess.results.slice(0, Math.max(0, PER - atlasResult.results.length))
+                ];
+                return { results: combined, total: atlasResult.total + finess.total, source: 'atlasante' };
+              }
+            } catch (_) {}
+          }
+          return atlasResult;
+        }
+      }
+    } catch (_) {}
+
+    // Fallback : données CPTS locales (EDNH/FCPTS)
     const local = searchCPTSLocal(dept, commune, nom, page);
     if (local.results.length > 0) {
-      setSourceStatus('finess','live');
-      // Si on cherche toutes les structures, on complète avec FINESS pour les autres types
+      setSourceStatus('finess', 'live');
       if (!typeStr) {
         try {
           const finess = await fetchFINESS(dept, commune, 'MSP', nom, 0);
           if (finess && finess.results.length) {
             const combined = [...local.results, ...finess.results.slice(0, PER - local.results.length)];
-            return {results: combined, total: local.total + finess.total, source: 'ednh_fcpts'};
+            return { results: combined, total: local.total + finess.total, source: 'ednh_fcpts' };
           }
-        } catch(_) {}
+        } catch (_) {}
       }
       return local;
     }
@@ -809,7 +951,7 @@ async function searchStrAPI(dept, commune, typeStr, nom, page) {
   try {
     const r = await fetchFINESS(dept, commune, typeStr, nom, page);
     if (r && r.results.length > 0) return r;
-  } catch(_) {}
+  } catch (_) {}
 
   // Fallback : données démo
   return mockStr(dept, commune, typeStr, nom, page);
@@ -824,7 +966,7 @@ function dr(icon, html) { return `<div class="dr"><span class="di">${icon}</span
 function drl(icon, href, text) { return `<div class="dr"><span class="di">${icon}</span><a href="${href}" class="dl" target="_blank" rel="noopener">${text}</a></div>`; }
 function btn(cls, href, label) { return `<a href="${href}" target="_blank" rel="noopener" class="ba ${cls}">${label}</a>`; }
 function srcBadge(src) {
-  const map = {rpps:'RPPS',finess:'FINESS',ameli:'AMELI',demo:'DÉMO',ednh_fcpts:'FCPTS'};
+  const map = {rpps:'RPPS',finess:'FINESS',ameli:'AMELI',demo:'DÉMO',ednh_fcpts:'FCPTS',atlasante:'AtlaSanté'};
   return `<span class="src-badge ${src}">${map[src]||src}</span>`;
 }
 
@@ -893,6 +1035,17 @@ function renderStrCard(str) {
       <div class="tags">${str.missionsActives.map(m=>tag('tm',m)).join('')}</div>
       ${str.populationCouverte?dr('👥',`Population couverte : <strong style="color:var(--text)">${str.populationCouverte} hab.</strong>`):''}
       ${str.dateAgreement?dr('📅',`Agrément ARS : <strong style="color:var(--text)">${str.dateAgreement}</strong>`):''}
+    </div>`;
+  } else if (str.typeStructure==='CPTS'&&(str.statut||str.nbCommunes!=null||str.populationCouverte)) {
+    // Données AtlaSanté WFS
+    specific = `<div class="dsec">
+      ${str.statut?`<div class="dsec-t" style="margin-bottom:.5rem">Statut : <span style="color:var(--accent);font-weight:600">${str.statut}</span></div>`:''}
+      <div class="igrid">
+        ${str.nbCommunes!=null?`<div class="icell"><div class="il">Communes</div><div class="iv">${str.nbCommunes}</div></div>`:''}
+        ${str.populationCouverte?`<div class="icell"><div class="il">Population</div><div class="iv">${str.populationCouverte} hab.</div></div>`:''}
+        ${str.dateOuverture?`<div class="icell"><div class="il">Ouverture</div><div class="iv">${str.dateOuverture}</div></div>`:''}
+        ${str.taille?`<div class="icell"><div class="il">Taille</div><div class="iv">${str.taille}</div></div>`:''}
+      </div>
     </div>`;
   }
   if ((str.typeStructure==='MSP'||str.typeStructure==='CDS')&&(str.disciplines||str.disciplinesCds)) {
@@ -1200,6 +1353,7 @@ function init(){
     apiFetch(`${APIS.FINESS_ODS.base}?limit=1`,'finess',4000),
     apiFetch(`${APIS.AMELI.base}?limit=1`,'ameli',4000),
     apiFetch(`${APIS.GEO.base}?nom=Paris&limit=1`,'datagouv',4000),
+    fetchAtlaSanteCPTS(), // préchargement AtlaSanté CPTS
   ]);
 
   // Recherches initiales

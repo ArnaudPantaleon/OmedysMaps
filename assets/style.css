@@ -157,10 +157,9 @@ body, html {
     padding: 10px 16px;
 }
 
-/* Icône loupe fixe */
-.bento-search::before {
-    content: '⌕';
-    font-size: 18px;
+/* Icône loupe via FA — injectée en JS dans ui.search.js */
+.bento-search .fa-magnifying-glass {
+    font-size: 15px;
     color: var(--text-secondary);
     flex-shrink: 0;
     position: relative; z-index: 1;
@@ -321,7 +320,10 @@ body, html {
     box-shadow: 0 2px 8px rgba(0,149,151,0.35);
 }
 .filter-checkbox::after {
-    content: '✓'; color: white; font-weight: 800; font-size: 11px;
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    content: '\f00c';
+    color: white; font-size: 10px;
     opacity: 0; transition: opacity 0.15s;
 }
 .filter-item.color-filter.active .filter-checkbox::after { opacity: 1; }
@@ -709,7 +711,8 @@ html.is-dark .bp3-pill-default .bp3-sdot { background: rgba(255,255,255,0.4); }
     box-shadow: 0 0 0 2px rgba(0,149,151,0.15);
 }
 
-.theme-btn-icon  { font-size: 14px; line-height: 1; }
+.theme-btn-icon  { font-size: 13px; line-height: 1; color: var(--text-secondary); }
+.theme-btn.active .theme-btn-icon { color: var(--primary); }
 .theme-btn-label {
     font-size: 10px; font-weight: 500;
     color: var(--text-secondary);

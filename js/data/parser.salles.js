@@ -1,19 +1,15 @@
 export function parseSalle(row){
 
-let location
+const location = row.Location || {}
 
-try{
-location = JSON.parse(row.Location || "{}")
-}catch{
-return null
-}
-
-if(!location.lat || !location.lng) return null
+if(!location?.lat || !location?.lng) return null
 
 return {
 
-id: row.id,
+id: row.Name + location.lat,
+
 name: row.Name,
+
 type:"salle",
 
 lat:Number(location.lat),
@@ -22,7 +18,20 @@ lng:Number(location.lng),
 city:location.city?.long_name || "",
 address:location.address || "",
 
-status:row.Statut
+status:row.Statut_Salle || "Inconnu",
+
+tms:row.TMS,
+
+contact:{
+name:row.ATT,
+mail:row.ATT_Mail,
+phone:row.Phone
+},
+
+meta:{
+statutTMS:row.Statut_TMS,
+structure:row.Type
+}
 
 }
 

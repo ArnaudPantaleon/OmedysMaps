@@ -1,28 +1,32 @@
+import {CONFIG} from "../core/config.js"
 import {store} from "../core/store.js"
 
-export function initStats(){
+export function initFilters(){
 
-const el = document.createElement("div")
+const container=document.createElement("div")
+container.className="filters"
 
-el.className="bento-stats"
+Object.entries(CONFIG.status).forEach(([key,val])=>{
 
-el.innerHTML=`
-<small>SITES</small>
-<span id="site-count">0</span>
-`
+store.filters.status[key]=val.checked
 
-document.body.appendChild(el)
+const btn=document.createElement("button")
 
-updateStats()
+btn.textContent=key
+btn.className="filter"
+
+btn.onclick=()=>{
+
+store.filters.status[key]=!store.filters.status[key]
+
+btn.classList.toggle("active")
 
 }
 
-export function updateStats(){
+container.appendChild(btn)
 
-const el=document.getElementById("site-count")
+})
 
-if(!el) return
-
-el.textContent = store.sites.length
+document.body.appendChild(container)
 
 }

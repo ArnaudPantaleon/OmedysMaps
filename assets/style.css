@@ -570,75 +570,161 @@ body, html {
 #filter-list { animation: slideDown 0.25s ease-out; }
 
 /* ============================================================
-   DARK MODE
+   DARK MODE — déclenché par data-theme="dark" sur <html>
+   Fallback : @media prefers-color-scheme pour le mode "system"
    ============================================================ */
+
+/* Tokens dark partagés en mixin via un sélecteur commun */
+:root[data-theme="dark"],
+:root[data-theme="system"]:not([data-theme]) /* jamais utilisé, sécurité */
+{ /* vide — les règles sont ci-dessous */ }
+
+/* Sélecteur unique pour dark forcé ET fallback system */
+[data-theme="dark"],
+@media (prefers-color-scheme: dark) { /* overridé si data-theme="light" */ }
+
+/* ── Variables dark ────────────────────────────────────── */
+[data-theme="dark"] {
+    --glass-bg:       rgba(10, 18, 35, 0.52);
+    --glass-bg-deep:  rgba(10, 18, 35, 0.68);
+    --glass-border:   rgba(255, 255, 255, 0.10);
+    --glass-inset:    rgba(255, 255, 255, 0.05);
+    --shadow-float:   0 24px 64px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06);
+    --text-primary:   rgba(255, 255, 255, 0.92);
+    --text-secondary: rgba(255, 255, 255, 0.48);
+    --text-muted:     rgba(255, 255, 255, 0.28);
+    --item-bg:        rgba(255, 255, 255, 0.07);
+    --item-bg-hover:  rgba(255, 255, 255, 0.12);
+    --item-border:    rgba(255, 255, 255, 0.09);
+    --select-bg:      rgba(255, 255, 255, 0.07);
+    --select-border:  rgba(255, 255, 255, 0.12);
+    --primary-glow:   rgba(0, 149, 151, 0.25);
+    --primary-dim:    rgba(0, 149, 151, 0.18);
+}
+
+/* Fallback système (quand data-theme="system", JS pose dark ou light — mais
+   au premier rendu avant JS, le CSS media query prend le relais) */
 @media (prefers-color-scheme: dark) {
-    :root {
-        /* Fond dark glass — transparent pour laisser voir la carte */
+    :root:not([data-theme="light"]) {
         --glass-bg:       rgba(10, 18, 35, 0.52);
         --glass-bg-deep:  rgba(10, 18, 35, 0.68);
         --glass-border:   rgba(255, 255, 255, 0.10);
         --glass-inset:    rgba(255, 255, 255, 0.05);
-        --shadow-float:   0 24px 64px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255,255,255,0.06);
-
+        --shadow-float:   0 24px 64px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06);
         --text-primary:   rgba(255, 255, 255, 0.92);
         --text-secondary: rgba(255, 255, 255, 0.48);
         --text-muted:     rgba(255, 255, 255, 0.28);
-
         --item-bg:        rgba(255, 255, 255, 0.07);
         --item-bg-hover:  rgba(255, 255, 255, 0.12);
         --item-border:    rgba(255, 255, 255, 0.09);
-
         --select-bg:      rgba(255, 255, 255, 0.07);
         --select-border:  rgba(255, 255, 255, 0.12);
-
         --primary-glow:   rgba(0, 149, 151, 0.25);
         --primary-dim:    rgba(0, 149, 151, 0.18);
     }
-
-    .bento-tile { background-image: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 50%); }
-
-    .filter-item.color-filter.active,
-    .filter-item.toggle-filter.active {
-        background: rgba(0, 149, 151, 0.12);
-        border-color: var(--primary);
-    }
-    .filter-item.active .filter-label     { color: #5eead4; }
-    .filter-item.active .filter-description { color: #2dd4bf; }
-
-    .filter-checkbox { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); }
-    .toggle-switch   { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.10); }
-    .toggle-switch::after { background: rgba(255,255,255,0.80); }
-
-    .filters-divider { background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent); }
-
-    .filter-section select { background-color: rgba(255,255,255,0.06); color: rgba(255,255,255,0.9); }
-    .filter-section select option { background: #1e293b; color: #f1f5f9; }
-
-    .filter-reset-btn { color: rgba(255,255,255,0.45); }
-    .filter-reset-btn:hover { background: rgba(255,255,255,0.10); color: rgba(255,255,255,0.85); }
-
-    .suggestion-city { color: rgba(255,255,255,0.92); }
-    .suggestion-zip  { background: rgba(0,149,151,0.20); color: #5eead4; }
-    .suggestion-item:not(.empty):hover { background: rgba(255,255,255,0.08); }
-
-    .bp3-badge { color: rgba(255,255,255,0.70); background: rgba(255,255,255,0.10); border-color: rgba(255,255,255,0.08); }
-    .bp3-title { color: rgba(255,255,255,0.92); }
-    .bp3 { background: rgba(10,18,35,0.55); border-color: rgba(255,255,255,0.08); }
-    .bp3-header { border-bottom-color: rgba(255,255,255,0.06); }
-    .bp3-tile  { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.06); }
-    .bp3-tile:hover { background: rgba(255,255,255,0.13); }
-    .bp3-tile-label { color: rgba(255,255,255,0.48); }
-    .bp3-tile-value { color: rgba(255,255,255,0.88); }
-    .bp3-link { color: #5eead4 !important; }
-    .bp3-link:hover { color: #99f6e4 !important; }
-    .bp3-btn--copy  { background: rgba(0,149,151,0.18); color: rgba(255,255,255,0.72); }
-    .bp3-btn--copy:hover { background: rgba(0,149,151,0.30); }
-    .bp3-mss { color: rgba(255,255,255,0.65) !important; }
-    .bp3-pill-ouvert  { background: rgba(0,172,200,0.20); color: #7dd3fc; }
-    .bp3-pill-encours { background: rgba(46,204,113,0.20); color: #6ee7b7; }
-    .bp3-pill-tele    { background: rgba(153,127,209,0.25); color: #c4b5fd; }
 }
+
+/* ── Règles dark (sélecteur réutilisable) ─────────────────── */
+[data-theme="dark"] .bento-tile,
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .bento-tile { } }
+
+/* On utilise une classe utilitaire .is-dark injectée par theme.js sur <html>
+   pour éviter les sélecteurs @media imbriqués non valides en CSS pur.
+   → Voir ci-dessous : JS ajoute/retire .is-dark sur <html> */
+
+html.is-dark .bento-tile {
+    background-image: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 50%);
+}
+html.is-dark .filter-item.color-filter.active,
+html.is-dark .filter-item.toggle-filter.active {
+    background: rgba(0,149,151,0.12); border-color: var(--primary);
+}
+html.is-dark .filter-item.active .filter-label      { color: #5eead4; }
+html.is-dark .filter-item.active .filter-description { color: #2dd4bf; }
+html.is-dark .filter-checkbox   { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); }
+html.is-dark .toggle-switch     { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.10); }
+html.is-dark .toggle-switch::after { background: rgba(255,255,255,0.80); }
+html.is-dark .filter-item.toggle-filter.active .toggle-switch { background: var(--primary); }
+html.is-dark .filters-divider   { background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent); }
+html.is-dark .filter-section select { background-color: rgba(255,255,255,0.06); color: rgba(255,255,255,0.9); }
+html.is-dark .filter-section select option { background: #1e293b; color: #f1f5f9; }
+html.is-dark .filter-reset-btn  { color: rgba(255,255,255,0.45); }
+html.is-dark .filter-reset-btn:hover { background: rgba(255,255,255,0.10); color: rgba(255,255,255,0.85); }
+html.is-dark .suggestion-city   { color: rgba(255,255,255,0.92); }
+html.is-dark .suggestion-zip    { background: rgba(0,149,151,0.20); color: #5eead4; }
+html.is-dark .suggestion-item:not(.empty):hover { background: rgba(255,255,255,0.08); }
+html.is-dark .bento-search input { color: rgba(255,255,255,0.92); }
+html.is-dark .bento-search input::placeholder { color: rgba(255,255,255,0.30); }
+html.is-dark .bento-search::before { color: rgba(255,255,255,0.40); }
+
+/* Popup BP3 en dark */
+html.is-dark .bp3-badge   { color: rgba(255,255,255,0.70); background: rgba(255,255,255,0.10); border-color: rgba(255,255,255,0.08); }
+html.is-dark .bp3-title   { color: rgba(255,255,255,0.92); }
+html.is-dark .bp3         { background: rgba(10,18,35,0.55); border-color: rgba(255,255,255,0.08); }
+html.is-dark .bp3-header  { border-bottom-color: rgba(255,255,255,0.06); }
+html.is-dark .bp3-tile    { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.06); }
+html.is-dark .bp3-tile:hover { background: rgba(255,255,255,0.13); }
+html.is-dark .bp3-tile-label { color: rgba(255,255,255,0.48); }
+html.is-dark .bp3-tile-value { color: rgba(255,255,255,0.88); }
+html.is-dark .bp3-link    { color: #5eead4 !important; }
+html.is-dark .bp3-link:hover { color: #99f6e4 !important; }
+html.is-dark .bp3-btn--copy  { background: rgba(0,149,151,0.18); color: rgba(255,255,255,0.72); }
+html.is-dark .bp3-btn--copy:hover { background: rgba(0,149,151,0.30); }
+html.is-dark .bp3-mss     { color: rgba(255,255,255,0.65) !important; }
+html.is-dark .bp3-pill-ouvert  { background: rgba(0,172,200,0.20); color: #7dd3fc; }
+html.is-dark .bp3-pill-encours { background: rgba(46,204,113,0.20); color: #6ee7b7; }
+html.is-dark .bp3-pill-tele    { background: rgba(153,127,209,0.25); color: #c4b5fd; }
+html.is-dark .bp3-pill-default { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.55); }
+html.is-dark .bp3-pill-default .bp3-sdot { background: rgba(255,255,255,0.4); }
+
+/* ============================================================
+   THEME SWITCHER
+   ============================================================ */
+.theme-switcher {
+    padding: 12px 14px;
+}
+.theme-switcher::before { display: none; } /* pas de glow sur cette tile */
+
+.theme-switcher-inner {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+
+.theme-switcher-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 9px; font-weight: 800;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.theme-switcher-btns {
+    display: flex; gap: 6px;
+}
+
+.theme-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    padding: 7px 10px; border-radius: 10px;
+    background: var(--item-bg);
+    border: 1px solid var(--item-border);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    font-family: 'DM Sans', sans-serif;
+}
+.theme-btn:hover  { background: var(--item-bg-hover); }
+.theme-btn:active { transform: scale(0.96); }
+.theme-btn.active {
+    background: var(--primary-dim);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(0,149,151,0.15);
+}
+
+.theme-btn-icon  { font-size: 14px; line-height: 1; }
+.theme-btn-label {
+    font-size: 9px; font-weight: 700;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--text-secondary);
+}
+.theme-btn.active .theme-btn-label { color: var(--primary); }
 
 /* ============================================================
    RESPONSIVE

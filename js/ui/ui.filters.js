@@ -126,7 +126,7 @@ export function initFilters(map, zones) {
   const wrapper = document.createElement("div")
   wrapper.className = "bento-wrapper"
 
-  // Ligne 1 : hamburger + stats
+  // Ligne 1 : hamburger + search (la search sera injectée par ui.search.js)
   const row = document.createElement("div")
   row.className = "bento-row"
 
@@ -135,14 +135,21 @@ export function initFilters(map, zones) {
   menuBtn.id = "menu-btn"
   menuBtn.innerHTML = `<span class="bar"></span><span class="bar"></span><span class="bar"></span>`
 
-  const statsTile = document.createElement("div")
-  statsTile.className = "bento-tile bento-stats"
-  statsTile.style.flex = "1"
-  statsTile.innerHTML = `<small>SITES AFFICHÉS</small><span id="site-count">0</span>`
+  // Slot search — ui.search.js viendra s'y greffer via id
+  const searchSlot = document.createElement("div")
+  searchSlot.id = "search-slot"
+  searchSlot.className = "bento-tile bento-search"
+  searchSlot.style.flex = "1"
 
   row.appendChild(menuBtn)
-  row.appendChild(statsTile)
+  row.appendChild(searchSlot)
   wrapper.appendChild(row)
+
+  // Ligne 2 : stats seule
+  const statsTile = document.createElement("div")
+  statsTile.className = "bento-tile bento-stats"
+  statsTile.innerHTML = `<small>SITES AFFICHÉS</small><span id="site-count">0</span>`
+  wrapper.appendChild(statsTile)
 
   // Panneau filtres
   const panel = document.createElement("div")

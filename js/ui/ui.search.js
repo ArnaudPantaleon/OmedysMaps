@@ -13,6 +13,11 @@ export function initSearch(map) {
   const tile = document.getElementById("search-slot")
   if (!tile) return
 
+  // Icône loupe
+  const searchIcon = document.createElement("i")
+  searchIcon.className = "fa-solid fa-magnifying-glass"
+  tile.appendChild(searchIcon)
+
   _inputEl = document.createElement("input")
   _inputEl.type = "text"
   _inputEl.placeholder = "Rechercher une ville, un CP…"
@@ -20,7 +25,7 @@ export function initSearch(map) {
 
   const clearBtn = document.createElement("button")
   clearBtn.className = "inner-search-btn"
-  clearBtn.innerHTML = "✕"
+  clearBtn.innerHTML = `<i class="fa-solid fa-xmark"></i>`
   clearBtn.style.display = "none"
   clearBtn.addEventListener("click", _clear)
 

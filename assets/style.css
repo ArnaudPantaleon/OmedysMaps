@@ -574,21 +574,29 @@ body, html {
    ============================================================ */
 @media (prefers-color-scheme: dark) {
     :root {
-        --glass-bg:       rgba(15, 23, 42, 0.65);
-        --glass-bg-deep:  rgba(15, 23, 42, 0.80);
-        --glass-border:   rgba(255, 255, 255, 0.08);
-        --glass-inset:    rgba(255, 255, 255, 0.04);
+        /* Fond dark glass — transparent pour laisser voir la carte */
+        --glass-bg:       rgba(10, 18, 35, 0.52);
+        --glass-bg-deep:  rgba(10, 18, 35, 0.68);
+        --glass-border:   rgba(255, 255, 255, 0.10);
+        --glass-inset:    rgba(255, 255, 255, 0.05);
+        --shadow-float:   0 24px 64px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255,255,255,0.06);
+
         --text-primary:   rgba(255, 255, 255, 0.92);
-        --text-secondary: rgba(255, 255, 255, 0.45);
-        --text-muted:     rgba(255, 255, 255, 0.25);
-        --item-bg:        rgba(255, 255, 255, 0.06);
-        --item-bg-hover:  rgba(255, 255, 255, 0.10);
-        --item-border:    rgba(255, 255, 255, 0.08);
-        --select-bg:      rgba(255, 255, 255, 0.06);
-        --select-border:  rgba(255, 255, 255, 0.10);
+        --text-secondary: rgba(255, 255, 255, 0.48);
+        --text-muted:     rgba(255, 255, 255, 0.28);
+
+        --item-bg:        rgba(255, 255, 255, 0.07);
+        --item-bg-hover:  rgba(255, 255, 255, 0.12);
+        --item-border:    rgba(255, 255, 255, 0.09);
+
+        --select-bg:      rgba(255, 255, 255, 0.07);
+        --select-border:  rgba(255, 255, 255, 0.12);
+
+        --primary-glow:   rgba(0, 149, 151, 0.25);
+        --primary-dim:    rgba(0, 149, 151, 0.18);
     }
 
-    .bento-tile { background-image: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 60%); }
+    .bento-tile { background-image: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 50%); }
 
     .filter-item.color-filter.active,
     .filter-item.toggle-filter.active {
@@ -614,14 +622,22 @@ body, html {
     .suggestion-zip  { background: rgba(0,149,151,0.20); color: #5eead4; }
     .suggestion-item:not(.empty):hover { background: rgba(255,255,255,0.08); }
 
-    .bp3-badge { color: rgba(255,255,255,0.70); background: rgba(255,255,255,0.10); }
+    .bp3-badge { color: rgba(255,255,255,0.70); background: rgba(255,255,255,0.10); border-color: rgba(255,255,255,0.08); }
     .bp3-title { color: rgba(255,255,255,0.92); }
-    .bp3-tile  { background: rgba(255,255,255,0.08); }
+    .bp3 { background: rgba(10,18,35,0.55); border-color: rgba(255,255,255,0.08); }
+    .bp3-header { border-bottom-color: rgba(255,255,255,0.06); }
+    .bp3-tile  { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.06); }
     .bp3-tile:hover { background: rgba(255,255,255,0.13); }
-    .bp3-tile-label { color: rgba(255,255,255,0.50); }
+    .bp3-tile-label { color: rgba(255,255,255,0.48); }
     .bp3-tile-value { color: rgba(255,255,255,0.88); }
-    .bp3-btn--copy  { background: rgba(0,149,151,0.20); color: rgba(255,255,255,0.75); }
-    .bp3-mss        { color: rgba(255,255,255,0.75) !important; }
+    .bp3-link { color: #5eead4 !important; }
+    .bp3-link:hover { color: #99f6e4 !important; }
+    .bp3-btn--copy  { background: rgba(0,149,151,0.18); color: rgba(255,255,255,0.72); }
+    .bp3-btn--copy:hover { background: rgba(0,149,151,0.30); }
+    .bp3-mss { color: rgba(255,255,255,0.65) !important; }
+    .bp3-pill-ouvert  { background: rgba(0,172,200,0.20); color: #7dd3fc; }
+    .bp3-pill-encours { background: rgba(46,204,113,0.20); color: #6ee7b7; }
+    .bp3-pill-tele    { background: rgba(153,127,209,0.25); color: #c4b5fd; }
 }
 
 /* ============================================================

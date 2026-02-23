@@ -1,11 +1,11 @@
 [
   {
-    "file": "json/salles.json",
+    "file": "data/json/salles.json",
     "label": "Salles de télémédecine",
     "visible": true
   },
   {
-    "file": "json/cabinets.json",
+    "file": "data/json/cabinets.json",
     "label": "Cabinets TMS",
     "visible": true
   }

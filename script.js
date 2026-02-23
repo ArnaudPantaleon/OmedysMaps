@@ -1,231 +1,441 @@
-// === CONFIGURATION GLOBALE ===
+// === CONFIG ===
 const CONFIG = {
     status: {
-        "Ouvert": { color: "#009597", label: "Cabinets Omedys", icon: "fa-house-medical", checked: true },
-        "Ouvertes": { color: "#3498db", label: "Salles Ouvertes", icon: "fa-door-open", checked: true },
-        "Telesecretariat OMEDYS": { color: "#8956FB", label: "Télésecretariat", icon: "fa-headset", checked: true },
-        "Ouverture en cours": { color: "#2ecc71", label: "En cours", icon: "fa-clock", checked: false }
+        "Ouvert": { color: "#009597", label: "Cabinets Omedys", description: "Ouverts", checked: true },
+        "Ouvertes": { color: "#3498db", label: "Salles Ouvertes", description: "", checked: true },
+        "Telesecretariat OMEDYS": { color: "#8956FB", label: "Télésecretariat", description: "", checked: true },
+        "Ouverture en cours": { color: "#2ecc71", label: "En cours d'ouverture", description: "", checked: false },
+        /*"Fermees ou refus OTT": { color: "#f17676", label: "Fermées", description: "", checked: false },
+        "Inactives": { color: "#cbd5e1", label: "Inactives", description: "", checked: false },
+        "En sourcing": { color: "#fdaf00", label: "En sourcing", description: "", checked: false }*/
     },
+
     tms: {
         isActive: false,
         filters: {
-            "TMS 10": { label: "TMS 10", location: "Aube", count: 0, checked: false },
-            "TMS 11": { label: "TMS 11", location: "Aude", count: 0, checked: false },
-            "TMS 14": { label: "TMS 14", location: "Caen", count: 0, checked: false },
-            "TMS 18": { label: "TMS 18", location: "Cher", count: 0, checked: false },
-            "TMS 21": { label: "TMS 21", location: "Dijon", count: 0, checked: false },
-            "TMS 26": { label: "TMS 26", location: "Drôme", count: 0, checked: false },
-            "TMS 28": { label: "TMS 28", location: "Eure-et-Loir", count: 0, checked: false },
-            "TMS 31": { label: "TMS 31", location: "Toulouse", count: 0, checked: false },
-            "TMS 41": { label: "TMS 41", location: "Blois", count: 0, checked: false },
-            "TMS 54": { label: "TMS 54", location: "Nancy", count: 0, checked: false },
-            "TMS 55": { label: "TMS 55", location: "Verdun", count: 0, checked: false },
-            "TMS 59": { label: "TMS 59", location: "Lille", count: 0, checked: false },
-            "TMS 72": { label: "TMS 72", location: "Le Mans", count: 0, checked: false },
-            "TMS ESMS Emeis": { label: "Emeis", location: "National", count: 0, checked: false }
+            "TMS 10": { label: "TMS 10 - Troyes", location: "Aube", count: 0, checked: false },
+            "TMS 11": { label: "TMS 11 - Narbonne", location: "Aude", count: 0, checked: false },
+            "TMS 14": { label: "TMS 14 - Caen", location: "Calvados", count: 0, checked: false },
+            "TMS 18": { label: "TMS 18 - Bourges", location: "Cher", count: 0, checked: false },
+            "TMS 21": { label: "TMS 21 - Dijon", location: "Côte-d'Or", count: 0, checked: false },
+            "TMS 26": { label: "TMS 26 - Montélimar", location: "Drôme", count: 0, checked: false },
+            "TMS 28": { label: "TMS 28 - Chartres", location: "Eure-et-Loir", count: 0, checked: false },
+            "TMS 31": { label: "TMS 31 - Toulouse", location: "Haute-Garonne", count: 0, checked: false },
+            "TMS 41": { label: "TMS 41 - Blois", location: "Loir-et-Cher", count: 0, checked: false },
+            "TMS 54": { label: "TMS 54 - Nancy", location: "Meurthe-et-Moselle", count: 0, checked: false },
+            "TMS 55": { label: "TMS 55 - Verdun", location: "Meuse", count: 0, checked: false },
+            "TMS 59": { label: "TMS 59 - Lille", location: "Nord", count: 0, checked: false },
+            "TMS 72": { label: "TMS 72 - Le Mans", location: "Sarthe", count: 0, checked: false },
+            "TMS ESMS Emeis": { label: "TMS ESMS Emeis", location: "National", count: 0, checked: false }
         }
     },
+
     type: {
-        ESMS: { label: "Afficher ESMS", count: 0, checked: true }
+        ESMS: { label: "Afficher les ESMS", description: "EHPAD, Foyers, FAM...", count: 0, checked: false }
     }
 };
 
-// === INITIALISATION ===
 let map = L.map('map', { zoomControl: false }).setView([46.6033, 1.8883], 6);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-let markersStore = [];
+const searchInput = document.getElementById('query');
+const suggestionBox = document.getElementById('suggestions');
+
 let debounceTimer = null;
+let markersStore = [];
 
-const formatPhone = (n) => {
-    if(!n) return "N/C";
-    let c = ('' + n).replace(/\D/g, '');
-    if(c.startsWith('33')) c = '0' + c.slice(2);
-    if(c.length === 9) c = '0' + c;
-    return c.replace(/(\d{2})(?=\d)/g, '$1 ');
-};
+// === UTILITAIRES ===
+function formatPhone(num) {
+    if (!num) return "N/C";
+    let cleaned = ('' + num).replace(/\D/g, '');
+    // +33XXXXXXXXX → 0XXXXXXXXX
+    if (cleaned.startsWith('33') && cleaned.length === 11) {
+        cleaned = '0' + cleaned.slice(2);
+    }
+    // 9 chiffres sans le 0 initial → on le rajoute
+    if (cleaned.length === 9) {
+        cleaned = '0' + cleaned;
+    }
+    let match = cleaned.match(/^(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})$/);
+    return match ? match.slice(1).join(' ') : num;
+}
 
-// === CORE APP ===
+function adjustBrightness(color, percent) {
+    let hex = color.replace('#', '');
+    let r = parseInt(hex.substring(0, 2), 16);
+    let g = parseInt(hex.substring(2, 4), 16);
+    let b = parseInt(hex.substring(4, 6), 16);
+    r = Math.min(255, Math.floor(r + (r * percent / 100)));
+    g = Math.min(255, Math.floor(g + (g * percent / 100)));
+    b = Math.min(255, Math.floor(b + (b * percent / 100)));
+    return "#" + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+}
+
+function copyAddress(address) {
+    if (!address || address === "Non disponible") {
+        alert('⚠️ Adresse non disponible');
+        return;
+    }
+    navigator.clipboard.writeText(address).then(() => {
+        alert('✓ Adresse copiée !');
+    }).catch(() => {
+        console.error('Erreur copie');
+    });
+}
+
+// === CHARGEMENT ET RENDU ===
 async function startApp() {
     try {
         const index = await fetch('index.json').then(r => r.json());
-        const datasets = await Promise.all(index.filter(f => f.visible).map(f => fetch(f.file).then(r => r.json())));
+        const visibleFiles = index.filter(entry => entry.visible);
+        const datasets = await Promise.all(visibleFiles.map(entry => fetch(entry.file).then(r => r.json())));
         const rawData = datasets.flatMap(d => d[0]?.data || []);
 
+        // Initialisation des compteurs
+        Object.keys(CONFIG.tms.filters).forEach(k => CONFIG.tms.filters[k].count = 0);
+        CONFIG.type.ESMS.count = 0;
+
         rawData.forEach(item => {
-            let loc = typeof item.Location === 'string' ? JSON.parse(item.Location) : item.Location;
-            if(!loc || !loc.lat) return;
+            let address = "Non disponible";
+            let lat, lng;
 
-            const statut = item.Statut_Salle || item.Statut || "Ouvert";
-            const tmsKey = item.TMS || "";
-            const isESMS = /ESMS|EHPAD|Foyer|FAM|MAS/i.test(item.Type || "");
-            const phone = item.Phone || item.ATT_Phone || item.Telephone || "";
-            const color = CONFIG.status[statut]?.color || "#94a3b8";
-
-            // Counters
-            if(CONFIG.tms.filters[tmsKey]) CONFIG.tms.filters[tmsKey].count++;
-            if(isESMS) CONFIG.type.ESMS.count++;
-
-            // Marker Design
-            let marker;
-            if (item.Type === "CABINET") {
-                marker = L.marker([loc.lat, loc.lng], {
-                    icon: L.divIcon({
-                        className: '',
-                        html: `<div style="width:40px;height:40px;background:var(--glass-bg);backdrop-filter:var(--glass-blur);border:2px solid var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--primary);box-shadow:var(--shadow);"><i class="fa-solid fa-stethoscope"></i></div>`,
-                        iconSize: [40, 40], iconAnchor: [20, 20], popupAnchor: [0, -20]
-                    })
-                });
-            } else {
-                marker = L.circleMarker([loc.lat, loc.lng], { radius: 8, fillColor: color, color: "#fff", weight: 2, fillOpacity: 0.9 });
+            // Location : objet direct (salles.json) ou string JSON (cabinet.json)
+            if (item.Location && typeof item.Location === 'object' && item.Location.lat) {
+                lat = parseFloat(item.Location.lat);
+                lng = parseFloat(item.Location.lng);
+                address = item.Location.address || "Non disponible";
+            } else if (item.Location && typeof item.Location === 'string') {
+                try {
+                    const loc = JSON.parse(item.Location);
+                    if (loc.lat) {
+                        lat = parseFloat(loc.lat);
+                        lng = parseFloat(loc.lng);
+                        address = loc.address || "Non disponible";
+                    }
+                } catch(e) {}
             }
 
-            // Popup BP3
-            const popupContent = `
-                <div class="bp3-card">
-                    <div class="bp3-header">
-                        <span class="bp3-badge">${item.Type || 'SITE'}</span>
-                        <div class="bp3-title">${item.Name || "Sans nom"}</div>
-                    </div>
-                    <div class="bp3-grid">
-                        <div class="bp3-info bp3-full">
-                            <i class="fa-solid fa-user-tie"></i>
-                            <span class="bp3-label">Responsable / ATT</span>
-                            <span class="bp3-value">${item.ATT_Name || item.ATT || "Non assigné"}</span>
-                        </div>
-                        <div class="bp3-info">
-                            <i class="fa-solid fa-phone"></i>
-                            <span class="bp3-label">Contact</span>
-                            <a href="tel:${phone}" style="text-decoration:none; color:inherit;" class="bp3-value">${formatPhone(phone)}</a>
-                        </div>
-                        <div class="bp3-info">
-                            <i class="fa-solid fa-network-wired"></i>
-                            <span class="bp3-label">Centre TMS</span>
-                            <span class="bp3-value">${tmsKey || "Standard"}</span>
-                        </div>
-                        ${item.MSS ? `
-                        <div class="bp3-info bp3-full">
-                            <i class="fa-solid fa-envelope-shield"></i>
-                            <span class="bp3-label">Messagerie MSS</span>
-                            <span class="bp3-value" style="font-size:11px;">${item.MSS}</span>
-                        </div>` : ''}
-                        <div class="bp3-info bp3-full">
-                            <i class="fa-solid fa-location-dot"></i>
-                            <span class="bp3-label">Adresse</span>
-                            <span class="bp3-value">${loc.address || "N/A"}</span>
-                        </div>
-                    </div>
-                    <div class="bp3-footer">
-                        <button class="bp3-btn btn-copy" onclick="copyAddr('${(loc.address || "").replace(/'/g, "\\'")}')"><i class="fa-solid fa-copy"></i> Copier</button>
-                        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc.address)}" target="_blank" class="bp3-btn btn-maps"><i class="fa-solid fa-route"></i> Maps</a>
-                    </div>
-                </div>`;
+            if (!isNaN(lat) && !isNaN(lng)) {
+                // ✅ Statut correct : Statut_Salle pour les salles, Statut pour les cabinets
+                const statut = item.Statut_Salle || item.Statut || "";
 
-            marker.bindPopup(popupContent, { className: 'bp3-popup', maxWidth: 320 });
-            
-            const entry = { marker, status: statut, tms: tmsKey, isESMS, type: item.Type };
-            markersStore.push(entry);
-            applyFilter(entry);
+                // TMS
+                const tmsKey = item.TMS || "";
+                if (tmsKey && CONFIG.tms.filters[tmsKey]) CONFIG.tms.filters[tmsKey].count++;
+
+                // ESMS
+                const isESMS = ["ESMS", "EHPAD", "Foyer", "FAM", "MAS"].some(t =>
+                    (item.Type || "").toUpperCase().includes(t.toUpperCase())
+                );
+                if (isESMS) CONFIG.type.ESMS.count++;
+
+                // Couleur selon statut
+                const color = CONFIG.status[statut]?.color || "#94a3b8";
+
+                // Marqueur selon type
+                const isCabinet = item.Type === "CABINET";
+
+                let marker;
+                if (isCabinet) {
+                    const pinIcon = L.divIcon({
+                        className: '',
+                        html: `<div style="position:relative;width:34px;height:34px;background:#fff;border-radius:50%;border:3px solid #009597;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 6px rgba(0,0,0,0.4);">🩺</div>`,
+                        iconSize: [34, 34],
+                        iconAnchor: [17, 17],
+                        popupAnchor: [0, -20]
+                    });
+                    marker = L.marker([lat, lng], { icon: pinIcon });
+                } else {
+                    marker = L.circleMarker([lat, lng], {
+                        radius: 7,
+                        fillColor: color,
+                        color: "#fff",
+                        weight: 2,
+                        fillOpacity: 0.9
+                    });
+                }
+
+                // Popup
+                const typeLabel = item.Type || (isESMS ? "ESMS" : "Site");
+                const phoneRaw = item.Phone || item.ATT_Phone || item.Telephone || '';
+                const attName = item.Type === "CABINET"
+                    ? (item.ATT_Name || item.ATT || "Non assigné")
+                    : (item.ATT || "Non assigné");
+
+                // Classe pill selon statut
+                const pillClass = statut === "Ouvert" || statut === "Ouvertes" ? "bp3-pill-ouvert"
+                    : statut === "Ouverture en cours" ? "bp3-pill-encours"
+                    : statut === "Telesecretariat OMEDYS" ? "bp3-pill-tele"
+                    : "bp3-pill-default";
+
+                const popupContent = `
+                    <div class="bp3">
+                        <div class="bp3-header" style="--bp3-accent-glow:${color}40">
+                            <div class="bp3-hd-top">
+                                <div class="bp3-badge">${typeLabel}</div>
+                                <div class="bp3-statut-pill ${pillClass}">
+                                    <span class="bp3-sdot"></span>${statut || "N/C"}
+                                </div>
+                            </div>
+                            <div class="bp3-title">${item.Name || "Site"}</div>
+                        </div>
+                        <div class="bp3-grid">
+                            ${item.Type === "CABINET" ? `
+                            <div class="bp3-tile bp3-wide">
+                                <span class="bp3-tile-icon">👤</span>
+                                <span class="bp3-tile-label">Responsable</span>
+                                <div class="bp3-tile-body">
+                                    <div class="bp3-tile-value">${attName}</div>
+                                </div>
+                            </div>` : item.TMS ? `
+                            <div class="bp3-tile">
+                                <span class="bp3-tile-icon">🩺</span>
+                                <span class="bp3-tile-label">Cabinet TMS</span>
+                                <div class="bp3-tile-body">
+                                    <div class="bp3-tile-value">${item.TMS}</div>
+                                </div>
+                            </div>
+                            <div class="bp3-tile">
+                                <span class="bp3-tile-icon">👤</span>
+                                <span class="bp3-tile-label">ATT</span>
+                                <div class="bp3-tile-body">
+                                    <div class="bp3-tile-value">${attName}</div>
+                                </div>
+                            </div>` : ''}
+
+                            <div class="bp3-tile">
+                                <span class="bp3-tile-icon">☎️</span>
+                                <span class="bp3-tile-label">Téléphone</span>
+                                <div class="bp3-tile-body">
+                                    <a href="tel:${phoneRaw}" class="bp3-tile-value bp3-link">${formatPhone(phoneRaw)}</a>
+                                </div>
+                            </div>
+
+                            ${item.MSS ? `
+                            <div class="bp3-tile">
+                                <span class="bp3-tile-icon">📨</span>
+                                <span class="bp3-tile-label">MSS</span>
+                                <div class="bp3-tile-body">
+                                    
+                                    <div class="bp3-tile-value bp3-mss">${item.MSS}</div>
+                                </div>
+                            </div>` : ''}
+
+                            <div class="bp3-tile bp3-wide">
+                                <span class="bp3-tile-icon">📍</span>
+                                <span class="bp3-tile-label">Adresse</span>
+                                <div class="bp3-tile-body">
+                                    <div class="bp3-tile-value">${address}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bp3-footer">
+                            <button class="bp3-btn bp3-btn--copy" onclick="copyAddress('${address.replace(/'/g, "\\'")}')">📋 Copier</button>
+                            <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}" target="_blank" class="bp3-btn bp3-btn--maps">🗺️ Maps</a>
+                        </div>
+                    </div>`;
+
+                marker.bindPopup(popupContent, { maxWidth: 340, className: 'bp3-popup' });
+
+                markersStore.push({
+                    marker,
+                    status: statut,
+                    tms: tmsKey,
+                    isESMS,
+                    type: item.Type || ""
+                });
+
+                applyVisibility(markersStore[markersStore.length - 1]);
+            }
         });
 
         renderFilters();
-    } catch (e) { console.error("Erreur Expertise Data:", e); }
+        return true;
+    } catch (err) {
+        console.error('Erreur chargement données:', err);
+        return false;
+    }
 }
 
-// === LOGIQUE DE FILTRE ===
-function applyFilter(entry) {
-    const statusMatch = CONFIG.status[entry.status]?.checked;
-    const tmsMatch = !CONFIG.tms.isActive || entry.type === "CABINET" || (entry.tms && CONFIG.tms.filters[entry.tms]?.checked);
-    const esmsMatch = !entry.isESMS || CONFIG.type.ESMS.checked;
-
-    if (statusMatch && tmsMatch && esmsMatch) entry.marker.addTo(map);
-    else map.removeLayer(entry.marker);
-    updateSiteCount();
+// === VISIBILITÉ ===
+function applyVisibility(item) {
+    const statusOk = CONFIG.status[item.status]?.checked !== false;
+    const tmsOk = !CONFIG.tms.isActive || item.type === "CABINET" || (item.tms && CONFIG.tms.filters[item.tms]?.checked);
+    const esmsOk = !item.isESMS || CONFIG.type.ESMS.checked;
+    const show = statusOk && tmsOk && esmsOk;
+    show ? item.marker.addTo(map) : map.removeLayer(item.marker);
 }
 
-function updateSiteCount() {
-    const count = markersStore.filter(m => map.hasLayer(m.marker)).length;
-    document.getElementById('site-count').innerText = count;
-}
-
-// === RENDER UI FILTRES ===
+// === RENDU FILTRES ===
 function renderFilters() {
-    const container = document.getElementById('filter-list');
-    if(!container) return;
-
-    let html = `<div class="filter-section-title">Statuts de déploiement</div>`;
-    Object.entries(CONFIG.status).forEach(([id, cfg]) => {
-        html += `
-            <div class="filter-item ${cfg.checked ? 'active' : ''}" onclick="toggleStatus('${id}')">
-                <i class="fa-solid ${cfg.icon}" style="color:${cfg.color}"></i>
-                <span style="flex:1; font-weight:700;">${cfg.label}</span>
-                <span style="font-size:11px; opacity:0.6;">${markersStore.filter(m => m.status === id).length}</span>
-            </div>`;
+    // Mise à jour des descriptions avec les vrais compteurs
+    Object.keys(CONFIG.status).forEach(key => {
+        const count = markersStore.filter(m => m.status === key).length;
+        CONFIG.status[key].description = `${count} site${count > 1 ? 's' : ''}`;
     });
 
-    html += `<div class="filter-section-title">Centres TMS</div><div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">`;
-    Object.entries(CONFIG.tms.filters).forEach(([id, cfg]) => {
-        html += `
-            <div class="filter-item ${cfg.checked ? 'active' : ''}" onclick="toggleTms('${id}')" style="flex-direction:column; align-items:flex-start; padding:10px;">
-                <span style="font-size:12px; font-weight:800;">${cfg.label}</span>
-                <span style="font-size:9px; opacity:0.7;">${cfg.location} (${cfg.count})</span>
-            </div>`;
-    });
-    html += `</div>`;
+    const filtersHtml = `
+        <div class="filter-section">
+            <div class="section-title">
+                <span>🎨 Affichage par statut</span>
+                <span class="section-badge">${Object.keys(CONFIG.status).length}</span>
+            </div>
+            <div class="filters-grid">
+                ${Object.entries(CONFIG.status).map(([key, config]) => `
+                    <div class="filter-item color-filter ${config.checked ? 'active' : ''}" onclick="window.toggleStatusFilter('${key}')">
+                        <div class="filter-dot" style="background: ${config.color};"></div>
+                        <div class="filter-content">
+                            <span class="filter-label">${config.label}</span>
+                            <span class="filter-description">${config.description}</span>
+                        </div>
+                        <div class="filter-checkbox"></div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
 
-    html += `<div class="filter-section-title">Établissements</div>`;
-    html += `
-        <div class="filter-item ${CONFIG.type.ESMS.checked ? 'active' : ''}" onclick="toggleEsms()">
-            <i class="fa-solid fa-hospital-user"></i>
-            <span style="flex:1; font-weight:700;">Afficher les ESMS</span>
-            <span style="font-size:11px; opacity:0.6;">${CONFIG.type.ESMS.count}</span>
-        </div>`;
+        <div class="filters-divider"></div>
 
-    container.innerHTML = html;
+        <div class="filter-section">
+            <div class="section-title">
+                <span>⚙️ Interrupteurs</span>
+                <span class="section-badge">${Object.keys(CONFIG.tms.filters).length + 1}</span>
+            </div>
+
+            <div style="margin-bottom: 14px;">
+                <div style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; padding-left: 4px;">🎯 Centres TMS</div>
+                <div class="filters-grid">
+                    ${Object.entries(CONFIG.tms.filters).map(([key, config]) => `
+                        <div class="filter-item toggle-filter ${config.checked ? 'active' : ''}" onclick="window.toggleTmsFilter('${key}')">
+                            <div class="filter-content">
+                                <span class="filter-label">${config.label}</span>
+                                <span class="filter-description">${config.location}</span>
+                            </div>
+                            <span class="tms-badge">${config.count}</span>
+                            <div class="toggle-switch"></div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+
+            <div>
+                <div style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; padding-left: 4px;">🏥 Type d'établissement</div>
+                <div class="filters-grid">
+                    <div class="filter-item toggle-filter ${CONFIG.type.ESMS.checked ? 'active' : ''}" onclick="window.toggleEsmsFilter()">
+                        <div class="filter-content">
+                            <span class="filter-label">${CONFIG.type.ESMS.label}</span>
+                            <span class="filter-description">${CONFIG.type.ESMS.description}</span>
+                        </div>
+                        <span class="tms-badge">${CONFIG.type.ESMS.count}</span>
+                        <div class="toggle-switch"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('filter-list').innerHTML = filtersHtml;
+    updateStats();
 }
 
-// === HANDLERS GLOBAUX ===
-window.toggleStatus = (id) => { CONFIG.status[id].checked = !CONFIG.status[id].checked; markersStore.forEach(applyFilter); renderFilters(); };
-window.toggleTms = (id) => { 
-    CONFIG.tms.filters[id].checked = !CONFIG.tms.filters[id].checked;
-    CONFIG.tms.isActive = Object.values(CONFIG.tms.filters).some(f => f.checked);
-    markersStore.forEach(applyFilter); renderFilters(); 
+// === TOGGLES ===
+window.toggleStatusFilter = (key) => {
+    CONFIG.status[key].checked = !CONFIG.status[key].checked;
+    markersStore.forEach(applyVisibility);
+    renderFilters();
 };
-window.toggleEsms = () => { CONFIG.type.ESMS.checked = !CONFIG.type.ESMS.checked; markersStore.forEach(applyFilter); renderFilters(); };
-window.copyAddr = (a) => { navigator.clipboard.writeText(a); alert("Adresse copiée !"); };
 
-// === RECHERCHE API ===
-const searchInput = document.getElementById('query');
-const sugBox = document.getElementById('suggestions');
+window.toggleTmsFilter = (key) => {
+    CONFIG.tms.filters[key].checked = !CONFIG.tms.filters[key].checked;
+    CONFIG.tms.isActive = Object.values(CONFIG.tms.filters).some(f => f.checked);
+    markersStore.forEach(applyVisibility);
+    renderFilters();
+};
+
+window.toggleEsmsFilter = () => {
+    CONFIG.type.ESMS.checked = !CONFIG.type.ESMS.checked;
+    markersStore.forEach(applyVisibility);
+    renderFilters();
+};
+
+function updateStats() {
+    document.getElementById('site-count').innerText = markersStore.filter(m => map.hasLayer(m.marker)).length;
+}
+
+// === RECHERCHE ===
+function displaySuggestions(features) {
+    if (!features || features.length === 0) {
+        suggestionBox.innerHTML = '<div class="suggestion-item empty">Aucun lieu trouvé</div>';
+        return;
+    }
+    suggestionBox.innerHTML = features.map((feature, idx) => {
+        const prop = feature.properties;
+        const geometry = feature.geometry;
+        const ctx = prop.context.split(', ');
+        const displayContext = ctx.length > 1 ? `${ctx[1]} (${ctx[0]}), ${ctx[2]}` : prop.context;
+        const municipality = prop.city;
+        const postcode = prop.postcode;
+        const lon = geometry.coordinates[0];
+        const lat = geometry.coordinates[1];
+        const safeName = municipality.replace(/'/g, "\\'");
+        return `
+            <div class="suggestion-item" onclick="window.selectSuggestion('${safeName}', ${lat}, ${lon}, ${idx})">
+                <div class="suggestion-header">
+                    <span class="suggestion-city"><strong>${municipality}</strong></span>
+                    <span class="suggestion-zip">${postcode}</span>
+                </div>
+                <div class="suggestion-meta">
+                    <span class="suggestion-province">${displayContext}</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function hideSuggestions() {
+    suggestionBox.innerHTML = '';
+}
+
+window.selectSuggestion = (city, lat, lon) => {
+    searchInput.value = city;
+    hideSuggestions();
+    map.flyTo([lat, lon], 13);
+};
+
+async function fetchSuggestions(query) {
+    const response = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${query}&limit=30&type=municipality`);
+    const data = await response.json();
+    displaySuggestions(data.features);
+}
 
 searchInput?.addEventListener('input', (e) => {
     clearTimeout(debounceTimer);
-    const q = e.target.value;
-    if(q.length < 3) { sugBox.innerHTML = ''; return; }
-    debounceTimer = setTimeout(async () => {
-        const r = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${q}&type=municipality&limit=5`);
-        const d = await r.json();
-        sugBox.innerHTML = `<div class="bento-tile" style="padding:5px;">` + d.features.map(f => `
-            <div class="filter-item" onclick="flyToCity(${f.geometry.coordinates[1]}, ${f.geometry.coordinates[0]}, '${f.properties.city.replace(/'/g, "\\'")}')">
-                <i class="fa-solid fa-location-dot"></i>
-                <div><strong>${f.properties.city}</strong> <small>(${f.properties.postcode})</small></div>
-            </div>`).join('') + `</div>`;
-    }, 300);
+    const query = e.target.value;
+    if (query.trim().length === 0) { hideSuggestions(); return; }
+    debounceTimer = setTimeout(() => fetchSuggestions(query), 300);
 });
 
-window.flyToCity = (lat, lon, name) => {
-    map.flyTo([lat, lon], 12);
-    searchInput.value = name;
-    sugBox.innerHTML = '';
-};
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.bento-search') && !e.target.closest('#suggestions')) hideSuggestions();
+});
 
-// === INIT UI ===
-document.addEventListener('DOMContentLoaded', () => {
-    startApp();
+searchInput?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') hideSuggestions();
+});
+
+// === INIT ===
+startApp().then(() => {
+    const menuBtn = document.getElementById('menu-btn');
+    const newMenuBtn = menuBtn.cloneNode(true);
+    menuBtn.parentNode.replaceChild(newMenuBtn, menuBtn);
+
     const btn = document.getElementById('menu-btn');
-    const panel = document.getElementById('filter-list');
-    btn.onclick = () => {
-        panel.classList.toggle('open');
-        btn.classList.toggle('active');
-    };
+    btn.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const b = document.getElementById('menu-btn');
+        const menu = document.getElementById('side-menu');
+        b.classList.toggle('active');
+        menu.classList.toggle('open');
+    }, true);
 });

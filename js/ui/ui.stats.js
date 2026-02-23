@@ -3,6 +3,7 @@ import {store} from "../core/store.js"
 export function initStats(){
 
 const el = document.createElement("div")
+
 el.className="bento-stats"
 
 el.innerHTML=`

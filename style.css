@@ -4,8 +4,8 @@
     --primary-glow:   rgba(0,149,151,0.25);
 
     /* Glass system — identique au popup bp3 */
-    --glass-bg:       rgba(255, 255, 255, 0.36);
-    --glass-bg-inner: rgba(255, 255, 255, 0.60);
+    --glass-bg:       rgba(255, 255, 255, 0.60);
+    --glass-bg-inner: rgba(255, 255, 255, 0.70);
     --glass-blur:     blur(22px) saturate(160%);
     --glass-border:   rgba(255, 255, 255, 0.09);
     --glass-border-inner: rgba(255, 255, 255, 0.12);

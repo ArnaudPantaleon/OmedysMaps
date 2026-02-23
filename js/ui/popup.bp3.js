@@ -90,10 +90,10 @@ export function BP3Popup(site, color) {
   <div class="bp3-footer">
     <button class="bp3-btn bp3-btn--copy"
       onclick="navigator.clipboard.writeText('${(site.address || site.city).replace(/'/g, "\\'")}')">
-      📋 Copier
+      <i class="fa-regular fa-copy"></i> Copier
     </button>
     <a class="bp3-btn bp3-btn--maps" href="${mapsUrl}" target="_blank">
-      🗺 Maps
+      <i class="fa-regular fa-map"></i> Maps
     </a>
   </div>
 

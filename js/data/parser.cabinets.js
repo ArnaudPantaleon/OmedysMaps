@@ -12,6 +12,10 @@ export function parseCabinet(row) {
 
   if (!loc.lat || !loc.lng) return null
 
+  // Extraire le code dept depuis le CP dans l'adresse
+  const cpMatch = (loc.address || "").match(/\b(\d{5})\b/)
+  const dept    = cpMatch ? cpMatch[1].slice(0, 2) : ""
+
   return {
     id:      row.id,
     name:    row.Name,
@@ -22,6 +26,7 @@ export function parseCabinet(row) {
 
     city:    loc.city?.long_name || "",
     address: loc.address || "",
+    dept,
 
     status:  row.Statut,
 

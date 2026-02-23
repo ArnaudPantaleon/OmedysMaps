@@ -15,8 +15,13 @@ export class MapEngine {
       { attribution: "© OpenStreetMap" }
     ).addTo(this.map)
 
+    // Salles : clusterisées normalement
     this.cluster = L.markerClusterGroup()
     this.map.addLayer(this.cluster)
+
+    // Cabinets : layer plat, jamais clusterisé, toujours au-dessus
+    this.cabinetLayer = L.layerGroup()
+    this.map.addLayer(this.cabinetLayer)
 
   }
 
@@ -63,6 +68,7 @@ export class MapEngine {
   renderSites() {
 
     this.cluster.clearLayers()
+    this.cabinetLayer.clearLayers()
     store.markers.length = 0
 
     store.sites.forEach(site => {
@@ -77,7 +83,7 @@ export class MapEngine {
 
       if (site.type === "cabinet") {
 
-        // ── Cabinet : divIcon FA + halo pulsé ──
+        // ── Cabinet : divIcon FA + halo pulsé, jamais clusterisé ──
         const icon = L.divIcon({
           className: "",
           html: `
@@ -87,37 +93,31 @@ export class MapEngine {
                 <i class="fa-solid fa-briefcase-medical"></i>
               </div>
             </div>`,
-          iconSize:   [36, 36],
-          iconAnchor: [18, 18],
-          popupAnchor:[0, -20]
+          iconSize:    [36, 36],
+          iconAnchor:  [18, 18],
+          popupAnchor: [0, -20]
         })
 
-        marker = L.marker([site.lat, site.lng], { icon })
+        marker = L.marker([site.lat, site.lng], { icon, zIndexOffset: 1000 })
+
+        marker.site = site
+        marker.bindPopup(BP3Popup(site, color), { maxWidth: 400, className: "bp3-popup" })
+        this.cabinetLayer.addLayer(marker)
 
       } else {
 
-        // ── Salle : circleMarker classique ──
+        // ── Salle : circleMarker clusterisé ──
         marker = L.circleMarker(
           [site.lat, site.lng],
-          {
-            radius:      7,
-            fillColor:   color,
-            color:       "#fff",
-            weight:      2,
-            fillOpacity: .9
-          }
+          { radius: 7, fillColor: color, color: "#fff", weight: 2, fillOpacity: .9 }
         )
+
+        marker.site = site
+        marker.bindPopup(BP3Popup(site, color), { maxWidth: 400, className: "bp3-popup" })
+        this.cluster.addLayer(marker)
 
       }
 
-      marker.site = site
-
-      marker.bindPopup(
-        BP3Popup(site, color),
-        { maxWidth: 400, className: "bp3-popup" }
-      )
-
-      this.cluster.addLayer(marker)
       store.markers.push(marker)
 
     })

@@ -1,15 +1,11 @@
 // === CONFIG ===
 const CONFIG = {
     status: {
-        "Ouvert": { color: "#009597", label: "Cabinets Omedys", description: "Ouverts", checked: true },
-        "Ouvertes": { color: "#3498db", label: "Salles Ouvertes", description: "", checked: true },
-        "Telesecretariat OMEDYS": { color: "#8956FB", label: "Télésecretariat", description: "", checked: true },
-        "Ouverture en cours": { color: "#2ecc71", label: "En cours d'ouverture", description: "", checked: false },
-        /*"Fermees ou refus OTT": { color: "#f17676", label: "Fermées", description: "", checked: false },
-        "Inactives": { color: "#cbd5e1", label: "Inactives", description: "", checked: false },
-        "En sourcing": { color: "#fdaf00", label: "En sourcing", description: "", checked: false }*/
+        "Ouvert": { color: "#009597", label: "Cabinets Omedys", checked: true },
+        "Ouvertes": { color: "#3498db", label: "Salles Ouvertes", checked: true },
+        "Telesecretariat OMEDYS": { color: "#8956FB", label: "Télésecretariat", checked: true },
+        "Ouverture en cours": { color: "#2ecc71", label: "En cours d'ouverture", checked: false },
     },
-
     tms: {
         isActive: false,
         filters: {
@@ -29,413 +25,219 @@ const CONFIG = {
             "TMS ESMS Emeis": { label: "TMS ESMS Emeis", location: "National", count: 0, checked: false }
         }
     },
-
-    type: {
-        ESMS: { label: "Afficher les ESMS", description: "EHPAD, Foyers, FAM...", count: 0, checked: false }
-    }
+    type: { ESMS: { label: "Afficher les ESMS", description: "EHPAD, Foyers, FAM...", count: 0, checked: false } }
 };
 
-let map = L.map('map', { zoomControl: false }).setView([46.6033, 1.8883], 6);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+// === INITIALISATION MAP ===
+const map = L.map('map', { zoomControl: false, preferCanvas: true }).setView([46.6033, 1.8883], 6);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
 
 const searchInput = document.getElementById('query');
 const suggestionBox = document.getElementById('suggestions');
-
-let debounceTimer = null;
 let markersStore = [];
+let debounceTimer = null;
 
 // === UTILITAIRES ===
-function formatPhone(num) {
-    if (!num) return "N/C";
-    let cleaned = ('' + num).replace(/\D/g, '');
-    // +33XXXXXXXXX → 0XXXXXXXXX
-    if (cleaned.startsWith('33') && cleaned.length === 11) {
-        cleaned = '0' + cleaned.slice(2);
+const utils = {
+    formatPhone: (num) => {
+        if (!num) return "N/C";
+        let cleaned = ('' + num).replace(/\D/g, '');
+        if (cleaned.startsWith('33')) cleaned = '0' + cleaned.slice(2);
+        if (cleaned.length === 9) cleaned = '0' + cleaned;
+        return cleaned.replace(/(\d{2})(?=\d)/g, '$1 ');
+    },
+    copyToClipboard: (text) => {
+        navigator.clipboard.writeText(text).then(() => alert('✓ Copié !')).catch(() => console.error('Erreur'));
+    },
+    parseLocation: (loc) => {
+        if (!loc) return null;
+        try {
+            const data = typeof loc === 'string' ? JSON.parse(loc) : loc;
+            return (data.lat && data.lng) ? data : null;
+        } catch (e) { return null; }
     }
-    // 9 chiffres sans le 0 initial → on le rajoute
-    if (cleaned.length === 9) {
-        cleaned = '0' + cleaned;
-    }
-    let match = cleaned.match(/^(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})$/);
-    return match ? match.slice(1).join(' ') : num;
-}
+};
 
-function adjustBrightness(color, percent) {
-    let hex = color.replace('#', '');
-    let r = parseInt(hex.substring(0, 2), 16);
-    let g = parseInt(hex.substring(2, 4), 16);
-    let b = parseInt(hex.substring(4, 6), 16);
-    r = Math.min(255, Math.floor(r + (r * percent / 100)));
-    g = Math.min(255, Math.floor(g + (g * percent / 100)));
-    b = Math.min(255, Math.floor(b + (b * percent / 100)));
-    return "#" + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
-}
-
-function copyAddress(address) {
-    if (!address || address === "Non disponible") {
-        alert('⚠️ Adresse non disponible');
-        return;
-    }
-    navigator.clipboard.writeText(address).then(() => {
-        alert('✓ Adresse copiée !');
-    }).catch(() => {
-        console.error('Erreur copie');
-    });
-}
-
-// === CHARGEMENT ET RENDU ===
+// === CORE APP ===
 async function startApp() {
     try {
         const index = await fetch('index.json').then(r => r.json());
-        const visibleFiles = index.filter(entry => entry.visible);
-        const datasets = await Promise.all(visibleFiles.map(entry => fetch(entry.file).then(r => r.json())));
+        const datasets = await Promise.all(index.filter(e => e.visible).map(e => fetch(e.file).then(r => r.json())));
         const rawData = datasets.flatMap(d => d[0]?.data || []);
 
-        // Initialisation des compteurs
-        Object.keys(CONFIG.tms.filters).forEach(k => CONFIG.tms.filters[k].count = 0);
-        CONFIG.type.ESMS.count = 0;
-
         rawData.forEach(item => {
-            let address = "Non disponible";
-            let lat, lng;
+            const loc = utils.parseLocation(item.Location);
+            if (!loc) return;
 
-            // Location : objet direct (salles.json) ou string JSON (cabinet.json)
-            if (item.Location && typeof item.Location === 'object' && item.Location.lat) {
-                lat = parseFloat(item.Location.lat);
-                lng = parseFloat(item.Location.lng);
-                address = item.Location.address || "Non disponible";
-            } else if (item.Location && typeof item.Location === 'string') {
-                try {
-                    const loc = JSON.parse(item.Location);
-                    if (loc.lat) {
-                        lat = parseFloat(loc.lat);
-                        lng = parseFloat(loc.lng);
-                        address = loc.address || "Non disponible";
-                    }
-                } catch(e) {}
-            }
+            const statut = item.Statut_Salle || item.Statut || "N/C";
+            const isESMS = /ESMS|EHPAD|Foyer|FAM|MAS/i.test(item.Type || "");
+            const tmsKey = item.TMS || "";
 
-            if (!isNaN(lat) && !isNaN(lng)) {
-                // ✅ Statut correct : Statut_Salle pour les salles, Statut pour les cabinets
-                const statut = item.Statut_Salle || item.Statut || "";
+            // Mise à jour compteurs
+            if (CONFIG.tms.filters[tmsKey]) CONFIG.tms.filters[tmsKey].count++;
+            if (isESMS) CONFIG.type.ESMS.count++;
 
-                // TMS
-                const tmsKey = item.TMS || "";
-                if (tmsKey && CONFIG.tms.filters[tmsKey]) CONFIG.tms.filters[tmsKey].count++;
+            // Création du marqueur
+            const color = CONFIG.status[statut]?.color || "#94a3b8";
+            let marker;
 
-                // ESMS
-                const isESMS = ["ESMS", "EHPAD", "Foyer", "FAM", "MAS"].some(t =>
-                    (item.Type || "").toUpperCase().includes(t.toUpperCase())
-                );
-                if (isESMS) CONFIG.type.ESMS.count++;
-
-                // Couleur selon statut
-                const color = CONFIG.status[statut]?.color || "#94a3b8";
-
-                // Marqueur selon type
-                const isCabinet = item.Type === "CABINET";
-
-                let marker;
-                if (isCabinet) {
-                    const pinIcon = L.divIcon({
-                        className: '',
-                        html: `<div style="position:relative;width:36px;height:36px;background:rgba(255,255,255,0.88);backdrop-filter:blur(10px);border-radius:50%;border:2px solid #009597;display:flex;align-items:center;justify-content:center;color:#009597;font-size:15px;box-shadow:0 3px 14px rgba(0,0,0,0.18),0 0 0 4px rgba(0,149,151,0.15);"><i class="fa-solid fa-stethoscope"></i></div>`,
-                        iconSize: [36, 36],
-                        iconAnchor: [18, 18],
-                        popupAnchor: [0, -20]
-                    });
-                    marker = L.marker([lat, lng], { icon: pinIcon });
-                } else {
-                    marker = L.circleMarker([lat, lng], {
-                        radius: 7,
-                        fillColor: color,
-                        color: "#fff",
-                        weight: 2,
-                        fillOpacity: 0.9
-                    });
-                }
-
-                // Popup
-                const typeLabel = item.Type || (isESMS ? "ESMS" : "Site");
-                const phoneRaw = item.Phone || item.ATT_Phone || item.Telephone || '';
-                const attName = item.Type === "CABINET"
-                    ? (item.ATT_Name || item.ATT || "Non assigné")
-                    : (item.ATT || "Non assigné");
-
-                // Classe pill selon statut
-                const pillClass = statut === "Ouvert" || statut === "Ouvertes" ? "bp3-pill-ouvert"
-                    : statut === "Ouverture en cours" ? "bp3-pill-encours"
-                    : statut === "Telesecretariat OMEDYS" ? "bp3-pill-tele"
-                    : "bp3-pill-default";
-
-                const popupContent = `
-                    <div class="bp3">
-                        <div class="bp3-header" style="--bp3-accent-glow:${color}40">
-                            <div class="bp3-hd-top">
-                                <div class="bp3-badge">${typeLabel}</div>
-                                <div class="bp3-statut-pill ${pillClass}">
-                                    <span class="bp3-sdot"></span>${statut || "N/C"}
-                                </div>
-                            </div>
-                            <div class="bp3-title">${item.Name || "Site"}</div>
-                        </div>
-                        <div class="bp3-grid">
-                            ${item.Type === "CABINET" ? `
-                            <div class="bp3-tile bp3-wide">
-                                <span class="bp3-tile-icon"><i class="fa-solid fa-user"></i></span>
-                                <span class="bp3-tile-label">Responsable</span>
-                                <div class="bp3-tile-body">
-                                    <div class="bp3-tile-value">${attName}</div>
-                                </div>
-                            </div>` : item.TMS ? `
-                            <div class="bp3-tile">
-                                <span class="bp3-tile-icon"><i class="fa-solid fa-stethoscope"></i></span>
-                                <span class="bp3-tile-label">Cabinet TMS</span>
-                                <div class="bp3-tile-body">
-                                    <div class="bp3-tile-value">${item.TMS}</div>
-                                </div>
-                            </div>
-                            <div class="bp3-tile">
-                                <span class="bp3-tile-icon"><i class="fa-solid fa-user"></i></span>
-                                <span class="bp3-tile-label">ATT</span>
-                                <div class="bp3-tile-body">
-                                    <div class="bp3-tile-value">${attName}</div>
-                                </div>
-                            </div>` : ''}
-
-                            <div class="bp3-tile">
-                                <span class="bp3-tile-icon"><i class="fa-solid fa-phone"></i></span>
-                                <span class="bp3-tile-label">Téléphone</span>
-                                <div class="bp3-tile-body">
-                                    <a href="tel:${phoneRaw}" class="bp3-tile-value bp3-link">${formatPhone(phoneRaw)}</a>
-                                </div>
-                            </div>
-
-                            ${item.MSS ? `
-                            <div class="bp3-tile">
-                                <span class="bp3-tile-icon"><i class="fa-solid fa-envelope"></i></span>
-                                <span class="bp3-tile-label">MSS</span>
-                                <div class="bp3-tile-body">
-                                    
-                                    <div class="bp3-tile-value bp3-mss">${item.MSS}</div>
-                                </div>
-                            </div>` : ''}
-
-                            <div class="bp3-tile bp3-wide">
-                                <span class="bp3-tile-icon"><i class="fa-solid fa-location-dot"></i></span>
-                                <span class="bp3-tile-label">Adresse</span>
-                                <div class="bp3-tile-body">
-                                    <div class="bp3-tile-value">${address}</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bp3-footer">
-                            <button class="bp3-btn bp3-btn--copy" onclick="copyAddress('${address.replace(/'/g, "\\'")}')"><i class="fa-solid fa-copy"></i> Copier</button>
-                            <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}" target="_blank" class="bp3-btn bp3-btn--maps"><i class="fa-solid fa-map-location-dot"></i> Maps</a>
-                        </div>
-                    </div>`;
-
-                marker.bindPopup(popupContent, { maxWidth: 340, className: 'bp3-popup' });
-
-                markersStore.push({
-                    marker,
-                    status: statut,
-                    tms: tmsKey,
-                    isESMS,
-                    type: item.Type || ""
+            if (item.Type === "CABINET") {
+                marker = L.marker([loc.lat, loc.lng], {
+                    icon: L.divIcon({
+                        className: 'custom-pin',
+                        html: `<div style="width:36px;height:36px;background:var(--glass-bg);backdrop-filter:var(--glass-blur);border-radius:50%;border:2px solid var(--primary);display:flex;align-items:center;justify-content:center;color:var(--primary);box-shadow:var(--glass-shadow);"><i class="fa-solid fa-stethoscope"></i></div>`,
+                        iconSize: [36, 36], iconAnchor: [18, 18], popupAnchor: [0, -20]
+                    })
                 });
-
-                applyVisibility(markersStore[markersStore.length - 1]);
+            } else {
+                marker = L.circleMarker([loc.lat, loc.lng], {
+                    radius: 7, fillColor: color, color: "#fff", weight: 2, fillOpacity: 0.9
+                });
             }
+
+            // Template Popup (bp3)
+            const pillClass = statut.includes("Ouvert") ? "bp3-pill-ouvert" : statut.includes("cours") ? "bp3-pill-encours" : "bp3-pill-default";
+            const phone = item.Phone || item.ATT_Phone || item.Telephone || '';
+            const address = loc.address || "Adresse non disponible";
+
+            const popupContent = `
+                <div class="bp3">
+                    <div class="bp3-header">
+                        <div class="bp3-hd-top">
+                            <span class="bp3-badge">${item.Type || 'Site'}</span>
+                            <span class="bp3-statut-pill ${pillClass}"><span class="bp3-sdot"></span>${statut}</span>
+                        </div>
+                        <div class="bp3-title">${item.Name || "Sans nom"}</div>
+                    </div>
+                    <div class="bp3-grid">
+                        <div class="bp3-tile bp3-wide">
+                            <span class="bp3-tile-label">Responsable</span>
+                            <span class="bp3-tile-value">${item.ATT_Name || item.ATT || "Non assigné"}</span>
+                        </div>
+                        <div class="bp3-tile">
+                            <span class="bp3-tile-label">Téléphone</span>
+                            <a href="tel:${phone}" class="bp3-tile-value bp3-link">${utils.formatPhone(phone)}</a>
+                        </div>
+                        <div class="bp3-tile">
+                            <span class="bp3-tile-label">TMS</span>
+                            <span class="bp3-tile-value">${tmsKey || 'N/A'}</span>
+                        </div>
+                        <div class="bp3-tile bp3-wide">
+                            <span class="bp3-tile-label">Adresse</span>
+                            <span class="bp3-tile-value">${address}</span>
+                        </div>
+                    </div>
+                    <div class="bp3-footer">
+                        <button class="bp3-btn bp3-btn--copy" onclick="utils.copyToClipboard('${address.replace(/'/g, "\\"')}')">Copier</button>
+                        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}" target="_blank" class="bp3-btn bp3-btn--maps">Maps</a>
+                    </div>
+                </div>`;
+
+            marker.bindPopup(popupContent, { maxWidth: 300, className: 'bp3-popup' });
+            
+            const markerEntry = { marker, status: statut, tms: tmsKey, isESMS, type: item.Type };
+            markersStore.push(markerEntry);
+            applyVisibility(markerEntry);
         });
 
         renderFilters();
-        return true;
     } catch (err) {
-        console.error('Erreur chargement données:', err);
-        return false;
+        console.error("Initialization failed", err);
     }
 }
 
-// === VISIBILITÉ ===
+// === LOGIQUE DE FILTRES ===
 function applyVisibility(item) {
-    const statusOk = CONFIG.status[item.status]?.checked !== false;
-    const tmsOk = !CONFIG.tms.isActive || item.type === "CABINET" || (item.tms && CONFIG.tms.filters[item.tms]?.checked);
-    const esmsOk = !item.isESMS || CONFIG.type.ESMS.checked;
-    const show = statusOk && tmsOk && esmsOk;
-    show ? item.marker.addTo(map) : map.removeLayer(item.marker);
+    const isVisible = (CONFIG.status[item.status]?.checked !== false) &&
+                      (!CONFIG.tms.isActive || item.type === "CABINET" || CONFIG.tms.filters[item.tms]?.checked) &&
+                      (!item.isESMS || CONFIG.type.ESMS.checked);
+    
+    isVisible ? item.marker.addTo(map) : map.removeLayer(item.marker);
 }
 
-// === RENDU FILTRES ===
 function renderFilters() {
-    // Mise à jour des descriptions avec les vrais compteurs
-    Object.keys(CONFIG.status).forEach(key => {
+    const container = document.getElementById('filter-list');
+    if(!container) return;
+
+    // Calcul dynamique des compteurs par statut pour l'affichage
+    const statusHtml = Object.entries(CONFIG.status).map(([key, cfg]) => {
         const count = markersStore.filter(m => m.status === key).length;
-        CONFIG.status[key].description = `${count} site${count > 1 ? 's' : ''}`;
-    });
+        return `
+            <div class="filter-item ${cfg.checked ? 'active' : ''}" onclick="toggleFilter('status', '${key}')">
+                <div class="filter-dot" style="background:${cfg.color}"></div>
+                <div class="filter-content">
+                    <span class="filter-label">${cfg.label}</span>
+                    <span class="filter-description">${count} sites</span>
+                </div>
+                <div class="filter-checkbox"></div>
+            </div>`;
+    }).join('');
 
-    const filtersHtml = `
-        <div class="filter-section">
-            <div class="section-title">
-                <i class="fa-solid fa-layer-group"></i> Affichage par statut
-                <span class="section-badge">${Object.keys(CONFIG.status).length}</span>
+    const tmsHtml = Object.entries(CONFIG.tms.filters).map(([key, cfg]) => `
+        <div class="filter-item toggle-filter ${cfg.checked ? 'active' : ''}" onclick="toggleFilter('tms', '${key}')">
+            <div class="filter-content">
+                <span class="filter-label">${cfg.label}</span>
+                <span class="filter-description">${cfg.location}</span>
             </div>
-            <div class="filters-grid">
-                ${Object.entries(CONFIG.status).map(([key, config]) => `
-                    <div class="filter-item color-filter ${config.checked ? 'active' : ''}" onclick="window.toggleStatusFilter('${key}')">
-                        <div class="filter-dot" style="background: ${config.color};"></div>
-                        <div class="filter-content">
-                            <span class="filter-label">${config.label}</span>
-                            <span class="filter-description">${config.description}</span>
-                        </div>
-                        <div class="filter-checkbox"></div>
-                    </div>
-                `).join('')}
-            </div>
-        </div>
+            <span class="tms-badge">${cfg.count}</span>
+            <div class="toggle-switch"></div>
+        </div>`).join('');
 
+    container.innerHTML = `
+        <div class="filter-section"><div class="section-title">Statuts</div>${statusHtml}</div>
         <div class="filters-divider"></div>
-
-        <div class="filter-section">
-            <div class="section-title">
-                <i class="fa-solid fa-sliders"></i> Interrupteurs
-                <span class="section-badge">${Object.keys(CONFIG.tms.filters).length + 1}</span>
-            </div>
-
-            <div style="margin-bottom: 14px;">
-                <div style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; padding-left: 4px;"><i class="fa-solid fa-tower-broadcast"></i> Centres TMS</div>
-                <div class="filters-grid">
-                    ${Object.entries(CONFIG.tms.filters).map(([key, config]) => `
-                        <div class="filter-item toggle-filter ${config.checked ? 'active' : ''}" onclick="window.toggleTmsFilter('${key}')">
-                            <div class="filter-content">
-                                <span class="filter-label">${config.label}</span>
-                                <span class="filter-description">${config.location}</span>
-                            </div>
-                            <span class="tms-badge">${config.count}</span>
-                            <div class="toggle-switch"></div>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-
-            <div>
-                <div style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; padding-left: 4px;"><i class="fa-solid fa-hospital"></i> Type d'établissement</div>
-                <div class="filters-grid">
-                    <div class="filter-item toggle-filter ${CONFIG.type.ESMS.checked ? 'active' : ''}" onclick="window.toggleEsmsFilter()">
-                        <div class="filter-content">
-                            <span class="filter-label">${CONFIG.type.ESMS.label}</span>
-                            <span class="filter-description">${CONFIG.type.ESMS.description}</span>
-                        </div>
-                        <span class="tms-badge">${CONFIG.type.ESMS.count}</span>
-                        <div class="toggle-switch"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <div class="filter-section"><div class="section-title">Centres TMS</div>${tmsHtml}</div>
     `;
-
-    document.getElementById('filter-list').innerHTML = filtersHtml;
-    updateStats();
+    
+    document.getElementById('site-count').textContent = markersStore.filter(m => map.hasLayer(m.marker)).length;
 }
 
-// === TOGGLES ===
-window.toggleStatusFilter = (key) => {
-    CONFIG.status[key].checked = !CONFIG.status[key].checked;
+window.toggleFilter = (type, key) => {
+    if (type === 'status') CONFIG.status[key].checked = !CONFIG.status[key].checked;
+    if (type === 'tms') {
+        CONFIG.tms.filters[key].checked = !CONFIG.tms.filters[key].checked;
+        CONFIG.tms.isActive = Object.values(CONFIG.tms.filters).some(f => f.checked);
+    }
+    if (type === 'esms') CONFIG.type.ESMS.checked = !CONFIG.type.ESMS.checked;
+
     markersStore.forEach(applyVisibility);
     renderFilters();
 };
-
-window.toggleTmsFilter = (key) => {
-    CONFIG.tms.filters[key].checked = !CONFIG.tms.filters[key].checked;
-    CONFIG.tms.isActive = Object.values(CONFIG.tms.filters).some(f => f.checked);
-    markersStore.forEach(applyVisibility);
-    renderFilters();
-};
-
-window.toggleEsmsFilter = () => {
-    CONFIG.type.ESMS.checked = !CONFIG.type.ESMS.checked;
-    markersStore.forEach(applyVisibility);
-    renderFilters();
-};
-
-function updateStats() {
-    document.getElementById('site-count').innerText = markersStore.filter(m => map.hasLayer(m.marker)).length;
-}
 
 // === RECHERCHE ===
-function displaySuggestions(features) {
-    if (!features || features.length === 0) {
-        suggestionBox.innerHTML = '<div class="suggestion-item empty">Aucun lieu trouvé</div>';
-        return;
-    }
-    suggestionBox.innerHTML = features.map((feature, idx) => {
-        const prop = feature.properties;
-        const geometry = feature.geometry;
-        const ctx = prop.context.split(', ');
-        const displayContext = ctx.length > 1 ? `${ctx[1]} (${ctx[0]}), ${ctx[2]}` : prop.context;
-        const municipality = prop.city;
-        const postcode = prop.postcode;
-        const lon = geometry.coordinates[0];
-        const lat = geometry.coordinates[1];
-        const safeName = municipality.replace(/'/g, "\\'");
-        return `
-            <div class="suggestion-item" onclick="window.selectSuggestion('${safeName}', ${lat}, ${lon}, ${idx})">
-                <div class="suggestion-header">
-                    <span class="suggestion-city"><strong>${municipality}</strong></span>
-                    <span class="suggestion-zip">${postcode}</span>
-                </div>
-                <div class="suggestion-meta">
-                    <span class="suggestion-province">${displayContext}</span>
-                </div>
-            </div>
-        `;
-    }).join('');
+async function fetchSuggestions(query) {
+    try {
+        const r = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=5&type=municipality`);
+        const data = await r.json();
+        suggestionBox.innerHTML = data.features.map(f => `
+            <div class="suggestion-item" onclick="selectLoc(${f.geometry.coordinates[1]}, ${f.geometry.coordinates[0]}, '${f.properties.city.replace(/'/g, "\\'")}')">
+                <span class="suggestion-city"><strong>${f.properties.city}</strong></span>
+                <span class="suggestion-zip">${f.properties.postcode}</span>
+            </div>`).join('');
+    } catch (e) { suggestionBox.innerHTML = ''; }
 }
 
-function hideSuggestions() {
-    suggestionBox.innerHTML = '';
-}
-
-window.selectSuggestion = (city, lat, lon) => {
+window.selectLoc = (lat, lon, city) => {
     searchInput.value = city;
-    hideSuggestions();
-    map.flyTo([lat, lon], 13);
+    suggestionBox.innerHTML = '';
+    map.flyTo([lat, lon], 12);
 };
 
-async function fetchSuggestions(query) {
-    const response = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${query}&limit=30&type=municipality`);
-    const data = await response.json();
-    displaySuggestions(data.features);
-}
-
-searchInput?.addEventListener('input', (e) => {
+searchInput.addEventListener('input', (e) => {
     clearTimeout(debounceTimer);
-    const query = e.target.value;
-    if (query.trim().length === 0) { hideSuggestions(); return; }
-    debounceTimer = setTimeout(() => fetchSuggestions(query), 300);
+    if (e.target.value.length < 2) return suggestionBox.innerHTML = '';
+    debounceTimer = setTimeout(() => fetchSuggestions(e.target.value), 300);
 });
 
-document.addEventListener('click', (e) => {
-    if (!e.target.closest('.bento-search') && !e.target.closest('#suggestions')) hideSuggestions();
-});
-
-searchInput?.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') hideSuggestions();
-});
-
-// === INIT ===
-startApp().then(() => {
+// === INITIALISATION UI ===
+document.addEventListener('DOMContentLoaded', () => {
+    startApp();
+    
     const menuBtn = document.getElementById('menu-btn');
-    const newMenuBtn = menuBtn.cloneNode(true);
-    menuBtn.parentNode.replaceChild(newMenuBtn, menuBtn);
+    const sideMenu = document.getElementById('bento-filters'); // Assure-toi que l'ID match ton HTML
 
-    const btn = document.getElementById('menu-btn');
-    btn.addEventListener('mousedown', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const b = document.getElementById('menu-btn');
-        const menu = document.getElementById('side-menu');
-        b.classList.toggle('active');
-        menu.classList.toggle('open');
-    }, true);
+    menuBtn?.addEventListener('click', () => {
+        menuBtn.classList.toggle('active');
+        sideMenu.classList.toggle('open');
+    });
 });

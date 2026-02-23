@@ -12,30 +12,34 @@ export function parseSalle(row) {
 
   if (!loc.lat || !loc.lng) return null
 
+  const cpMatch = (loc.address || "").match(/\b(\d{5})\b/)
+  const dept    = cpMatch ? cpMatch[1].slice(0, 2) : ""
+
   return {
-    id:      row.id || row.Name,
-    name:    row.Name,
-    type:    "salle",
+    id:       row.id || row.Name,
+    name:     row.Name,
+    type:     "salle",
 
-    lat:     Number(loc.lat),
-    lng:     Number(loc.lng),
+    lat:      Number(loc.lat),
+    lng:      Number(loc.lng),
 
-    city:    loc.city?.long_name || "",
-    address: loc.address || "",
+    city:     loc.city?.long_name || "",
+    address:  loc.address || "",
+    dept,
 
-    // Les salles utilisent Statut_Salle (pas Statut)
-    status:  row.Statut_Salle || row.Statut || "",
+    status:   row.Statut_Salle || row.Statut || "",
+    statusTMS: row.Statut_TMS  || "",
 
-    tms:     row.TMS || "",
+    tms:      row.TMS      || "",
+    typeSite: row.Type     || "",
 
     contact: {
-      name:  row.ATT   || "",
+      name:  row.ATT      || "",
       mail:  row.ATT_Mail || "",
-      phone: row.Phone || ""
+      phone: row.Phone    || ""
     },
 
-    mss:     row.MSS || "",
-    typeSite: row.Type || ""
+    mss: row.MSS || ""
   }
 
 }

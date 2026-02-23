@@ -5,10 +5,36 @@ export const CONFIG = {
     zoom:   6
   },
 
-  status: {
+  // Statuts cabinets
+  statusCabinet: {
     "Ouvert":             { color: "#16a34a", checked: true  },
     "Ouverture en cours": { color: "#f59e0b", checked: true  },
     "Virtuel":            { color: "#64748b", checked: false }
+  },
+
+  // Statuts salles
+  statusSalle: {
+    "Ouvertes":               { color: "#2563eb", checked: true  },
+    "Ouverture en cours":     { color: "#f59e0b", checked: true  },
+    "Telesecretariat OMEDYS": { color: "#8b5cf6", checked: true  }
+  },
+
+  // Types de sites (salles)
+  typeSite: {
+    "ESMS":                              { checked: true },
+    "CDS/MSP/CM":                        { checked: true },
+    "CPTS":                              { checked: true },
+    "Cabinet Infirmier":                 { checked: true },
+    "Pharmacie":                         { checked: true },
+    "Laboratoire":                       { checked: true },
+    "Salle":                             { checked: true },
+    "Salle collectivité":                { checked: true },
+    "ODYS":                              { checked: true },
+    "Etablissement scolaire":            { checked: true },
+    "Foyer d'accueil":                   { checked: true },
+    "Domicile":                          { checked: true },
+    "Vehicule de télémédecine assistée": { checked: true },
+    "véhicule de télémédecine assitée":  { checked: true }
   }
 
 }

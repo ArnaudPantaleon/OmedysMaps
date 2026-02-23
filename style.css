@@ -19,6 +19,28 @@
     --border-light:   #e2e8f0;
     --bg-hover:       rgba(255, 255, 255, 0.75);
     --bg-light:       rgba(255, 255, 255, 0.45);
+
+    /* Tokens popup — light */
+    --bp3-text:           rgba(0, 0, 0, 0.82);
+    --bp3-text-secondary: rgba(0, 0, 0, 0.55);
+    --bp3-text-muted:     rgba(0, 0, 0, 0.40);
+    --bp3-surface:        rgba(255, 255, 255, 0.60);
+    --bp3-surface-hover:  rgba(255, 255, 255, 0.82);
+    --bp3-border:         rgba(255, 255, 255, 0.12);
+    --bp3-header-border:  rgba(0, 0, 0, 0.06);
+    --bp3-close-bg:       rgba(255, 255, 255, 0.45);
+    --bp3-close-color:    rgba(0, 0, 0, 0.40);
+    --bp3-btn-copy-bg:    rgba(0, 149, 151, 0.10);
+    --bp3-btn-copy-hover: rgba(0, 149, 151, 0.20);
+    --bp3-btn-copy-text:  rgba(0, 0, 0, 0.65);
+    --bp3-pill-ouvert-bg:  rgba(0, 149, 151, 0.12);
+    --bp3-pill-ouvert-fg:  #007a7c;
+    --bp3-pill-encours-bg: rgba(46, 204, 113, 0.15);
+    --bp3-pill-encours-fg: #1e9e55;
+    --bp3-pill-tele-bg:    rgba(137, 86, 251, 0.14);
+    --bp3-pill-tele-fg:    #6b35d4;
+    --bp3-pill-default-bg: rgba(0, 0, 0, 0.06);
+    --bp3-pill-default-fg: rgba(0, 0, 0, 0.45);
 }
 .leaflet-container a {
     color: #fff;
@@ -440,7 +462,7 @@ body, html {
 /* ===== DARK MODE ===== */
 @media (prefers-color-scheme: dark) {
     :root {
-        --glass-bg:       rgba(15, 23, 42, 0.62);
+        --glass-bg:       rgba(15, 36, 42, 0.70);
         --glass-bg-inner: rgba(30, 41, 59, 0.65);
         --glass-border:   rgba(255,255,255,0.07);
         --glass-border-inner: rgba(255,255,255,0.08);
@@ -449,6 +471,28 @@ body, html {
         --text-primary:   #f1f5f9;
         --text-secondary: #94a3b8;
         --border-light:   #334155;
+
+        /* Tokens popup dark */
+        --bp3-text:           rgba(255, 255, 255, 0.90);
+        --bp3-text-secondary: rgba(255, 255, 255, 0.55);
+        --bp3-text-muted:     rgba(255, 255, 255, 0.35);
+        --bp3-surface:        rgba(255, 255, 255, 0.07);
+        --bp3-surface-hover:  rgba(255, 255, 255, 0.13);
+        --bp3-border:         rgba(255, 255, 255, 0.09);
+        --bp3-header-border:  rgba(255, 255, 255, 0.08);
+        --bp3-close-bg:       rgba(255, 255, 255, 0.12);
+        --bp3-close-color:    rgba(255, 255, 255, 0.55);
+        --bp3-btn-copy-bg:    rgba(255, 255, 255, 0.08);
+        --bp3-btn-copy-hover: rgba(255, 255, 255, 0.14);
+        --bp3-btn-copy-text:  rgba(255, 255, 255, 0.80);
+        --bp3-pill-ouvert-bg:  rgba(0, 149, 151, 0.22);
+        --bp3-pill-ouvert-fg:  #5eead4;
+        --bp3-pill-encours-bg: rgba(46, 204, 113, 0.20);
+        --bp3-pill-encours-fg: #86efac;
+        --bp3-pill-tele-bg:    rgba(137, 86, 251, 0.22);
+        --bp3-pill-tele-fg:    #c4b5fd;
+        --bp3-pill-default-bg: rgba(255, 255, 255, 0.08);
+        --bp3-pill-default-fg: rgba(255, 255, 255, 0.40);
     }
     .bento-search input { color: #f1f5f9; }
     .bento-search input::placeholder { color: #475569; }
@@ -500,27 +544,7 @@ body, html {
         /* Placeholder visible */
     .bento-search input::placeholder { color: rgba(255,255,255,0.45); }
     
-    /* Tokens popup dark */
-    --bp3-text:           rgba(255, 255, 255, 0.90);
-    --bp3-text-secondary: rgba(255, 255, 255, 0.55);
-    --bp3-text-muted:     rgba(255, 255, 255, 0.35);
-    --bp3-surface:        rgba(255, 255, 255, 0.07);
-    --bp3-surface-hover:  rgba(255, 255, 255, 0.13);
-    --bp3-border:         rgba(255, 255, 255, 0.09);
-    --bp3-header-border:  rgba(255, 255, 255, 0.08);
-    --bp3-close-bg:       rgba(255, 255, 255, 0.12);
-    --bp3-close-color:    rgba(255, 255, 255, 0.55);
-    --bp3-btn-copy-bg:    rgba(255, 255, 255, 0.08);
-    --bp3-btn-copy-hover: rgba(255, 255, 255, 0.14);
-    --bp3-btn-copy-text:  rgba(255, 255, 255, 0.80);
-    --bp3-pill-ouvert-bg:  rgba(0, 149, 151, 0.22);
-    --bp3-pill-ouvert-fg:  #5eead4;
-    --bp3-pill-encours-bg: rgba(46, 204, 113, 0.20);
-    --bp3-pill-encours-fg: #86efac;
-    --bp3-pill-tele-bg:    rgba(137, 86, 251, 0.22);
-    --bp3-pill-tele-fg:    #c4b5fd;
-    --bp3-pill-default-bg: rgba(255, 255, 255, 0.08);
-    --bp3-pill-default-fg: rgba(255, 255, 255, 0.40);
+    
 }
 
 /* ===== MOBILE ===== */

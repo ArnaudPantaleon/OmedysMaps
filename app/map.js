@@ -1,24 +1,19 @@
 import {CONFIG} from "../core/config.js"
 import {store} from "../core/store.js"
 import {BP3Popup} from "../ui/popup.bp3.js"
-
+import {updateStats} from "../ui/ui.stats.js"
 export class MapEngine{
 
 constructor(){
-
-this.map=L.map("map",{zoomControl:false})
-.setView(CONFIG.map.center,CONFIG.map.zoom)
-
-L.tileLayer(
-"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-).addTo(this.map)
-
-import {updateStats} from "../ui/ui.stats.js"
-
-this.cluster = L.markerClusterGroup()
-
-this.map.addLayer(this.cluster)
-
+  this.map=L.map("map",{zoomControl:false})
+  .setView(CONFIG.map.center,CONFIG.map.zoom)
+  
+  L.tileLayer(
+  "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+  ).addTo(this.map)
+  
+  this.cluster = L.markerClusterGroup()
+  this.map.addLayer(this.cluster)
 }
 
 renderSites(){
@@ -51,5 +46,6 @@ store.markers.push(marker)
 })
 updateStats()
 }
+
 
 }

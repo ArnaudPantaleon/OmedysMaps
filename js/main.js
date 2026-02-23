@@ -1,7 +1,7 @@
 import {loadData} from "./data/data.loader.js"
 import {MapEngine} from "./map/map.engine.js"
-import {initFilters} from "./ui/ui.filters.js"
 import {initStats} from "./ui/ui.stats.js"
+import {initFilters} from "./ui/ui.filters.js"
 
 async function start(){
 
@@ -11,8 +11,8 @@ const map = new MapEngine()
 
 map.renderSites()
 
-initFilters()
 initStats()
+initFilters()
 
 }
 

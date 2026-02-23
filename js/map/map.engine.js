@@ -73,22 +73,48 @@ export class MapEngine {
         ? (CONFIG.statusCabinet[site.status]?.color || "#94a3b8")
         : (CONFIG.statusSalle[site.status]?.color   || "#2563eb")
 
-      const marker = L.circleMarker(
-        [site.lat, site.lng],
-        {
-          radius:      site.type === "cabinet" ? 9 : 7,
-          fillColor:   color,
-          color:       "#fff",
-          weight:      2,
-          fillOpacity: .9
-        }
-      )
+      let marker
+
+      if (site.type === "cabinet") {
+
+        // ── Cabinet : divIcon FA + halo pulsé ──
+        const icon = L.divIcon({
+          className: "",
+          html: `
+            <div class="cabinet-marker" style="--cm-color:${color}">
+              <div class="cabinet-pulse"></div>
+              <div class="cabinet-pin">
+                <i class="fa-solid fa-briefcase-medical"></i>
+              </div>
+            </div>`,
+          iconSize:   [36, 36],
+          iconAnchor: [18, 18],
+          popupAnchor:[0, -20]
+        })
+
+        marker = L.marker([site.lat, site.lng], { icon })
+
+      } else {
+
+        // ── Salle : circleMarker classique ──
+        marker = L.circleMarker(
+          [site.lat, site.lng],
+          {
+            radius:      7,
+            fillColor:   color,
+            color:       "#fff",
+            weight:      2,
+            fillOpacity: .9
+          }
+        )
+
+      }
 
       marker.site = site
 
       marker.bindPopup(
         BP3Popup(site, color),
-        { maxWidth: 340, className: "bp3-popup" }
+        { maxWidth: 400, className: "bp3-popup" }
       )
 
       this.cluster.addLayer(marker)

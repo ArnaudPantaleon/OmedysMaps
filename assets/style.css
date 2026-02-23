@@ -549,8 +549,8 @@ body, html {
 }
 .bp3-btn--copy { background: rgba(0,149,151,0.14); border: 1px solid rgba(255,255,255,0.12); color: rgba(0,0,0,0.65); }
 .bp3-btn--copy:hover { background: rgba(0,149,151,0.25); }
-.bp3-btn--maps { background: var(--primary); color: #fff; }
-.bp3-btn--maps:hover { background: #007a7c; }
+.bp3-btn--maps { background: var(--primary); color: #fff !important; }
+.bp3-btn--maps:hover { background: #007a7c; color: #fff !important; }
 
 /* ============================================================
    ANIMATIONS

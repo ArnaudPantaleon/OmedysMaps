@@ -452,6 +452,46 @@ body, html {
 .suggestion-province { word-break: break-word; }
 
 /* ============================================================
+   MARQUEUR CABINET — divIcon FA + halo pulsé
+   ============================================================ */
+.cabinet-marker {
+    position: relative;
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+}
+
+.cabinet-pulse {
+    position: absolute;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--cm-color);
+    opacity: 0.35;
+    animation: cabinet-pulse 2s ease-out infinite;
+}
+
+@keyframes cabinet-pulse {
+    0%   { transform: scale(0.7); opacity: 0.45; }
+    70%  { transform: scale(1.9); opacity: 0;    }
+    100% { transform: scale(1.9); opacity: 0;    }
+}
+
+.cabinet-pin {
+    position: relative; z-index: 1;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--cm-color);
+    border: 2.5px solid rgba(255,255,255,0.9);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.15s;
+}
+.cabinet-pin i {
+    font-size: 12px;
+    color: #fff;
+}
+.cabinet-marker:hover .cabinet-pin { transform: scale(1.12); }
+
+/* ============================================================
    POPUP BP3 — Glassmorphisme (inchangé, référence)
    ============================================================ */
 .bp3-popup .leaflet-popup-content-wrapper {

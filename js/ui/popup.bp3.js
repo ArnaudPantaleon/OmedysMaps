@@ -41,7 +41,7 @@ export function BP3Popup(site, color) {
 
   // Téléphone
   const phoneTile = site.contact?.phone ? `
-    <div class="bp3-tile">
+    <div class="bp3-tile bp3-wide">
       <div class="bp3-tile-label">Téléphone</div>
       <div class="bp3-tile-value">
         <a class="bp3-link" href="tel:${site.contact.phone}">${site.contact.phone}</a>

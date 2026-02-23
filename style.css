@@ -369,6 +369,61 @@ body, html {
     to   { opacity: 1; transform: translateY(0); }
 }
 
+
+/* ===================================================
+   ICONOIR — Intégration icônes monochromes
+   =================================================== */
+
+/* Icônes dans les tiles du popup */
+.bp3-tile-icon {
+    display: flex;
+    align-items: center;
+    height: 18px;
+    margin-bottom: 5px;
+    color: var(--text-muted);
+}
+.bp3-tile-icon i {
+    font-size: 16px;
+    line-height: 1;
+}
+
+/* Icônes dans les boutons footer */
+.bp3-btn i {
+    font-size: 14px;
+    line-height: 1;
+}
+.bp3-btn--copy i { color: var(--text-secondary); }
+.bp3-btn--maps i { color: rgba(255,255,255,0.95); }
+
+/* Icônes dans les section-title des filtres */
+.section-title i {
+    font-size: 14px;
+    opacity: 0.75;
+    color: var(--text-muted);
+}
+
+/* Icônes sub-section-title */
+.sub-section-title {
+    font-size: 10px; font-weight: 700; color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 8px; padding-left: 2px;
+    display: flex; align-items: center; gap: 5px;
+}
+.sub-section-title i {
+    font-size: 14px;
+    opacity: 0.7;
+    color: var(--text-muted);
+}
+
+/* Marqueur cabinet — icône Iconoir dans le divIcon */
+.cabinet-icon i {
+    font-size: 18px;
+    color: var(--primary, #009597);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 /* ===== DARK MODE ===== */
 @media (prefers-color-scheme: dark) {
     :root {

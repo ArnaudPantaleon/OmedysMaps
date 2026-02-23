@@ -29,7 +29,8 @@ store.sites.forEach(site=>{
 
 const color =
 CONFIG.status[site.status]?.color ||
-(site.type==="salle" ? "#2563eb" : "#94a3b8")
+CONFIG.datasets[site.type]?.color ||
+"#94a3b8"
 
 const marker = L.circleMarker(
 [site.lat,site.lng],

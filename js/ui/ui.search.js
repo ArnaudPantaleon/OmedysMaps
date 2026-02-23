@@ -9,12 +9,9 @@ export function initSearch(map) {
 
   _map = map
 
-  // Injecter la barre de recherche dans le bento-wrapper existant
-  const wrapper = document.querySelector(".bento-wrapper")
-  if (!wrapper) return
-
-  const tile = document.createElement("div")
-  tile.className = "bento-tile bento-search"
+  // Injecter dans le slot créé par ui.filters.js
+  const tile = document.getElementById("search-slot")
+  if (!tile) return
 
   _inputEl = document.createElement("input")
   _inputEl.type = "text"
@@ -29,10 +26,6 @@ export function initSearch(map) {
 
   tile.appendChild(_inputEl)
   tile.appendChild(clearBtn)
-
-  // Insérer la barre AVANT le panneau filtres (2ème enfant)
-  const panel = wrapper.querySelector(".bento-filters")
-  wrapper.insertBefore(tile, panel)
 
   // Conteneur suggestions
   _suggestEl = document.createElement("div")

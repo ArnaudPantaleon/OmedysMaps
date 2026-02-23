@@ -460,7 +460,7 @@ body, html {
     border-radius: 16px !important; box-shadow: none !important;
     padding: 0 !important; overflow: visible !important;
 }
-.bp3-popup .leaflet-popup-content { margin: 0 !important; width: 300px !important; }
+.bp3-popup .leaflet-popup-content { margin: 0 !important; width: 350px !important; }
 .bp3-popup .leaflet-popup-tip-container { display: none; }
 .bp3-popup .leaflet-popup-close-button {
     top: 10px !important; right: 10px !important;
@@ -475,7 +475,7 @@ body, html {
 
 .bp3 {
     font-family: 'DM Sans', system-ui, sans-serif;
-    width: 300px; border-radius: 16px; overflow: hidden;
+    width: 350px; border-radius: 16px; overflow: hidden;
     background: rgba(255,255,255,0.36);
     backdrop-filter: blur(22px) saturate(160%);
     -webkit-backdrop-filter: blur(22px) saturate(160%);
@@ -726,8 +726,8 @@ html.is-dark .bp3-pill-default .bp3-sdot { background: rgba(255,255,255,0.4); }
     #site-count { font-size: 26px; }
     .bento-filters.open { max-height: 85vh !important; }
     #suggestions { top: 72px; left: 12px; width: calc(100% - 24px); }
-    .bp3-popup .leaflet-popup-content { width: 280px !important; }
-    .bp3 { width: 280px; }
+    .bp3-popup .leaflet-popup-content { width: 320px !important; }
+    .bp3 { width: 320px; }
 }
 
 @media (max-width: 480px) {
@@ -743,8 +743,8 @@ html.is-dark .bp3-pill-default .bp3-sdot { background: rgba(255,255,255,0.4); }
     .toggle-switch::after { width: 16px; height: 16px; }
     .filter-item.toggle-filter.active .toggle-switch::after { transform: translateX(14px); }
     .bar { width: 18px; height: 2.5px; }
-    .bp3-popup .leaflet-popup-content { width: 260px !important; }
-    .bp3 { width: 260px; }
+    .bp3-popup .leaflet-popup-content { width: 300px !important; }
+    .bp3 { width: 300px; }
     #suggestions { top: 66px; left: 10px; width: calc(100% - 20px); }
 }
 
@@ -752,6 +752,6 @@ html.is-dark .bp3-pill-default .bp3-sdot { background: rgba(255,255,255,0.4); }
     .bento-wrapper { width: calc(100% - 16px); left: 8px; gap: 6px; }
     .bento-tile { border-radius: 12px; padding: 9px 11px; }
     #site-count { font-size: 20px; }
-    .bp3 { width: 240px; }
-    .bp3-popup .leaflet-popup-content { width: 240px !important; }
+    .bp3 { width: 280px; }
+    .bp3-popup .leaflet-popup-content { width: 280px !important; }
 }

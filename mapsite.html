@@ -1,74 +1,23 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0, user-scalable=yes">
-    <meta name="description" content="Cartographie interactive des cabinets, salles et établissements du réseau Omedys en France.">
-    <meta name="theme-color" content="#009597">
-    
-    <title>Cartographie Omedys</title>
-    
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css">
-    
-    <!-- Favicon -->
-    <link rel="icon" href="https://med.support-omedys.fr/wp-content/uploads/2025/09/CA_Logo_nu_Omedys_RVB_white_round-150x150.png" sizes="32x32">
-    <link rel="icon" href="https://med.support-omedys.fr/wp-content/uploads/2025/09/CA_Logo_nu_Omedys_RVB_white_round-300x300.png" sizes="192x192">
-    <link rel="apple-touch-icon" href="https://med.support-omedys.fr/wp-content/uploads/2025/09/CA_Logo_nu_Omedys_RVB_white_round-300x300.png">
-</head>
-<body>
+import {loadData} from "./data.js"
+import {MapEngine} from "./map.js"
+import {initSearch} from "./search.js"
+import {initFilters} from "../ui/ui.filters.js"
+import {initStats} from "../ui/ui.stats.js"
 
-    <div id="map"></div>
+async function start(){
 
-    <div class="bento-wrapper">
-        <!-- Bouton Menu + Search Bar -->
-        <div class="bento-row">
-           <!--<button id="menu-btn" class="bento-action" title="Menu filtres" aria-label="Ouvrir menu">
-                <span class="bar"></span>
-                <span class="bar"></span>
-                <span class="bar"></span>
-            </button>-->
-            
-            <div class="bento-tile bento-search">
-                <input 
-                    type="text" 
-                    id="query" 
-                    placeholder="Ville, CP..." 
-                    autocomplete="off"
-                    aria-label="Rechercher une ville"
-                >
-                <button class="inner-search-btn" title="Rechercher" aria-label="Rechercher">
-                    <img id="searchicon" width="22" height="22" src="https://img.icons8.com/sf-black/100/94a3b8/search.png" alt="search"/>
-                </button>
-            </div>
-        </div>
+await loadData()
 
-        <!-- Stats 
-        <div class="bento-tile bento-stats">
-            <small>SITES AFFICHÉS</small>
-            <span id="site-count">0</span>
-        </div>-->
+window.map = new MapEngine()
 
-        <!-- Menu Filtres -->
-    <div id="side-menu" class="bento-tile bento-filters">
-        <div id="filter-list-wrapper" class="filter-list-wrapper">
-            <div id="filter-list"></div>
-        </div>
-    </div>
-    </div>
-    
-    <div id="suggestions" class="suggestion-box"></div>
+map.renderSites()
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
-    <!-- App JS -->
-    <script src="script.js"></script>
-</body>
-</html>
+initSearch()
+
+initFilters()
+
+initStats()
+
+}
+
+start()

@@ -495,6 +495,32 @@ body, html {
     .suggestion-item { border-bottom-color: rgba(255,255,255,0.06); }
     .suggestion-item:not(.empty):hover { background: rgba(255,255,255,0.07); }
     .suggestion-item.empty { color: #475569; }
+
+
+        /* Placeholder visible */
+    .bento-search input::placeholder { color: rgba(255,255,255,0.45); }
+    
+    /* Tokens popup dark */
+    --bp3-text:           rgba(255, 255, 255, 0.90);
+    --bp3-text-secondary: rgba(255, 255, 255, 0.55);
+    --bp3-text-muted:     rgba(255, 255, 255, 0.35);
+    --bp3-surface:        rgba(255, 255, 255, 0.07);
+    --bp3-surface-hover:  rgba(255, 255, 255, 0.13);
+    --bp3-border:         rgba(255, 255, 255, 0.09);
+    --bp3-header-border:  rgba(255, 255, 255, 0.08);
+    --bp3-close-bg:       rgba(255, 255, 255, 0.12);
+    --bp3-close-color:    rgba(255, 255, 255, 0.55);
+    --bp3-btn-copy-bg:    rgba(255, 255, 255, 0.08);
+    --bp3-btn-copy-hover: rgba(255, 255, 255, 0.14);
+    --bp3-btn-copy-text:  rgba(255, 255, 255, 0.80);
+    --bp3-pill-ouvert-bg:  rgba(0, 149, 151, 0.22);
+    --bp3-pill-ouvert-fg:  #5eead4;
+    --bp3-pill-encours-bg: rgba(46, 204, 113, 0.20);
+    --bp3-pill-encours-fg: #86efac;
+    --bp3-pill-tele-bg:    rgba(137, 86, 251, 0.22);
+    --bp3-pill-tele-fg:    #c4b5fd;
+    --bp3-pill-default-bg: rgba(255, 255, 255, 0.08);
+    --bp3-pill-default-fg: rgba(255, 255, 255, 0.40);
 }
 
 /* ===== MOBILE ===== */

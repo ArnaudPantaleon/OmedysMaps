@@ -16,9 +16,10 @@ ${site.name}
 
 <div class="bp3-body">
 
-<div>${site.address}</div>
+<div>${site.address || ""}</div>
+<div>${site.city || ""}</div>
 
-<div>${site.city}</div>
+${site.meta?.structure ? `<div>${site.meta.structure}</div>` : ""}
 
 </div>
 

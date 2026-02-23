@@ -400,6 +400,7 @@ body, html {
         --glass-border:      rgba(255, 255, 255, 0.09)   /* bordure extérieure */
         --glass-border-inner:rgba(255, 255, 255, 0.12)   /* bordure interne */
         --bg-tile: rgba(12, 38, 43, 0.65);
+        --primary: #009597;
         --text-primary: #f1f5f9;
         --text-secondary: #94a3b8;
         --border-light: #334155;

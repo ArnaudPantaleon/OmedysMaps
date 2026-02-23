@@ -14,38 +14,37 @@ constructor(){
   
   this.cluster = L.markerClusterGroup()
   this.map.addLayer(this.cluster)
+
+
+  renderSites(){
+  
+  store.sites.forEach(site=>{
+  
+  const color = CONFIG.status[site.statut]?.color || "#94a3b8"
+  
+  const marker=L.circleMarker(
+  [site.lat,site.lng],
+  {
+  radius:7,
+  fillColor:color,
+  color:"#fff",
+  weight:2,
+  fillOpacity:.9
+  })
+  
+  marker.site = site
+  
+  marker.bindPopup(
+  BP3Popup(site,color),
+  {maxWidth:340}
+  )
+  
+  this.cluster.addLayer(marker)
+  
+  store.markers.push(marker)
+  
+  })
+  updateStats()
+  }
 }
 
-renderSites(){
-
-store.sites.forEach(site=>{
-
-const color = CONFIG.status[site.statut]?.color || "#94a3b8"
-
-const marker=L.circleMarker(
-[site.lat,site.lng],
-{
-radius:7,
-fillColor:color,
-color:"#fff",
-weight:2,
-fillOpacity:.9
-})
-
-marker.site = site
-
-marker.bindPopup(
-BP3Popup(site,color),
-{maxWidth:340}
-)
-
-this.cluster.addLayer(marker)
-
-store.markers.push(marker)
-
-})
-updateStats()
-}
-
-
-}

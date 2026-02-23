@@ -93,13 +93,6 @@ function makeSelect(placeholder, options, value, onChange) {
   const wrap = document.createElement("div")
   wrap.style.cssText = "padding:4px 0"
   const sel = document.createElement("select")
-  sel.style.cssText = `
-    width:100%; padding:9px 12px; border-radius:12px;
-    border:2px solid var(--border-light); background:var(--bg-light);
-    font-size:13px; font-weight:600; color:var(--text-primary);
-    cursor:pointer; outline:none; transition:border-color .2s;
-    -webkit-appearance:none; appearance:none;
-  `
   sel.innerHTML = `<option value="">${placeholder}</option>`
   options.forEach(({ value: v, label }) => {
     const o = document.createElement("option")
@@ -109,8 +102,6 @@ function makeSelect(placeholder, options, value, onChange) {
     sel.appendChild(o)
   })
   sel.addEventListener("change", () => onChange(sel.value || null))
-  sel.addEventListener("focus",  () => sel.style.borderColor = "var(--primary)")
-  sel.addEventListener("blur",   () => sel.style.borderColor = "var(--border-light)")
   wrap.appendChild(sel)
   return { wrap, sel }
 }
@@ -281,11 +272,7 @@ export function initFilters(map, zones) {
   listWrap.appendChild(makeDivider())
   const resetBtn = document.createElement("button")
   resetBtn.textContent = "↺ Réinitialiser les filtres"
-  resetBtn.style.cssText = `
-    width:100%; padding:10px; border-radius:12px; border:2px solid var(--border-light);
-    background:var(--bg-light); font-size:13px; font-weight:700; color:var(--text-secondary);
-    cursor:pointer; margin-top:4px; transition:all .2s;
-  `
+  resetBtn.className = "filter-reset-btn"
   resetBtn.addEventListener("click", () => _resetFilters(map, wrapper))
   listWrap.appendChild(resetBtn)
 

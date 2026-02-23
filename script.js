@@ -139,7 +139,7 @@ async function startApp() {
                 if (isCabinet) {
                     const pinIcon = L.divIcon({
                         className: '',
-                        html: `<div style="position:relative;width:36px;height:36px;background:rgba(255,255,255,0.85);backdrop-filter:blur(10px);border-radius:50%;border:2px solid #009597;display:flex;align-items:center;justify-content:center;color:#009597;font-size:1px;box-shadow:0 3px 14px rgba(0,0,0,0.18),0 0 0 4px rgba(0,149,151,0.15);"><i class="iconoir-stethoscope"></i></div>`,
+                        html: `<div style="position:relative;width:36px;height:36px;background:rgba(255,255,255,0.88);backdrop-filter:blur(10px);border-radius:50%;border:2px solid #009597;display:flex;align-items:center;justify-content:center;color:#009597;font-size:15px;box-shadow:0 3px 14px rgba(0,0,0,0.18),0 0 0 4px rgba(0,149,151,0.15);"><i class="fa-solid fa-stethoscope"></i></div>`,
                         iconSize: [36, 36],
                         iconAnchor: [18, 18],
                         popupAnchor: [0, -20]
@@ -182,21 +182,21 @@ async function startApp() {
                         <div class="bp3-grid">
                             ${item.Type === "CABINET" ? `
                             <div class="bp3-tile bp3-wide">
-                                <span class="bp3-tile-icon"><i class="iconoir-profile-circle"></i></span>
+                                <span class="bp3-tile-icon"><i class="fa-solid fa-user"></i></span>
                                 <span class="bp3-tile-label">Responsable</span>
                                 <div class="bp3-tile-body">
                                     <div class="bp3-tile-value">${attName}</div>
                                 </div>
                             </div>` : item.TMS ? `
                             <div class="bp3-tile">
-                                <span class="bp3-tile-icon"><i class="iconoir-stethoscope"></i></span>
+                                <span class="bp3-tile-icon"><i class="fa-solid fa-stethoscope"></i></span>
                                 <span class="bp3-tile-label">Cabinet TMS</span>
                                 <div class="bp3-tile-body">
                                     <div class="bp3-tile-value">${item.TMS}</div>
                                 </div>
                             </div>
                             <div class="bp3-tile">
-                                <span class="bp3-tile-icon"><i class="iconoir-profile-circle"></i></span>
+                                <span class="bp3-tile-icon"><i class="fa-solid fa-user"></i></span>
                                 <span class="bp3-tile-label">ATT</span>
                                 <div class="bp3-tile-body">
                                     <div class="bp3-tile-value">${attName}</div>
@@ -204,7 +204,7 @@ async function startApp() {
                             </div>` : ''}
 
                             <div class="bp3-tile">
-                                <span class="bp3-tile-icon"><i class="iconoir-phone"></i></span>
+                                <span class="bp3-tile-icon"><i class="fa-solid fa-phone"></i></span>
                                 <span class="bp3-tile-label">Téléphone</span>
                                 <div class="bp3-tile-body">
                                     <a href="tel:${phoneRaw}" class="bp3-tile-value bp3-link">${formatPhone(phoneRaw)}</a>
@@ -213,7 +213,7 @@ async function startApp() {
 
                             ${item.MSS ? `
                             <div class="bp3-tile">
-                                <span class="bp3-tile-icon"><i class="iconoir-mail"></i></span>
+                                <span class="bp3-tile-icon"><i class="fa-solid fa-envelope"></i></span>
                                 <span class="bp3-tile-label">MSS</span>
                                 <div class="bp3-tile-body">
                                     
@@ -222,7 +222,7 @@ async function startApp() {
                             </div>` : ''}
 
                             <div class="bp3-tile bp3-wide">
-                                <span class="bp3-tile-icon"><i class="iconoir-map-pin"></i></span>
+                                <span class="bp3-tile-icon"><i class="fa-solid fa-location-dot"></i></span>
                                 <span class="bp3-tile-label">Adresse</span>
                                 <div class="bp3-tile-body">
                                     <div class="bp3-tile-value">${address}</div>
@@ -230,8 +230,8 @@ async function startApp() {
                             </div>
                         </div>
                         <div class="bp3-footer">
-                            <button class="bp3-btn bp3-btn--copy" onclick="copyAddress('${address.replace(/'/g, "\\'")}')"><i class="iconoir-copy"></i> Copier</button>
-                            <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}" target="_blank" class="bp3-btn bp3-btn--maps"><i class="iconoir-maps"></i> Maps</a>
+                            <button class="bp3-btn bp3-btn--copy" onclick="copyAddress('${address.replace(/'/g, "\\'")}')"><i class="fa-solid fa-copy"></i> Copier</button>
+                            <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}" target="_blank" class="bp3-btn bp3-btn--maps"><i class="fa-solid fa-map-location-dot"></i> Maps</a>
                         </div>
                     </div>`;
 
@@ -277,7 +277,7 @@ function renderFilters() {
     const filtersHtml = `
         <div class="filter-section">
             <div class="section-title">
-                <i class="iconoir-layers"></i> Affichage par statut
+                <i class="fa-solid fa-layer-group"></i> Affichage par statut
                 <span class="section-badge">${Object.keys(CONFIG.status).length}</span>
             </div>
             <div class="filters-grid">
@@ -298,12 +298,12 @@ function renderFilters() {
 
         <div class="filter-section">
             <div class="section-title">
-                <i class="iconoir-settings"></i> Interrupteurs
+                <i class="fa-solid fa-sliders"></i> Interrupteurs
                 <span class="section-badge">${Object.keys(CONFIG.tms.filters).length + 1}</span>
             </div>
 
             <div style="margin-bottom: 14px;">
-                <div style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; padding-left: 4px;"><i class="iconoir-antenna"></i> Centres TMS</div>
+                <div style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; padding-left: 4px;"><i class="fa-solid fa-tower-broadcast"></i> Centres TMS</div>
                 <div class="filters-grid">
                     ${Object.entries(CONFIG.tms.filters).map(([key, config]) => `
                         <div class="filter-item toggle-filter ${config.checked ? 'active' : ''}" onclick="window.toggleTmsFilter('${key}')">
@@ -319,7 +319,7 @@ function renderFilters() {
             </div>
 
             <div>
-                <div style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; padding-left: 4px;"><i class="iconoir-health-shield"></i> Type d'établissement</div>
+                <div style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; padding-left: 4px;"><i class="fa-solid fa-hospital"></i> Type d'établissement</div>
                 <div class="filters-grid">
                     <div class="filter-item toggle-filter ${CONFIG.type.ESMS.checked ? 'active' : ''}" onclick="window.toggleEsmsFilter()">
                         <div class="filter-content">

@@ -1,4 +1,9 @@
 :root {
+    --glass-bg:          rgba(255, 255, 255, 0.36)   /* conteneur principal */
+    --glass-bg-inner:    rgba(255, 255, 255, 0.60)   /* tuiles internes */
+    --glass-blur:        blur(22px) saturate(160%)   /* blur unifié */
+    --glass-border:      rgba(255, 255, 255, 0.09)   /* bordure extérieure */
+    --glass-border-inner:rgba(255, 255, 255, 0.12)   /* bordure interne */
     --primary: #009597;
     --bg-tile: rgba(255, 255, 255, 0.95);
     --shadow: 0 10px 30px rgba(0,0,0,0.1);
@@ -389,6 +394,11 @@ body, html {
 /* ===== DARK MODE ===== */
 @media (prefers-color-scheme: dark) {
     :root {
+        --glass-bg:          rgba(255, 255, 255, 0.36)   /* conteneur principal */
+        --glass-bg-inner:    rgba(255, 255, 255, 0.60)   /* tuiles internes */
+        --glass-blur:        blur(22px) saturate(160%)   /* blur unifié */
+        --glass-border:      rgba(255, 255, 255, 0.09)   /* bordure extérieure */
+        --glass-border-inner:rgba(255, 255, 255, 0.12)   /* bordure interne */
         --bg-tile: rgba(30, 41, 59, 0.95);
         --text-primary: #f1f5f9;
         --text-secondary: #94a3b8;

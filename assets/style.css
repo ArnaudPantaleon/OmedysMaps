@@ -1,10 +1,10 @@
 /* ============================================================
    OMEDYS CARTOGRAPHIE — Design System v2
    Langage : Glassmorphisme BP3
-   Typo    : Syne (titres) + DM Sans (corps)
+   Typo    : DM Sans (tout)
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
 
 /* ── Tokens ──────────────────────────────────────────────── */
 :root {
@@ -136,20 +136,17 @@ body, html {
 }
 
 .bento-stats small {
-    font-family: 'Syne', sans-serif;
-    font-size: 9px; font-weight: 800;
-    letter-spacing: 0.12em; text-transform: uppercase;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.03em;
     color: var(--text-secondary);
+    text-transform: none;
 }
 
 #site-count {
     display: block;
-    font-family: 'Syne', sans-serif;
-    font-size: 30px; font-weight: 800;
-    background: linear-gradient(135deg, var(--primary), #00c4c6);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    background-clip: text;
-    line-height: 1;
+    font-size: 28px; font-weight: 700;
+    color: var(--primary);
+    line-height: 1.1;
 }
 
 /* ============================================================
@@ -222,9 +219,8 @@ body, html {
 
 /* Titre de section — style bp3-tile-label */
 .section-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 9px; font-weight: 800;
-    letter-spacing: 0.12em; text-transform: uppercase;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.01em;
     color: var(--text-secondary);
     margin: 0 0 10px 2px;
     display: flex; align-items: center; gap: 6px;
@@ -232,10 +228,9 @@ body, html {
 
 .section-badge {
     display: inline-flex; align-items: center; justify-content: center;
-    min-width: 18px; height: 18px; padding: 0 5px;
+    min-width: 18px; height: 18px; padding: 0 6px;
     background: var(--primary-dim); border-radius: 6px;
-    font-size: 9px; font-weight: 800; color: var(--primary);
-    font-family: 'DM Sans', sans-serif;
+    font-size: 11px; font-weight: 600; color: var(--primary);
 }
 
 .filters-divider {
@@ -297,15 +292,15 @@ body, html {
 .filter-item.color-filter:hover .filter-dot { transform: scale(1.2); }
 
 /* Contenu texte */
-.filter-content { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.filter-content { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 
 .filter-label {
-    font-size: 12px; font-weight: 700;
-    color: var(--text-primary); letter-spacing: -0.2px;
+    font-size: 13px; font-weight: 600;
+    color: var(--text-primary);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .filter-description {
-    font-size: 10px; font-weight: 500;
+    font-size: 11px; font-weight: 400;
     color: var(--text-secondary);
 }
 .filter-item.active .filter-label     { color: #0f766e; }
@@ -442,20 +437,19 @@ body, html {
     align-items: center; margin-bottom: 3px;
 }
 .suggestion-city {
-    font-family: 'Syne', sans-serif;
-    font-size: 13px; font-weight: 700;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 600;
     color: var(--text-primary);
     flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .suggestion-zip {
-    font-size: 10px; font-weight: 800; letter-spacing: 0.05em;
+    font-size: 11px; font-weight: 600;
     color: var(--primary);
     background: var(--primary-dim);
     padding: 2px 8px; border-radius: 6px;
     flex-shrink: 0; margin-left: 8px;
-    font-family: 'DM Sans', sans-serif;
 }
-.suggestion-meta { font-size: 10px; color: var(--text-secondary); font-weight: 500; }
+.suggestion-meta { font-size: 11px; color: var(--text-secondary); font-weight: 400; }
 .suggestion-province { word-break: break-word; }
 
 /* ============================================================
@@ -505,12 +499,12 @@ body, html {
 }
 .bp3-hd-top { display: inline-grid; align-items: center; gap: 7px; margin-bottom: 8px; flex-wrap: wrap; }
 .bp3-badge {
-    font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
-    color: rgba(0,0,0,0.65); background: rgba(255,255,255,0.39);
+    font-size: 11px; font-weight: 500;
+    color: rgba(0,0,0,0.55); background: rgba(255,255,255,0.39);
     border: 1px solid rgba(255,255,255,0.12); padding: 3px 8px; border-radius: 20px;
 }
 .bp3-statut-pill {
-    font-size: 9px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    font-size: 11px; font-weight: 600;
     padding: 3px 8px; border-radius: 20px; display: flex; align-items: center; gap: 4px;
 }
 .bp3-pill-ouvert  { background: rgba(0,172,200,0.15); color: #0050c8; }
@@ -523,9 +517,8 @@ body, html {
 .bp3-pill-tele    .bp3-sdot { background: #8956FB; box-shadow: 0 0 5px #8956FB; }
 .bp3-pill-default .bp3-sdot { background: rgba(0,0,0,0.3); }
 .bp3-title {
-    font-family: 'Syne', 'DM Sans', sans-serif;
-    font-size: 14px; font-weight: 700;
-    color: rgba(0,0,0,0.92); line-height: 1.3;
+    font-size: 15px; font-weight: 700;
+    color: rgba(0,0,0,0.88); line-height: 1.3;
 }
 .bp3-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 8px; }
 .bp3-tile {
@@ -536,18 +529,18 @@ body, html {
 .bp3-tile:hover { background: rgba(255,255,255,0.75); }
 .bp3-tile.bp3-wide { grid-column: 1 / -1; }
 .bp3-tile-label {
-    font-size: 9px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase;
-    color: rgba(0,0,0,0.6); margin-bottom: 3px;
+    font-size: 10px; font-weight: 500;
+    color: rgba(0,0,0,0.50); margin-bottom: 3px;
 }
 .bp3-tile-value {
     font-size: 12px; font-weight: 600; color: rgba(0,0,0,0.82);
     white-space: pre-line; overflow: hidden; text-overflow: ellipsis;
     max-width: 100%; display: block;
 }
-.bp3-tile.bp3-wide .bp3-tile-value { white-space: normal; font-size: 11px; }
-.bp3-link { color: #009597 !important; text-decoration: none; font-size: 13px !important; font-weight: 700 !important; }
+.bp3-tile.bp3-wide .bp3-tile-value { white-space: normal; font-size: 12px; }
+.bp3-link { color: #009597 !important; text-decoration: none; font-size: 13px !important; font-weight: 600 !important; }
 .bp3-link:hover { color: #006365 !important; }
-.bp3-mss { font-size: 10px !important; color: rgba(0,0,0,0.8) !important; }
+.bp3-mss { font-size: 11px !important; color: rgba(0,0,0,0.7) !important; }
 .bp3-footer { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 0 8px 8px; }
 .bp3-btn {
     display: flex; align-items: center; justify-content: center; gap: 5px;
@@ -690,9 +683,7 @@ html.is-dark .bp3-pill-default .bp3-sdot { background: rgba(255,255,255,0.4); }
 }
 
 .theme-switcher-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 9px; font-weight: 800;
-    letter-spacing: 0.12em; text-transform: uppercase;
+    font-size: 13px; font-weight: 500;
     color: var(--text-secondary);
     white-space: nowrap;
 }
@@ -720,8 +711,7 @@ html.is-dark .bp3-pill-default .bp3-sdot { background: rgba(255,255,255,0.4); }
 
 .theme-btn-icon  { font-size: 14px; line-height: 1; }
 .theme-btn-label {
-    font-size: 9px; font-weight: 700;
-    letter-spacing: 0.04em; text-transform: uppercase;
+    font-size: 10px; font-weight: 500;
     color: var(--text-secondary);
 }
 .theme-btn.active .theme-btn-label { color: var(--primary); }

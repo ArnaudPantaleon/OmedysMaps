@@ -16,20 +16,17 @@
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
 <style>
+  /* Search bar centrée, pleine largeur du wrapper */
   .bento-wrapper {
     top: 16px;
     left: 50%;
     transform: translateX(-50%);
     width: min(400px, calc(100vw - 32px));
   }
+  /* Pas de hamburger — la row = juste la search */
   .bento-row   { display: block; }
   #search-slot { width: 100%; flex: unset; }
-  #suggestions {
-    position: absolute;
-    top: calc(100% + 8px);
-    left: 0; right: 0;
-    width: auto;
-  }
+  /* Les suggestions sont positionnées dynamiquement par ui.search.js */
 </style>
 
 <!--

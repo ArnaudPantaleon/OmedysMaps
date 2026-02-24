@@ -4,45 +4,43 @@ let _map        = null
 let _debounce   = null
 let _inputEl    = null
 let _suggestEl  = null
+let _tileEl     = null
 
 export function initSearch(map) {
 
   _map = map
 
-  // Injecter dans le slot créé par ui.filters.js
-  const tile = document.getElementById("search-slot")
-  if (!tile) return
+  _tileEl = document.getElementById("search-slot")
+  if (!_tileEl) return
 
-  // Icône loupe
   const searchIcon = document.createElement("i")
   searchIcon.className = "fa-solid fa-magnifying-glass"
-  tile.appendChild(searchIcon)
+  _tileEl.appendChild(searchIcon)
 
   _inputEl = document.createElement("input")
   _inputEl.type = "text"
   _inputEl.placeholder = "Rechercher une ville, un CP…"
   _inputEl.autocomplete = "off"
+  _tileEl.appendChild(_inputEl)
 
   const clearBtn = document.createElement("button")
   clearBtn.className = "inner-search-btn"
   clearBtn.innerHTML = `<i class="fa-solid fa-xmark"></i>`
   clearBtn.style.display = "none"
   clearBtn.addEventListener("click", _clear)
+  _tileEl.appendChild(clearBtn)
 
-  tile.appendChild(_inputEl)
-  tile.appendChild(clearBtn)
-
-  // Conteneur suggestions
+  // Suggestions — au body, positionnées dynamiquement sous le slot
   _suggestEl = document.createElement("div")
   _suggestEl.id = "suggestions"
+  _suggestEl.style.display = "none"
   document.body.appendChild(_suggestEl)
 
-  // Événements
   _inputEl.addEventListener("input", () => {
     const q = _inputEl.value.trim()
     clearBtn.style.display = q ? "flex" : "none"
     clearTimeout(_debounce)
-    if (q.length < 2) { _clearSuggestions(); return }
+    if (q.length < 2) { _hideSug(); return }
     _debounce = setTimeout(() => _search(q), 250)
   })
 
@@ -51,88 +49,95 @@ export function initSearch(map) {
   })
 
   document.addEventListener("click", e => {
-    if (!tile.contains(e.target) && !_suggestEl.contains(e.target))
-      _clearSuggestions()
+    if (!_tileEl.contains(e.target) && !_suggestEl.contains(e.target))
+      _hideSug()
   })
+
+  window.addEventListener("resize", _reposition)
 
 }
 
-// ─── Recherche ────────────────────────────────────────────────────────────────
+// ── Positionnement dynamique ──────────────────────────────────
+// Calcule la position exacte sous le slot à chaque affichage,
+// fonctionne que le wrapper soit à gauche (app) ou centré (embed)
+
+function _reposition() {
+  if (!_tileEl || !_suggestEl) return
+  const rect = _tileEl.getBoundingClientRect()
+  _suggestEl.style.position = "fixed"
+  _suggestEl.style.top      = (rect.bottom + 6) + "px"
+  _suggestEl.style.left     = rect.left + "px"
+  _suggestEl.style.width    = rect.width + "px"
+  _suggestEl.style.right    = "auto"
+}
+
+// ── Recherche ─────────────────────────────────────────────────
 
 async function _search(q) {
 
   const results = []
-
-  // 1. Recherche dans les sites locaux
   const qLow = q.toLowerCase()
-  const local = store.sites
+
+  // Sites locaux
+  store.sites
     .filter(s =>
       s.city?.toLowerCase().includes(qLow) ||
       s.name?.toLowerCase().includes(qLow) ||
       s.dept?.startsWith(q)
     )
     .slice(0, 5)
-    .map(s => ({
-      label:    s.name,
-      sub:      s.city || s.address,
-      zip:      s.dept,
-      lat:      s.lat,
-      lng:      s.lng,
-      local:    true
+    .forEach(s => results.push({
+      label: s.name,
+      sub:   s.city || s.address,
+      zip:   s.dept,
+      lat:   s.lat,
+      lng:   s.lng,
+      local: true
     }))
 
-  results.push(...local)
-
-  // 2. API geo.api.gouv.fr
+  // API géo
   try {
     const isCP = /^\d{2,5}$/.test(q)
     const url  = isCP
       ? `https://geo.api.gouv.fr/communes?codePostal=${q}&fields=nom,codesPostaux,centre,codeDepartement&limit=8`
       : `https://geo.api.gouv.fr/communes?nom=${encodeURIComponent(q)}&fields=nom,codesPostaux,centre,codeDepartement&limit=8&boost=population`
-
-    const res  = await fetch(url)
-    const data = await res.json()
-
-    data.forEach(c => {
-      results.push({
-        label:  c.nom,
-        sub:    c.codeDepartement,
-        zip:    c.codesPostaux?.[0] || "",
-        lat:    c.centre?.coordinates?.[1],
-        lng:    c.centre?.coordinates?.[0],
-        local:  false
-      })
-    })
-  } catch {
-    // silencieux si pas de réseau
-  }
+    const data = await fetch(url).then(r => r.json())
+    data.forEach(c => results.push({
+      label: c.nom,
+      sub:   c.codeDepartement,
+      zip:   c.codesPostaux?.[0] || "",
+      lat:   c.centre?.coordinates?.[1],
+      lng:   c.centre?.coordinates?.[0],
+      local: false
+    }))
+  } catch {}
 
   _renderSuggestions(results, q)
 
 }
 
-// ─── Rendu suggestions ────────────────────────────────────────────────────────
+// ── Rendu ─────────────────────────────────────────────────────
 
 function _renderSuggestions(results, q) {
 
   _suggestEl.innerHTML = ""
+  _reposition()
 
   if (results.length === 0) {
     const empty = document.createElement("div")
     empty.className = "suggestion-item empty"
     empty.textContent = "Aucun résultat"
     _suggestEl.appendChild(empty)
+    _suggestEl.style.display = "block"
     return
   }
 
-  // Dédoublonner par label+zip
   const seen = new Set()
   results
     .filter(r => {
       const key = `${r.label}|${r.zip}`
       if (seen.has(key)) return false
-      seen.add(key)
-      return true
+      seen.add(key); return true
     })
     .slice(0, 10)
     .forEach(r => {
@@ -151,28 +156,31 @@ function _renderSuggestions(results, q) {
       _suggestEl.appendChild(item)
     })
 
+  _suggestEl.style.display = "block"
+
 }
 
-// ─── Sélection ────────────────────────────────────────────────────────────────
+// ── Sélection ─────────────────────────────────────────────────
 
 function _select(r) {
-  if (r.lat && r.lng) {
-    _map.flyTo(r.lat, r.lng, r.local ? 14 : 12)
-  }
+  if (r.lat && r.lng) _map.flyTo(r.lat, r.lng, r.local ? 14 : 12)
   _inputEl.value = r.label
-  _clearSuggestions()
+  _hideSug()
 }
 
-// ─── Utils ────────────────────────────────────────────────────────────────────
+// ── Utils ─────────────────────────────────────────────────────
 
 function _clear() {
   _inputEl.value = ""
-  _clearSuggestions()
+  _hideSug()
   document.querySelector(".inner-search-btn").style.display = "none"
 }
 
-function _clearSuggestions() {
-  if (_suggestEl) _suggestEl.innerHTML = ""
+function _hideSug() {
+  if (_suggestEl) {
+    _suggestEl.innerHTML = ""
+    _suggestEl.style.display = "none"
+  }
 }
 
 function _highlight(text, q) {

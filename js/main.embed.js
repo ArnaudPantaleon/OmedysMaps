@@ -127,6 +127,11 @@ function buildMap() {
 async function start() {
   bootstrapUI()
   await loadData()
+
+  // Restreindre store.sites aux seuls sites visibles par la config embed
+  // → la search ne propose que des sites effectivement affichés sur la carte
+  store.sites = store.sites.filter(isVisible)
+
   const map = buildMap()
   initSearch(map)
 }

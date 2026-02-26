@@ -22,7 +22,7 @@ export const CONFIG = {
 
   // Types de sites (salles)
   typeSite: {
-    "ESMS":                              { checked: true },
+    "ESMS":                              { checked: false },
     "CDS/MSP/CM":                        { checked: true },
     "CPTS":                              { checked: true },
     "Cabinet Infirmier":                 { checked: true },

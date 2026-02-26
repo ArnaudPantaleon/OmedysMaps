@@ -15,7 +15,8 @@ export const CONFIG = {
   // Statuts salles
   statusSalle: {
     "Ouvertes":               { color: "#2563eb", checked: true  },
-    "Ouverture en cours":     { color: "#f59e0b", checked: true  },
+    "ESMS ouvert au public":  { color: "#f59e0b", checked: true  },
+    "Ouverture en cours":     { color: "#f59e0b", checked: false  },
     "Telesecretariat OMEDYS": { color: "#8b5cf6", checked: true  }
   },
 

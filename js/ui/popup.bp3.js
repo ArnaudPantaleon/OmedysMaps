@@ -2,9 +2,11 @@ export function BP3Popup(site, color) {
 
   // Calcul de la classe de statut pour la pill
   const pillClass = {
-    "Ouvert":             "bp3-pill-ouvert",
-    "Ouverture en cours": "bp3-pill-encours",
-    "Virtuel":            "bp3-pill-tele"
+    "Ouvert":                 "bp3-pill-ouvert",
+    "Ouvertes":               "bp3-pill-ouvert",
+    "ESMS ouvert au public":  "bp3-pill-ouvert",
+    "Ouverture en cours":     "bp3-pill-encours",
+    "Telesecretariat OMEDYS": "bp3-pill-tele"
   }[site.status] || "bp3-pill-default"
 
   const badge = site.type === "salle" ? "Salle télémédecine" : "Cabinet TMS"
@@ -59,7 +61,7 @@ export function BP3Popup(site, color) {
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${site.lat},${site.lng}`
 
   return `
-<div class="bp3" style="--bp3-accent-glow:${color}33">
+<div class="bp3" style="--bp3-accent-glow:${color}48">
 
   <div class="bp3-header">
     <div class="bp3-hd-top">

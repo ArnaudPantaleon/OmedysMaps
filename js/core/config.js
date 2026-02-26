@@ -7,7 +7,7 @@ export const CONFIG = {
 
   // Statuts cabinets
   statusCabinet: {
-    "Ouvert":             { color: "#16a34a", checked: true  },
+    "Ouvert":             { color: "#009597", checked: true  },
     "Ouverture en cours": { color: "#f59e0b", checked: true  },
     "Virtuel":            { color: "#64748b", checked: false }
   },

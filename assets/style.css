@@ -547,7 +547,7 @@ body, html {
     padding: 3px 8px; border-radius: 20px; display: flex; align-items: center; gap: 4px;
 }
 .bp3-pill-ouvert  { background: rgba(0,172,200,0.15); color: #0050c8; }
-.bp3-pill-encours { background: rgba(245,158,11,0.25); color: #f59e0b; }
+.bp3-pill-encours { background: rgba(255,202,111,0.25); color: #f59e0b; }
 .bp3-pill-tele    { background: rgba(153,127,209,0.37); color: #6636db; }
 .bp3-pill-default { background: rgba(255,255,255,0.08); color: rgba(0,0,0,0.45); }
 .bp3-sdot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
@@ -704,7 +704,7 @@ html.is-dark .bp3-btn--copy  { background: rgba(0,149,151,0.18); color: rgba(255
 html.is-dark .bp3-btn--copy:hover { background: rgba(0,149,151,0.30); }
 html.is-dark .bp3-mss     { color: rgba(255,255,255,0.65) !important; }
 html.is-dark .bp3-pill-ouvert  { background: rgba(0,172,200,0.20); color: #7dd3fc; }
-html.is-dark .bp3-pill-encours { background: rgba(245,158,11,0.25); color: #f59e0b; }
+html.is-dark .bp3-pill-encours { background: rgba(255,202,111,0.25); color: #f59e0b; }
 html.is-dark .bp3-pill-tele    { background: rgba(153,127,209,0.25); color: #c4b5fd; }
 html.is-dark .bp3-pill-default { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.55); }
 html.is-dark .bp3-pill-default .bp3-sdot { background: rgba(255,255,255,0.4); }

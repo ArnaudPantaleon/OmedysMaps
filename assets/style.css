@@ -547,12 +547,12 @@ body, html {
     padding: 3px 8px; border-radius: 20px; display: flex; align-items: center; gap: 4px;
 }
 .bp3-pill-ouvert  { background: rgba(0,172,200,0.15); color: #0050c8; }
-.bp3-pill-encours { background: rgba(46,204,113,0.25); color: #268f52; }
+.bp3-pill-encours { background: rgba(245,158,11,0.25); color: #f59e0b; }
 .bp3-pill-tele    { background: rgba(153,127,209,0.37); color: #6636db; }
 .bp3-pill-default { background: rgba(255,255,255,0.08); color: rgba(0,0,0,0.45); }
 .bp3-sdot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
 .bp3-pill-ouvert  .bp3-sdot { background: #0050c8; box-shadow: 0 0 5px #0050c8; }
-.bp3-pill-encours .bp3-sdot { background: #2ecc71; }
+.bp3-pill-encours .bp3-sdot { background: #f59e0b; }
 .bp3-pill-tele    .bp3-sdot { background: #8956FB; box-shadow: 0 0 5px #8956FB; }
 .bp3-pill-default .bp3-sdot { background: rgba(0,0,0,0.3); }
 .bp3-title {

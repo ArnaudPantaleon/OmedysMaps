@@ -704,7 +704,7 @@ html.is-dark .bp3-btn--copy  { background: rgba(0,149,151,0.18); color: rgba(255
 html.is-dark .bp3-btn--copy:hover { background: rgba(0,149,151,0.30); }
 html.is-dark .bp3-mss     { color: rgba(255,255,255,0.65) !important; }
 html.is-dark .bp3-pill-ouvert  { background: rgba(0,172,200,0.20); color: #7dd3fc; }
-html.is-dark .bp3-pill-encours { background: rgba(46,204,113,0.20); color: #6ee7b7; }
+html.is-dark .bp3-pill-encours { background: rgba(245,158,11,0.25); color: #f59e0b; }
 html.is-dark .bp3-pill-tele    { background: rgba(153,127,209,0.25); color: #c4b5fd; }
 html.is-dark .bp3-pill-default { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.55); }
 html.is-dark .bp3-pill-default .bp3-sdot { background: rgba(255,255,255,0.4); }

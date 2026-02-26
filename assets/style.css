@@ -531,8 +531,8 @@ body, html {
     border-bottom: 1px solid rgba(255,255,255,0.07);
 }
 .bp3-header::before {
-    content: ''; position: absolute; top: -40px; right: -30px;
-    width: 120px; height: 120px; border-radius: 50%;
+    content: ''; position: absolute; top: -40px; right: -60px;
+    width: 140px; height: 140px; border-radius: 50%;
     background: radial-gradient(circle, var(--bp3-accent-glow, rgba(0,149,151,0.3)) 0%, transparent 70%);
     pointer-events: none;
 }

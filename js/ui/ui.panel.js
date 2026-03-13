@@ -9,7 +9,7 @@ let _detailsCache = null
 async function _loadDetails() {
   if (_detailsCache) return _detailsCache
   try {
-    const arr = await fetch("/data/details.json").then(r => r.json())
+    const arr = await fetch("/data/json/details.json").then(r => r.json())
     _detailsCache = {}
     arr.forEach(d => { _detailsCache[d.name] = d })
   } catch {

@@ -9,7 +9,7 @@ let _detailsCache = null
 async function _loadDetails() {
   if (_detailsCache) return _detailsCache
   try {
-    const arr = await fetch("/data/json/details.json").then(r => r.json())
+    const arr = await fetch("/data/details.json").then(r => r.json())
     _detailsCache = {}
     arr.forEach(d => { _detailsCache[d.name] = d })
   } catch {
@@ -225,7 +225,7 @@ function _renderActions(site, details) {
 
   let html = `
     <button class="panel-action-btn panel-action--copy"
-      onclick="navigator.clipboard.writeText('${addr.replace(/'/g, "\\'")}')">
+      onclick="window._panelCopy('${addr.replace(/'/g, "\\'")}')">
       <i class="fa-regular fa-copy"></i><span>Copier</span>
     </button>
     <a class="panel-action-btn panel-action--maps" href="${mapsUrl}" target="_blank" rel="noopener">
@@ -276,6 +276,30 @@ function _initSwipe(panel) {
 }
 
 // ── Utils ─────────────────────────────────────────────────────
+
+// Exposé sur window pour le onclick inline du bouton Copier
+window._panelCopy = function(text) {
+  navigator.clipboard.writeText(text).then(() => _showToast("Adresse copiée !"))
+}
+
+function _showToast(msg) {
+  // Réutiliser un toast existant s'il est encore visible
+  let toast = document.getElementById("panel-toast")
+  if (!toast) {
+    toast = document.createElement("div")
+    toast.id = "panel-toast"
+    document.body.appendChild(toast)
+  }
+  toast.textContent = msg
+  toast.classList.remove("panel-toast--out")
+  toast.classList.add("panel-toast--in")
+
+  clearTimeout(toast._timer)
+  toast._timer = setTimeout(() => {
+    toast.classList.replace("panel-toast--in", "panel-toast--out")
+  }, 2000)
+}
+
 function _formatPhone(p) {
   return (p || "").replace(/(\d{2})(?=\d)/g, "$1 ").trim()
 }

@@ -4,7 +4,7 @@ let _detailsCache = null
 async function _loadDetails() {
   if (_detailsCache) return _detailsCache
   try {
-    const res = await fetch("/data/details.json")
+    const res = await fetch("/data/json/details.json")
     const arr = await res.json()
     // Indexer par name pour lookup O(1)
     _detailsCache = {}

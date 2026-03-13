@@ -11,6 +11,16 @@ export function parseSalle(row) {
 
   if (!location.lat || !location.lng) return null
 
+  // Equipements : chaîne séparée par virgules ou tableau JSON
+  let equipements = []
+  if (row.Equipments) {
+    try {
+      equipements = JSON.parse(row.Equipments)
+    } catch {
+      equipements = row.Equipments.split(",").map(s => s.trim()).filter(Boolean)
+    }
+  }
+
   return {
     id:       row.id,
     name:     row.Name,
@@ -22,15 +32,21 @@ export function parseSalle(row) {
     address:  location.address || "",
 
     status:   row.Statut_Salle || row.Statut || "",
-    typeSite: row.Type || "",
-    tms:      row.TMS  || "",
-    mss:      row.MSS  || "",
+    typeSite: row.Type     || "",
+    tms:      row.TMS      || "",
+    mss:      row.MSS      || "",
 
     contact: {
       name:  row.ATT      || "",
       mail:  row.ATT_Mail || "",
       phone: row.Phone    || ""
-    }
+    },
+
+    // Champs détails enrichis
+    horaires:    row.Opening_hours || "",
+    equipements: equipements,
+    lien:        row.Link          || "",
+    notes:       row.Notes         || ""
   }
 
 }

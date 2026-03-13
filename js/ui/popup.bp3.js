@@ -13,8 +13,13 @@ async function _loadDetails() {
   return _detailsCache
 }
 
-// Pré-charger au démarrage
 _loadDetails()
+
+// ── Exposer sur window DÈS le chargement du module ───────────
+// Les onclick="" des popups Leaflet (HTML string) ont besoin que
+// window._openSitePanel existe avant tout clic utilisateur.
+window._openSitePanel = _openPanel
+window._closePanel    = _closePanel
 
 // ── Popup BP3 ─────────────────────────────────────────────────
 export function BP3Popup(site, color) {
@@ -71,7 +76,6 @@ export function BP3Popup(site, color) {
 
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${site.lat},${site.lng}`
 
-  // Bouton info — uniquement pour les salles, dataset chargé en avance
   const infoBtn = site.type === "salle" ? `
     <button class="bp3-btn bp3-btn--info" onclick="window._openSitePanel('${_esc(site.name)}')">
       <i class="fa-solid fa-circle-info"></i> Infos
@@ -124,11 +128,13 @@ export function BP3Popup(site, color) {
 // ── Panel latéral ─────────────────────────────────────────────
 export function initSitePanel() {
 
+  // Overlay
   const overlay = document.createElement("div")
   overlay.id = "panel-overlay"
   overlay.addEventListener("click", _closePanel)
   document.body.appendChild(overlay)
 
+  // Panel
   const panel = document.createElement("div")
   panel.id = "site-panel"
   panel.innerHTML = `
@@ -145,17 +151,18 @@ export function initSitePanel() {
   `
   document.body.appendChild(panel)
 
-  window._openSitePanel = _openPanel
-  window._closePanel    = _closePanel
-
 }
 
 // ── Ouverture panel ───────────────────────────────────────────
 async function _openPanel(name) {
 
+  // Créer le panel à la volée si initSitePanel() n'a pas encore été appelé
+  if (!document.getElementById("site-panel")) {
+    initSitePanel()
+  }
+
   const panel   = document.getElementById("site-panel")
   const overlay = document.getElementById("panel-overlay")
-  if (!panel) return
 
   panel.classList.add("open")
   overlay.classList.add("open")

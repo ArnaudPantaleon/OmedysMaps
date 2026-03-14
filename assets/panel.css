@@ -1,6 +1,18 @@
 /* ═══════════════════════════════════════════════════════════════
    SITE PANEL — Latéral desktop / Bottom sheet mobile
    ═══════════════════════════════════════════════════════════════ */
+:root {
+    --primary:        #009597;
+    --primary-glow:   rgba(0, 149, 151, 0.35);
+    --primary-dim:    rgba(0, 149, 151, 0.15);
+
+    /* Glass surfaces */
+    --glass-bg:       rgba(255, 255, 255, 0.75);
+    --glass-bg-deep:  rgba(255, 255, 255, 0.18);
+    --glass-border:   rgba(255, 255, 255, 0.18);
+    --glass-inset:    rgba(255, 255, 255, 0.08);
+    --glass-blur:     blur(28px) saturate(180%);
+}
 
 /* ── Overlay ──────────────────────────────────────────────────── */
 #panel-overlay {
@@ -25,9 +37,9 @@
 
   position: fixed;
   z-index: 1200;
-  background: rgba(255,255,255,0.80);
-  backdrop-filter: blur(28px) saturate(170%);
-  -webkit-backdrop-filter: blur(28px) saturate(170%);
+  background: var (--glass-bg);
+  backdrop-filter: var (--glass-blur);
+  -webkit-backdrop-filter: var (--glass-blur);
   display: flex;
   flex-direction: column;
   overflow: hidden;

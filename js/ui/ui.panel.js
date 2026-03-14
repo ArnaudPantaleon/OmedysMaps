@@ -121,6 +121,32 @@ function _renderBase(site) {
   }
 
   // Contact
+  const contactTile = site.contact?.name ? `
+    <div class="bp3-tile bp3-wide">
+      <div class="bp3-tile-label">Contact</div>
+      <div class="bp3-tile-value">${site.contact.name}</div>
+    </div>` : ""
+
+  // Mail
+  const mailTile = site.contact?.mail ? `
+    <div class="bp3-tile bp3-wide">
+      <div class="bp3-tile-label">Email</div>
+      <div class="bp3-tile-value">
+        <a class="bp3-link" href="mailto:${site.contact.mail}">${site.contact.mail}</a>
+      </div>
+    </div>` : ""
+
+  // Téléphone
+  const phoneTile = site.contact?.phone ? `
+    <div class="bp3-tile bp3-wide">
+      <div class="bp3-tile-label">Téléphone</div>
+      <div class="bp3-tile-value">
+        <a class="bp3-link" href="tel:${site.contact.phone}">${site.contact.phone}</a>
+      </div>
+    </div>` : ""
+
+  
+  // Contact
   if(site.contact){
   html += `<div class="panel-section">
       <div class="panel-section-title"><i class="fa-solid fa-user"></i> Contact</div>

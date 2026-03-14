@@ -37,9 +37,9 @@
 
   position: fixed;
   z-index: 1200;
-  background: var (--glass-bg);
-  backdrop-filter: var (--glass-blur);
-  -webkit-backdrop-filter: var (--glass-blur);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   display: flex;
   flex-direction: column;
   overflow: hidden;

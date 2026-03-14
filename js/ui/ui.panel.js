@@ -121,7 +121,7 @@ function _renderBase(site) {
   }
 
   // Contact
-  
+  if(site.contact){
   html += `<div class="panel-section">
       <div class="panel-section-title"><i class="fa-solid fa-user"></i> Contact</div>
       <div class="panel-contact-block">`
@@ -129,6 +129,7 @@ function _renderBase(site) {
   if (site.contact.phone) html += `<div class="panel-contact-line"><i class="fa-solid fa-phone"></i><a class="panel-link" href="tel:${site.contact.phone}">${_formatPhone(site.contact.phone)}</a></div>`
   if (site.contact.mail)  html += `<div class="panel-contact-line"><i class="fa-regular fa-envelope"></i><a class="panel-link" href="mailto:${site.contact.mail}">${site.contact.mail}</a></div>`
   html += `</div></div>`
+  }
   
 
   // MSS

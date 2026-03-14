@@ -1,52 +1,69 @@
-export function parseSalle(row) {
+/**
+ * parser.salles.js
+ * Parse une ligne du fichier salles.json en objet site normalisé.
+ * Champs source : Name, Location (objet), Phone, TMS, ATT, ATT_Mail,
+ *                 MSS, Statut_TMS, Statut_Salle, Type,
+ *                 Opening_hours, Equipments, Link, Notes
+ */
 
-  let location
-  try {
-    location = typeof row.Location === "string"
-      ? JSON.parse(row.Location)
-      : row.Location || {}
-  } catch {
-    return null
+export function parseSalle(row) {
+  // --- Géolocalisation ---
+  const loc = row.Location || {};
+
+  // Location peut être un objet JSON ou une string JSON selon la source
+  let location = loc;
+  if (typeof loc === 'string') {
+    try { location = JSON.parse(loc); } catch { return null; }
   }
 
-  if (!location.lat || !location.lng) return null
+  if (!location.lat || !location.lng) return null;
 
-  // Equipements : chaîne séparée par virgules ou tableau JSON
-  let equipements = []
-  if (row.Equipments) {
+  // --- Équipements : virgules séparées ou tableau JSON ---
+  let equipements = [];
+  const rawEquip = (row.Equipments || '').trim();
+  if (rawEquip) {
     try {
-      equipements = JSON.parse(row.Equipments)
+      const parsed = JSON.parse(rawEquip);
+      equipements = Array.isArray(parsed) ? parsed : [String(parsed)];
     } catch {
-      equipements = row.Equipments.split(",").map(s => s.trim()).filter(Boolean)
+      equipements = rawEquip.split(',').map(s => s.trim()).filter(Boolean);
     }
   }
 
   return {
-    id:       row.id,
-    name:     row.Name,
-    type:     "salle",
+    // identité
+    id:          row.Name,          // pas de champ id dédié, on utilise Name
+    name:        row.Name || '',
+    dataset:     'salle',
 
-    lat:      Number(location.lat),
-    lng:      Number(location.lng),
-    city:     location.city?.long_name || "",
-    address:  location.address || "",
+    // géo
+    lat:         Number(location.lat),
+    lng:         Number(location.lng),
+    city:        location.city?.long_name  || '',
+    address:     location.address         || '',
 
-    status:   row.Statut_Salle || row.Statut || "",
-    typeSite: row.Type     || "",
-    tms:      row.TMS      || "",
-    mss:      row.MSS      || "",
+    // contact
+    phone:       row.Phone    || '',
+    mss:         row.MSS      || '',
 
-    contact: {
-      name:  row.ATT      || "",
-      mail:  row.ATT_Mail || "",
-      phone: row.Phone    || ""
-    },
+    // référent
+    att:         row.ATT      || '',
+    attMail:     row.ATT_Mail || '',
 
-    // Champs détails enrichis
-    opening_hours:    row.Opening_hours || "",
-    equipements: equipements,
-    link:        row.Link          || "",
-    notes:       row.Notes         || ""
-  }
+    // TMS
+    tms:         row.TMS       || '',
+    statusTms:   row.Statut_TMS  || '',   // "Ouvert" | "Virtuel" | ""
 
+    // salle
+    status:      row.Statut_Salle || '',  // "Ouvertes" | "Ouverture en cours"
+                                           // | "Telesecretariat OMEDYS"
+                                           // | "ESMS ouvert au public"
+    typeSite:    row.Type || '',
+
+    // enrichissement
+    horaires:    row.Opening_hours || '',
+    equipements,
+    lien:        row.Link  || '',
+    notes:       row.Notes || '',
+  };
 }

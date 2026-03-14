@@ -1,24 +1,9 @@
 // ═══════════════════════════════════════════════════════════════
-// site.panel.js — Panel latéral (desktop) / bottom sheet (mobile)
+// ui.panel.js — Panel latéral (desktop) / bottom sheet (mobile)
 // Remplace entièrement les popups Leaflet
+// Les détails enrichis (horaires, équipements, lien, notes)
+// sont lus directement depuis le site parsé (salles.json)
 // ═══════════════════════════════════════════════════════════════
-
-// ── Cache details.json ────────────────────────────────────────
-let _detailsCache = null
-
-async function _loadDetails() {
-  if (_detailsCache) return _detailsCache
-  try {
-    const arr = await fetch("/data/json/details.json").then(r => r.json())
-    _detailsCache = {}
-    arr.forEach(d => { _detailsCache[d.name] = d })
-  } catch {
-    _detailsCache = {}
-  }
-  return _detailsCache
-}
-
-_loadDetails()
 
 // ── Init DOM ──────────────────────────────────────────────────
 export function initSitePanel() {
@@ -62,14 +47,13 @@ export function initSitePanel() {
 }
 
 // ── Ouverture ─────────────────────────────────────────────────
-export async function openSitePanel(site, color) {
+export function openSitePanel(site, color) {
 
   initSitePanel()
 
   const panel   = document.getElementById("site-panel")
   const overlay = document.getElementById("panel-overlay")
 
-  // Pill statut
   const pillClass = {
     "Ouvert":                 "bp3-pill-ouvert",
     "Ouvertes":               "bp3-pill-ouvert",
@@ -78,34 +62,19 @@ export async function openSitePanel(site, color) {
     "Telesecretariat OMEDYS": "bp3-pill-tele"
   }[site.status] || "bp3-pill-default"
 
-  // Header
-  panel.querySelector(".panel-badge").textContent       = site.type === "salle" ? "Salle télémédecine" : "Cabinet TMS"
-  panel.querySelector(".panel-statut-pill").className   = `panel-statut-pill ${pillClass}`
+  panel.querySelector(".panel-badge").textContent        = site.type === "salle" ? "Salle télémédecine" : "Cabinet TMS"
+  panel.querySelector(".panel-statut-pill").className    = `panel-statut-pill ${pillClass}`
   panel.querySelector(".panel-statut-label").textContent = site.status
   panel.querySelector(".panel-accent-dot").style.background = color
-  panel.querySelector(".panel-title").textContent       = site.name
+  panel.querySelector(".panel-title").textContent        = site.name
   panel.style.setProperty("--panel-accent", color)
 
-  // Loading
-  panel.querySelector(".panel-body").innerHTML = `
-    <div class="panel-loading">
-      <i class="fa-solid fa-circle-notch fa-spin"></i>
-    </div>`
-  panel.querySelector(".panel-actions").innerHTML = ""
+  panel.querySelector(".panel-body").innerHTML    = _renderBase(site) + _renderDetails(site)
+  panel.querySelector(".panel-actions").innerHTML = _renderActions(site)
 
-  // Ouvrir
   panel.classList.add("open")
   overlay.classList.add("open")
 
-  // Infos de base (toujours présentes)
-  const baseHTML = _renderBase(site)
-
-  // Details enrichis (details.json)
-  const cache   = await _loadDetails()
-  const details = cache[site.name] || null
-
-  panel.querySelector(".panel-body").innerHTML = baseHTML + (details ? _renderDetails(details) : "")
-  panel.querySelector(".panel-actions").innerHTML = _renderActions(site, details)
 }
 
 export function closePanel() {
@@ -176,11 +145,12 @@ function _renderBase(site) {
 
   return html
 }
-function _renderDetails(d) {
+
+function _renderDetails(site) {
   let html = ""
 
-  if (d.opening_hours) {
-    const lines = d.opening_hours.split("\n")
+  if (site.horaires) {
+    const lines = site.horaires.split("\n")
       .map(l => `<div class="panel-schedule-line">${l}</div>`).join("")
     html += `
       <div class="panel-section">
@@ -191,8 +161,8 @@ function _renderDetails(d) {
       </div>`
   }
 
-  if (d.equipements?.length) {
-    const items = d.equipements.map(e => `
+  if (site.equipements?.length) {
+    const items = site.equipements.map(e => `
       <div class="panel-equip-item">
         <i class="fa-solid fa-circle-check"></i><span>${e}</span>
       </div>`).join("")
@@ -205,20 +175,20 @@ function _renderDetails(d) {
       </div>`
   }
 
-  if (d.notes) {
+  if (site.notes) {
     html += `
       <div class="panel-section">
         <div class="panel-section-title">
           <i class="fa-regular fa-note-sticky"></i> Notes
         </div>
-        <div class="panel-notes">${d.notes}</div>
+        <div class="panel-notes">${site.notes}</div>
       </div>`
   }
 
   return html
 }
 
-function _renderActions(site, details) {
+function _renderActions(site) {
   const addr    = site.address || site.city || ""
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${site.lat},${site.lng}`
 
@@ -231,9 +201,9 @@ function _renderActions(site, details) {
       <i class="fa-regular fa-map"></i><span>Maps</span>
     </a>`
 
-  if (details?.link) {
+  if (site.lien) {
     html += `
-      <a class="panel-action-btn panel-action--link" href="${details.link}" target="_blank" rel="noopener">
+      <a class="panel-action-btn panel-action--link" href="${site.lien}" target="_blank" rel="noopener">
         <i class="fa-solid fa-arrow-up-right-from-square"></i><span>Fiche</span>
       </a>`
   }

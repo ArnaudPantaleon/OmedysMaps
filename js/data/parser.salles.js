@@ -1,37 +1,49 @@
+
+/**
+ * parser.salles.js
+ * Parse une ligne du fichier salles.json en objet site normalisé.
+ * Champs source : Name, Location (objet), Phone, TMS, ATT, ATT_Mail,
+ *                 MSS, Statut_TMS, Statut_Salle, Type,
+ *                 Opening_hours, Equipments, Link, Notes
+ */
+
 export function parseSalle(row) {
 
-  let loc
-
+  let location
   try {
-    loc = typeof row.Location === "string"
-      ? JSON.parse(row.Location || "{}")
-      : (row.Location || {})
+    location = typeof row.Location === "string"
+      ? JSON.parse(row.Location)
+      : row.Location || {}
   } catch {
     return null
   }
 
-  if (!loc.lat || !loc.lng) return null
-
-  const cpMatch = (loc.address || "").match(/\b(\d{5})\b/)
-  const dept    = cpMatch ? cpMatch[1].slice(0, 2) : ""
-
+  if (!location.lat || !location.lng) return null
+      
+    let equipements = [];
+    const rawEquip = (row.Equipments || '').trim();
+    if (rawEquip) {
+      try {
+        const parsed = JSON.parse(rawEquip);
+        equipements = Array.isArray(parsed) ? parsed : [String(parsed)];
+      } catch {
+        equipements = rawEquip.split(',').map(s => s.trim()).filter(Boolean);
+      }
+    }
   return {
-    id:       row.id || row.Name,
+    id:       row.id,
     name:     row.Name,
     type:     "salle",
 
-    lat:      Number(loc.lat),
-    lng:      Number(loc.lng),
-
-    city:     loc.city?.long_name || "",
-    address:  loc.address || "",
-    dept,
+    lat:      Number(location.lat),
+    lng:      Number(location.lng),
+    city:     location.city?.long_name || "",
+    address:  location.address || "",
 
     status:   row.Statut_Salle || row.Statut || "",
-    statusTMS: row.Statut_TMS  || "",
-
-    tms:      row.TMS      || "",
-    typeSite: row.Type     || "",
+    typeSite: row.Type || "",
+    tms:      row.TMS  || "",
+    mss:      row.MSS  || "",
 
     contact: {
       name:  row.ATT      || "",
@@ -39,7 +51,11 @@ export function parseSalle(row) {
       phone: row.Phone    || ""
     },
 
-    mss: row.MSS || ""
+    // enrichissement
+    horaires:    row.Opening_hours || '',
+    equipements,
+    lien:        row.Link  || '',
+    notes:       row.Notes || '',
   }
 
 }

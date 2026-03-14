@@ -13,11 +13,11 @@
     --primary-dim:    rgba(0, 149, 151, 0.15);
 
     /* Glass surfaces */
-    --glass-bg:       rgba(255, 255, 255, 0.28);
+    --glass-bg:       rgba(255, 255, 255, 0.75);
     --glass-bg-deep:  rgba(255, 255, 255, 0.18);
     --glass-border:   rgba(255, 255, 255, 0.18);
     --glass-inset:    rgba(255, 255, 255, 0.08);
-    --glass-blur:     blur(24px) saturate(160%);
+    --glass-blur:     blur(28px) saturate(180%);
 
     /* Shadows */
     --shadow-float:   0 24px 64px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255,255,255,0.12);
@@ -492,107 +492,6 @@ body, html {
 .cabinet-marker:hover .cabinet-pin { transform: scale(1.12); }
 
 /* ============================================================
-   POPUP BP3 — Glassmorphisme (inchangé, référence)
-   ============================================================ */
-.bp3-popup .leaflet-popup-content-wrapper {
-    background: transparent !important; border: none !important;
-    border-radius: 16px !important; box-shadow: none !important;
-    padding: 0 !important; overflow: visible !important;
-}
-.bp3-popup .leaflet-popup-content { margin: 0 !important; width: 350px !important; }
-.bp3-popup .leaflet-popup-tip-container { display: none; }
-.bp3-popup .leaflet-popup-close-button {
-    top: 10px !important; right: 10px !important;
-    width: 24px !important; height: 24px !important;
-    font-size: 16px !important; line-height: 24px !important;
-    text-align: center;
-    color: rgba(0,0,0,0.40) !important;
-    background: rgba(255,255,255,0.40) !important;
-    border: 1px solid rgba(255,255,255,0.15) !important;
-    border-radius: 50% !important; z-index: 10;
-}
-
-.bp3 {
-    font-family: 'DM Sans', system-ui, sans-serif;
-    width: 350px; border-radius: 16px; overflow: hidden;
-    background: rgba(255,255,255,0.36);
-    backdrop-filter: blur(22px) saturate(160%);
-    -webkit-backdrop-filter: blur(22px) saturate(160%);
-    border: 1px solid rgba(255,255,255,0.09);
-    box-shadow: 0 24px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.07);
-    animation: bp3In 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-@keyframes bp3In {
-    from { opacity: 0; transform: scale(0.92) translateY(8px); }
-    to   { opacity: 1; transform: scale(1)    translateY(0);   }
-}
-.bp3-header {
-    padding: 14px 16px 12px; position: relative; overflow: hidden;
-    border-bottom: 1px solid rgba(255,255,255,0.07);
-}
-.bp3-header::before {
-    content: ''; position: absolute; top: -40px; right: -60px;
-    width: 140px; height: 140px; border-radius: 50%;
-    background: radial-gradient(circle, var(--bp3-accent-glow, rgba(0,149,151,0.3)) 0%, transparent 70%);
-    pointer-events: none;
-}
-.bp3-hd-top { display: inline-grid; align-items: center; gap: 7px; margin-bottom: 8px; flex-wrap: wrap; }
-.bp3-badge {
-    font-size: 11px; font-weight: 500;
-    color: rgba(0,0,0,0.55); background: rgba(255,255,255,0.39);
-    border: 1px solid rgba(255,255,255,0.12); padding: 3px 8px; border-radius: 20px;
-}
-.bp3-statut-pill {
-    font-size: 11px; font-weight: 600;
-    padding: 3px 8px; border-radius: 20px; display: flex; align-items: center; gap: 4px;
-}
-.bp3-pill-ouvert  { background: rgba(0,172,200,0.15); color: #0050c8; }
-.bp3-pill-encours { background: rgba(255,202,111,0.25); color: #f59e0b; }
-.bp3-pill-tele    { background: rgba(153,127,209,0.37); color: #6636db; }
-.bp3-pill-default { background: rgba(255,255,255,0.08); color: rgba(0,0,0,0.45); }
-.bp3-sdot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
-.bp3-pill-ouvert  .bp3-sdot { background: #0050c8; box-shadow: 0 0 5px #0050c8; }
-.bp3-pill-encours .bp3-sdot { background: #f59e0b; }
-.bp3-pill-tele    .bp3-sdot { background: #8956FB; box-shadow: 0 0 5px #8956FB; }
-.bp3-pill-default .bp3-sdot { background: rgba(0,0,0,0.3); }
-.bp3-title {
-    font-size: 15px; font-weight: 700;
-    color: rgba(0,0,0,0.88); line-height: 1.3;
-}
-.bp3-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 8px; }
-.bp3-tile {
-    background: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 10px; padding: 9px 10px; display: block;
-    transition: background 0.14s; cursor: default; min-width: 0;
-}
-.bp3-tile:hover { background: rgba(255,255,255,0.75); }
-.bp3-tile.bp3-wide { grid-column: 1 / -1; }
-.bp3-tile-label {
-    font-size: 10px; font-weight: 500;
-    color: rgba(0,0,0,0.50); margin-bottom: 3px;
-}
-.bp3-tile-value {
-    font-size: 12px; font-weight: 600; color: rgba(0,0,0,0.82);
-    white-space: pre-line; overflow: hidden; text-overflow: ellipsis;
-    max-width: 100%; display: block;
-}
-.bp3-tile.bp3-wide .bp3-tile-value { white-space: normal; font-size: 12px; }
-.bp3-link { color: #009597 !important; text-decoration: none; font-size: 13px !important; font-weight: 600 !important; }
-.bp3-link:hover { color: #006365 !important; }
-.bp3-mss { font-size: 11px !important; color: rgba(0,0,0,0.7) !important; }
-.bp3-footer { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 0 8px 8px; }
-.bp3-btn {
-    display: flex; align-items: center; justify-content: center; gap: 5px;
-    padding: 9px; border-radius: 9px; font-family: 'DM Sans', sans-serif;
-    font-size: 12px; font-weight: 600; cursor: pointer;
-    text-decoration: none; border: none; transition: all 0.14s;
-}
-.bp3-btn--copy { background: rgba(0,149,151,0.14); border: 1px solid rgba(255,255,255,0.12); color: rgba(0,0,0,0.65); }
-.bp3-btn--copy:hover { background: rgba(0,149,151,0.25); }
-.bp3-btn--maps { background: var(--primary); color: #fff !important; }
-.bp3-btn--maps:hover { background: #007a7c; color: #fff !important; }
-
-/* ============================================================
    ANIMATIONS
    ============================================================ */
 @keyframes slideDown {
@@ -766,8 +665,6 @@ html.is-dark .bp3-pill-default .bp3-sdot { background: rgba(255,255,255,0.4); }
     #site-count { font-size: 26px; }
     .bento-filters.open { max-height: 85vh !important; }
     #suggestions { top: 72px; left: 12px; width: calc(100% - 24px); }
-    .bp3-popup .leaflet-popup-content { width: 320px !important; }
-    .bp3 { width: 320px; }
 }
 
 @media (max-width: 480px) {
@@ -783,8 +680,6 @@ html.is-dark .bp3-pill-default .bp3-sdot { background: rgba(255,255,255,0.4); }
     .toggle-switch::after { width: 16px; height: 16px; }
     .filter-item.toggle-filter.active .toggle-switch::after { transform: translateX(14px); }
     .bar { width: 18px; height: 2.5px; }
-    .bp3-popup .leaflet-popup-content { width: 300px !important; }
-    .bp3 { width: 300px; }
     #suggestions { top: 66px; left: 10px; width: calc(100% - 20px); }
 }
 

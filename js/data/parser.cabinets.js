@@ -1,42 +1,34 @@
 export function parseCabinet(row) {
 
-  let loc
-
+  let location
   try {
-    loc = typeof row.Location === "string"
-      ? JSON.parse(row.Location || "{}")
-      : (row.Location || {})
+    location = typeof row.Location === "string"
+      ? JSON.parse(row.Location)
+      : row.Location || {}
   } catch {
     return null
   }
 
-  if (!loc.lat || !loc.lng) return null
-
-  // Extraire le code dept depuis le CP dans l'adresse
-  const cpMatch = (loc.address || "").match(/\b(\d{5})\b/)
-  const dept    = cpMatch ? cpMatch[1].slice(0, 2) : ""
+  if (!location.lat || !location.lng) return null
 
   return {
     id:      row.id,
     name:    row.Name,
     type:    "cabinet",
 
-    lat:     Number(loc.lat),
-    lng:     Number(loc.lng),
+    lat:     Number(location.lat),
+    lng:     Number(location.lng),
+    city:    location.city?.long_name || "",
+    address: location.address || "",
 
-    city:    loc.city?.long_name || "",
-    address: loc.address || "",
-    dept,
-
-    status:  row.Statut,
+    status:  row.Statut || "",
+    mss:     row.MSS    || "",
 
     contact: {
       name:  row.ATT_Name  || "",
       mail:  row.ATT_Mail  || "",
       phone: row.ATT_Phone || ""
-    },
-
-    mss: row.MSS || ""
+    }
   }
 
 }

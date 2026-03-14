@@ -42,13 +42,14 @@ export function parseSalle(row) {
     city:        location.city?.long_name  || '',
     address:     location.address         || '',
 
-    // contact
-    phone:       row.Phone    || '',
-    mss:         row.MSS      || '',
+    status:  row.Statut || "",
+    mss:     row.MSS    || "",
 
-    // référent
-    att:         row.ATT      || '',
-    attMail:     row.ATT_Mail || '',
+    contact: {
+      name:  row.ATT_Name  || "",
+      mail:  row.ATT_Mail  || "",
+      phone: row.ATT_Phone || ""
+    }
 
     // TMS
     tms:         row.TMS       || '',

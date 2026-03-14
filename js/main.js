@@ -15,7 +15,7 @@ async function start() {
 
   await loadData()
 
-  const zones = await fetch("/data/zones.json").then(r => r.json()).catch(() => null)
+  const zones = await fetch("/data/json/zones.json").then(r => r.json()).catch(() => null)
   window._zonesCache = zones
 
   const map = new MapEngine()

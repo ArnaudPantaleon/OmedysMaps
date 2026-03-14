@@ -176,12 +176,11 @@ function _renderBase(site) {
 
   return html
 }
-
 function _renderDetails(d) {
   let html = ""
 
-  if (d.horaires) {
-    const lines = d.horaires.split("\n")
+  if (d.opening_hours) {
+    const lines = d.opening_hours.split("\n")
       .map(l => `<div class="panel-schedule-line">${l}</div>`).join("")
     html += `
       <div class="panel-section">
@@ -232,9 +231,9 @@ function _renderActions(site, details) {
       <i class="fa-regular fa-map"></i><span>Maps</span>
     </a>`
 
-  if (details?.lien) {
+  if (details?.link) {
     html += `
-      <a class="panel-action-btn panel-action--link" href="${details.lien}" target="_blank" rel="noopener">
+      <a class="panel-action-btn panel-action--link" href="${details.link}" target="_blank" rel="noopener">
         <i class="fa-solid fa-arrow-up-right-from-square"></i><span>Fiche</span>
       </a>`
   }

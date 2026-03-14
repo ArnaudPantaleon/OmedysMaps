@@ -49,7 +49,7 @@ export function parseSalle(row) {
       name:  row.ATT      || "",
       mail:  row.ATT_Mail || "",
       phone: row.Phone    || ""
-    }
+    },
 
     // enrichissement
     horaires:    row.Opening_hours || '',

@@ -43,9 +43,9 @@ export function parseSalle(row) {
     },
 
     // Champs détails enrichis
-    horaires:    row.Opening_hours || "",
+    opening_hours:    row.Opening_hours || "",
     equipements: equipements,
-    lien:        row.Link          || "",
+    link:        row.Link          || "",
     notes:       row.Notes         || ""
   }
 

@@ -21,10 +21,10 @@ async function start() {
   const map = new MapEngine()
   map.renderSites()
 
-  /*initFilters(map, zones)
+  initFilters(map, zones)
   initSearch(map)
   initStats()
-  initThemeSwitcher()*/
+  initThemeSwitcher()
 
 }
 

@@ -22,9 +22,9 @@ async function start() {
   map.renderSites()
 
   initFilters(map, zones)
-  initSearch(map)
+  /*initSearch(map)
   initStats()
-  initThemeSwitcher()
+  initThemeSwitcher()*/
 
 }
 

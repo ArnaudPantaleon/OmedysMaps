@@ -21,8 +21,8 @@ async function start() {
   const map = new MapEngine()
   map.renderSites()
 
-  initFilters(map, zones)
-  /*initSearch(map)
+  /*initFilters(map, zones)
+  initSearch(map)
   initStats()
   initThemeSwitcher()*/
 

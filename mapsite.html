@@ -4,96 +4,29 @@
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cartographie Omedys — Embed</title>
+
+<title>Cartographie Omedys</title>
 
 <link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/panel.css">
+
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
-<style>
-  /* Search bar centrée, pleine largeur du wrapper */
-  .bento-wrapper {
-    top: 16px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: min(400px, calc(100vw - 32px));
-  }
-  /* Pas de hamburger — la row = juste la search */
-  .bento-row   { display: block; }
-  #search-slot { width: 100%; flex: unset; }
-  /* Les suggestions sont positionnées dynamiquement par ui.search.js */
-</style>
-
-<!--
-  ============================================================
-  EMBED_CONFIG — Configuration des filtres
-  ============================================================
-  Règle : si aucun filtre n'est défini, RIEN n'est affiché.
-  Chaque propriété est un tableau de valeurs autorisées.
-  Tableau vide [] = pas de restriction sur ce critère.
-  Plusieurs valeurs = logique OU.
-
-  dataset       → "cabinet" | "salle"
-  ─────────────────────────────────────
-  ["cabinet"]            → cabinets TMS uniquement
-  ["salle"]              → salles uniquement
-  ["cabinet", "salle"]   → les deux
-
-  tms (salles uniquement)
-  ─────────────────────────────────────
-  "TMS 10" | "TMS 11" | "TMS 14" | "TMS 18" | "TMS 26" | "TMS 28"
-  "TMS 31" | "TMS 41" | "TMS 54" | "TMS 55" | "TMS 59" | "TMS 72"
-  "TMS ESMS (cabinet virtuel)" | "TMS ESMS Emeis" | "Inconnu"
-
-  typeSite (salles uniquement)
-  ─────────────────────────────────────
-  "ESMS" | "CDS/MSP/CM" | "CPTS" | "Cabinet Infirmier"
-  "Pharmacie" | "Laboratoire" | "Salle" | "Salle collectivité"
-  "ODYS" | "Etablissement scolaire" | "Foyer d'accueil"
-  "Domicile" | "Vehicule de télémédecine assistée"
-
-  statusCabinet (cabinets uniquement)
-  ─────────────────────────────────────
-  "Ouvert" | "Ouverture en cours" | "Virtuel"
-
-  statusSalle (salles uniquement)
-  ─────────────────────────────────────
-  "Ouvertes" | "Ouverture en cours" | "Telesecretariat OMEDYS"
-  ============================================================
--->
-
-<script>
-window.EMBED_CONFIG = {
-
-  // Types de sites à afficher
-  dataset: ["cabinet", "salle"],
-
-  // TMS rattaché — [] = tous les TMS
-  tms: [],
-
-  // Type de site — [] = tous les types
-  typeSite: [ "CDS/MSP/CM", "CPTS", "Cabinet Infirmier", "Pharmacie", "Laboratoire", "Salle", "Salle collectivité", "ODYS", "Etablissement scolaire", "Foyer d'accueil", "Domicile", "Vehicule de télémédecine assistée"],
-
-  // Statut des cabinets — [] = tous les statuts
-  statusCabinet: ["Ouvert", "Ouverture en cours"],
-
-  // Statut des salles — [] = tous les statuts
-  statusSalle: ["Ouvertes", "Ouverture en cours"],
-
-}
-</script>
-
 </head>
+
 <body>
 
 <div id="map"></div>
+<div id="ui"></div>
 
-<script type="module" src="/js/main.embed.js"></script>
+<script type="module" src="/js/main.js"></script>
 
 </body>
 </html>

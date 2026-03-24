@@ -1,9 +1,11 @@
-import { initTheme }  from "./core/theme.js"
-import { loadData }   from "./data/data.loader.js"
-import { store }      from "./core/store.js"
-import { CONFIG }     from "./core/config.js"
-import { BP3Popup }   from "./ui/popup.bp3.js"
-import { initSearch } from "./ui/ui.search.js"
+import { initTheme }        from "./core/theme.js"
+import { loadData }         from "./data/data.loader.js"
+import { MapEngine }        from "./map/map.engine.js"
+import { initFilters }      from "./ui/ui.filters.js"
+import { initSearch }       from "./ui/ui.search.js"
+import { initStats }        from "./ui/ui.stats.js"
+import { initThemeSwitcher } from "./ui/ui.theme.js"
+import { initSitePanel }    from "./ui/ui.panel.js"
 
 // ── Thème ─────────────────────────────────────────────────────
 initTheme()

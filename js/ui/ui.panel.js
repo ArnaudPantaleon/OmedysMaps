@@ -97,11 +97,9 @@ function _renderBase(site) {
       </div>`
   }
 
-  // TMS rattaché + référent ATT (contact.name, contact.mail, contact.phone)
+  // TMS rattaché
   if (site.tms) {
     let tmsHtml = `<div class="panel-contact-line"><i class="fa-solid fa-hospital"></i><span>${site.tms}</span></div>`
-    if (site.contact?.name)  tmsHtml += `<div class="panel-contact-line"><i class="fa-regular fa-user"></i><span>${site.contact.name}</span></div>`
-    if (site.contact?.mail)  tmsHtml += `<div class="panel-contact-line"><i class="fa-regular fa-envelope"></i><a class="panel-link" href="mailto:${site.contact.mail}">${site.contact.mail}</a></div>`
     if (site.mss)  tmsHtml += `<div class="panel-contact-line"><i class="fa-regular fa-envelope"></i><a class="panel-link">${site.mss}</a></div>`
     html += `
       <div class="panel-section">
@@ -111,7 +109,21 @@ function _renderBase(site) {
         <div class="panel-contact-block">${tmsHtml}</div>
       </div>`
   }
-
+  
+  // référent ATT (att.name)
+  if (site.att) {
+    let tmsHtml = 
+    if (site.att?.name)  tmsHtml += `<div class="panel-contact-line"><i class="fa-regular fa-user"></i><span>${site.att.name}</span></div>`
+    if (site.att?.mail)  tmsHtml += `<div class="panel-contact-line"><i class="fa-regular fa-envelope"></i><a class="panel-link" href="mailto:${site.att.mail}">${site.att.mail}</a></div>`
+    if (site.att?.phone)  tmsHtml += `<div class="panel-contact-line"><i class="fa-regular fa-phone"></i><a class="panel-link" href="tel:${site.att.phone}">${_formatPhone(site.att.phone)}</a></div>`
+    html += `
+      <div class="panel-section">
+        <div class="panel-section-title">
+          <i class="fa-solid fa-hospital"></i> Référent Cabinet
+        </div>
+        <div class="panel-contact-block">${tmsHtml}</div>
+      </div>`
+  }
   // Type de structure
   if (site.typeSite) {
     html += `
@@ -130,7 +142,7 @@ function _renderBase(site) {
         <div class="panel-section-title">
           <i class="fa-solid fa-tag"></i> Contact
         </div>
-        <div class="panel-info-block"><a class="panel-link" href="tel:${site.contact.phone}">${_formatPhone(site.contact.phone)}</a></div>
+        <div class="panel-info-block"><i class="fa-regular fa-phone"></i><a class="panel-link" href="tel:${site.contact.phone}">${_formatPhone(site.contact.phone)}</a></div>
       </div>`
   }
 

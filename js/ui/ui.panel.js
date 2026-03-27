@@ -142,7 +142,7 @@ function _renderBase(site) {
         <div class="panel-section-title">
           <i class="fa-solid fa-tag"></i> Contact
         </div>
-        <div class="panel-info-block"><i class="fa-solid fa-phone"></i><a class="panel-link" href="tel:${site.contact.phone}">${_formatPhone(site.contact.phone)}</a></div>
+        <div class="panel-contact-line"><i class="fa-solid fa-phone"></i><a class="panel-link" href="tel:${site.contact.phone}">${_formatPhone(site.contact.phone)}</a></div>
       </div>`
   }
 

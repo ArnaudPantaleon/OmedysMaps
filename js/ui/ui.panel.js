@@ -124,8 +124,6 @@ function _renderBase(site) {
       </div>`
   }
 
-
-
   // Contact
     if (site.contact?.phone) {
     html += `<div class="panel-section">

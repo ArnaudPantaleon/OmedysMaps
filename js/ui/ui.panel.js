@@ -112,16 +112,16 @@ function _renderBase(site) {
   
   // référent ATT (att.name)
   if (site.att) {
-    let tmsHtml = 
-    if (site.att?.name)  tmsHtml += `<div class="panel-contact-line"><i class="fa-regular fa-user"></i><span>${site.att.name}</span></div>`
-    if (site.att?.mail)  tmsHtml += `<div class="panel-contact-line"><i class="fa-regular fa-envelope"></i><a class="panel-link" href="mailto:${site.att.mail}">${site.att.mail}</a></div>`
-    if (site.att?.phone)  tmsHtml += `<div class="panel-contact-line"><i class="fa-regular fa-phone"></i><a class="panel-link" href="tel:${site.att.phone}">${_formatPhone(site.att.phone)}</a></div>`
+    let attHtml = 
+    if (site.att?.name)  attHtml += `<div class="panel-contact-line"><i class="fa-regular fa-user"></i><span>${site.att.name}</span></div>`
+    if (site.att?.mail)  attHtml += `<div class="panel-contact-line"><i class="fa-regular fa-envelope"></i><a class="panel-link" href="mailto:${site.att.mail}">${site.att.mail}</a></div>`
+    if (site.att?.phone)  attHtml += `<div class="panel-contact-line"><i class="fa-regular fa-phone"></i><a class="panel-link" href="tel:${site.att.phone}">${_formatPhone(site.att.phone)}</a></div>`
     html += `
       <div class="panel-section">
         <div class="panel-section-title">
           <i class="fa-solid fa-hospital"></i> Référent Cabinet
         </div>
-        <div class="panel-contact-block">${tmsHtml}</div>
+        <div class="panel-contact-block">${attHtml}</div>
       </div>`
   }
   // Type de structure

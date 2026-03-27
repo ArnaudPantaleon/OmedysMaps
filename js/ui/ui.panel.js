@@ -62,7 +62,7 @@ export function openSitePanel(site, color) {
     "Telesecretariat OMEDYS": "bp3-pill-tele"
   }[site.status] || "bp3-pill-default"
 
-  panel.querySelector(".panel-badge").textContent        = site.type === "salle" ? "Salle télémédecine" : "Cabinet TMS"
+  panel.querySelector(".panel-badge").textContent        = site.dataset === "salle" ? "Salle télémédecine" : "Cabinet TMS"
   panel.querySelector(".panel-statut-pill").className    = `panel-statut-pill ${pillClass}`
   panel.querySelector(".panel-statut-label").textContent = site.status
   panel.querySelector(".panel-accent-dot").style.background = color
@@ -74,7 +74,6 @@ export function openSitePanel(site, color) {
 
   panel.classList.add("open")
   overlay.classList.add("open")
-
 }
 
 export function closePanel() {
@@ -97,19 +96,19 @@ function _renderBase(site) {
         <div class="panel-info-block">${site.address || site.city}</div>
       </div>`
   }
-  
-  // TMS rattaché
+
+  // TMS rattaché + référent ATT (contact.name, contact.mail, contact.phone)
   if (site.tms) {
+    let tmsHtml = `<div class="panel-contact-line"><i class="fa-solid fa-hospital"></i><span>${site.tms}</span></div>`
+    if (site.contact?.name)  tmsHtml += `<div class="panel-contact-line"><i class="fa-regular fa-user"></i><span>${site.contact.name}</span></div>`
+    if (site.contact?.mail)  tmsHtml += `<div class="panel-contact-line"><i class="fa-regular fa-envelope"></i><a class="panel-link" href="mailto:${site.contact.mail}">${site.contact.mail}</a></div>`
+    if (site.contact?.phone) tmsHtml += `<div class="panel-contact-line"><i class="fa-solid fa-phone"></i><a class="panel-link" href="tel:${site.contact.phone}">${_formatPhone(site.contact.phone)}</a></div>`
     html += `
       <div class="panel-section">
         <div class="panel-section-title">
           <i class="fa-solid fa-hospital"></i> Cabinet TMS
         </div>
-        <div class="panel-info-block">
-          if (site.contact.mail)  html += `<div class="panel-contact-line"><i class="fa-regular fa-hospital"></i>${site.tms}</div>`
-          if (site.contact.name)  html += `<div class="panel-contact-line"><i class="fa-regular fa-user"></i>${site.contact.name}</div>`
-          if (site.contact.mail)  html += `<div class="panel-contact-line"><i class="fa-regular fa-envelope"></i><a class="panel-link" href="mailto:${site.contact.mail}">${site.contact.mail}</a></div>`
-        </div>
+        <div class="panel-contact-block">${tmsHtml}</div>
       </div>`
   }
 
@@ -122,15 +121,6 @@ function _renderBase(site) {
         </div>
         <div class="panel-info-block">${site.typeSite}</div>
       </div>`
-  }
-
-  // Contact
-    if (site.contact?.phone) {
-    html += `<div class="panel-section">
-      <div class="panel-section-title"><i class="fa-solid fa-user"></i> Contact</div>
-      <div class="panel-contact-block">`
-    if (site.contact.phone) html += `<div class="panel-contact-line"><i class="fa-solid fa-phone"></i><a class="panel-link" href="tel:${site.contact.phone}">${_formatPhone(site.contact.phone)}</a></div>`
-    html += `</div></div>`
   }
 
   // MSS
@@ -177,12 +167,14 @@ function _renderDetails(site) {
   }
 
   if (site.notes) {
+    const lines = site.notes.split("\n")
+      .map(l => `<div class="panel-schedule-line">${l}</div>`).join("")
     html += `
       <div class="panel-section">
         <div class="panel-section-title">
           <i class="fa-regular fa-note-sticky"></i> Notes
         </div>
-        <div class="panel-notes">${site.notes}</div>
+        <div class="panel-notes">${lines}</div>
       </div>`
   }
 
@@ -218,7 +210,6 @@ function _initSwipe(panel) {
   let isDragging = false
 
   panel.addEventListener("touchstart", e => {
-    // Seulement si on touche le handle ou le header
     if (!e.target.closest(".panel-handle, .panel-header, .panel-title-row")) return
     startY = e.touches[0].clientY
     isDragging = true
@@ -253,7 +244,6 @@ window._panelCopy = function(text) {
 }
 
 function _showToast(msg) {
-  // Réutiliser un toast existant s'il est encore visible
   let toast = document.getElementById("panel-toast")
   if (!toast) {
     toast = document.createElement("div")

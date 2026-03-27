@@ -97,7 +97,7 @@ function _renderBase(site) {
         <div class="panel-info-block">${site.address || site.city}</div>
       </div>`
   }
-
+  
   // TMS rattaché
   if (site.tms) {
     html += `
@@ -105,7 +105,11 @@ function _renderBase(site) {
         <div class="panel-section-title">
           <i class="fa-solid fa-hospital"></i> Cabinet TMS
         </div>
-        <div class="panel-info-block">${site.tms}</div>
+        <div class="panel-info-block">
+          if (site.contact.mail)  html += `<div class="panel-contact-line"><i class="fa-regular fa-hospital"></i>${site.tms}</div>`
+          if (site.contact.name)  html += `<div class="panel-contact-line"><i class="fa-regular fa-user"></i>${site.contact.name}</div>`
+          if (site.contact.mail)  html += `<div class="panel-contact-line"><i class="fa-regular fa-envelope"></i><a class="panel-link" href="mailto:${site.contact.mail}">${site.contact.mail}</a></div>`
+        </div>
       </div>`
   }
 
@@ -120,15 +124,14 @@ function _renderBase(site) {
       </div>`
   }
 
+
+
   // Contact
-  const hasContact = site.contact?.name || site.contact?.mail || site.contact?.phone
-  if (hasContact) {
+    if (site.contact?.phone) {
     html += `<div class="panel-section">
       <div class="panel-section-title"><i class="fa-solid fa-user"></i> Contact</div>
       <div class="panel-contact-block">`
-    if (site.contact.name)  html += `<div class="panel-contact-line"><i class="fa-regular fa-user"></i>${site.contact.name}</div>`
     if (site.contact.phone) html += `<div class="panel-contact-line"><i class="fa-solid fa-phone"></i><a class="panel-link" href="tel:${site.contact.phone}">${_formatPhone(site.contact.phone)}</a></div>`
-    if (site.contact.mail)  html += `<div class="panel-contact-line"><i class="fa-regular fa-envelope"></i><a class="panel-link" href="mailto:${site.contact.mail}">${site.contact.mail}</a></div>`
     html += `</div></div>`
   }
 

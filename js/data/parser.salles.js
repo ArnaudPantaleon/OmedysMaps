@@ -44,10 +44,13 @@ export function parseSalle(row) {
     typeSite: row.Type || "",
     tms:      row.TMS  || "",
     mss:      row.MSS  || "",
-
+    
+    att: {
+      name:  row.ATT_Name  || "",
+      mail:  row.ATT_Mail  || "",
+      phone: row.ATT_Phone || ""
+    },
     contact: {
-      name:  row.ATT      || "",
-      mail:  row.ATT_Mail || "",
       phone: row.Phone    || ""
     },
 

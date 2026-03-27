@@ -102,7 +102,6 @@ function _renderBase(site) {
     let tmsHtml = `<div class="panel-contact-line"><i class="fa-solid fa-hospital"></i><span>${site.tms}</span></div>`
     if (site.contact?.name)  tmsHtml += `<div class="panel-contact-line"><i class="fa-regular fa-user"></i><span>${site.contact.name}</span></div>`
     if (site.contact?.mail)  tmsHtml += `<div class="panel-contact-line"><i class="fa-regular fa-envelope"></i><a class="panel-link" href="mailto:${site.contact.mail}">${site.contact.mail}</a></div>`
-    if (site.contact?.phone) tmsHtml += `<div class="panel-contact-line"><i class="fa-solid fa-phone"></i><a class="panel-link" href="tel:${site.contact.phone}">${_formatPhone(site.contact.phone)}</a></div>`
     if (site.mss)  tmsHtml += `<div class="panel-contact-line"><i class="fa-regular fa-envelope"></i><a class="panel-link">${site.mss}</a></div>`
     html += `
       <div class="panel-section">
@@ -121,6 +120,17 @@ function _renderBase(site) {
           <i class="fa-solid fa-tag"></i> Type
         </div>
         <div class="panel-info-block">${site.typeSite}</div>
+      </div>`
+  }
+
+    // Contact
+  if (site.contact?.phone) {
+    html += `
+      <div class="panel-section">
+        <div class="panel-section-title">
+          <i class="fa-solid fa-tag"></i> Contact
+        </div>
+        <div class="panel-info-block"><a class="panel-link" href="tel:${site.contact.phone}">${_formatPhone(site.contact.phone)}</a><</div>
       </div>`
   }
 

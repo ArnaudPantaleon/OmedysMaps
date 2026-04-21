@@ -39,35 +39,38 @@ export class MapEngine {
         : (CONFIG.statusSalle?.[site.status]?.color   || CONFIG.status?.[site.status]?.color || "#2563eb")
 
       let marker
-
       if (site.type === "cabinet") {
-        const icon = L.divIcon({
-          className: "",
-          html: `<div class="cabinet-marker" style="--cm-color:${color}">
-            <div class="cabinet-pulse"></div>
-            <div class="cabinet-pin"><i class="fa-solid fa-hospital"></i></div>
-          </div>`,
-          iconSize: [36, 36], iconAnchor: [18, 18]
-        })
-        marker = L.marker([site.lat, site.lng], { icon, zIndexOffset: 1000 })
-        this.cabinetLayer.addLayer(marker)
-      } else {
-        const icon = L.divIcon({
-          className: "",
-          html: `<div class="cabinet-marker" style="--cm-color:${color}">
-            <div class="salle-pulse"></div>
-            <div class="salle-pin">`
-            if (site.typeSite === "véhicule de télémédecine assitée") {
-               html: `<i class="fa-solid fa-truck-medical"></i>`
-            else {
-               html: `<i class="fa-solid fa-briefcase-medical"></i>`
-            }
-            html: `</div></div>`,
-          iconSize: [24, 24], iconAnchor: [18, 18]
-        })
-        marker = L.marker([site.lat, site.lng], { icon, zIndexOffset: 1000 })
-        this.cluster.addLayer(marker)
-      }
+          const icon = L.divIcon({
+            className: "",
+            html: `<div class="cabinet-marker" style="--cm-color:${color}">
+                    <div class="cabinet-pulse"></div>
+                    <div class="cabinet-pin"><i class="fa-solid fa-hospital"></i></div>
+                  </div>`,
+            iconSize: [36, 36],
+            iconAnchor: [18, 18]
+          });
+          marker = L.marker([site.lat, site.lng], { icon, zIndexOffset: 1000 });
+          this.cabinetLayer.addLayer(marker);
+        } else {
+          // 1. Determine the specific icon class first
+          const iconClass = site.typeSite === "véhicule de télémédecine assitée" 
+            ? "fa-truck-medical" 
+            : "fa-briefcase-medical";
+        
+          // 2. Create the icon object
+          const icon = L.divIcon({
+            className: "",
+            html: `<div class="cabinet-marker" style="--cm-color:${color}">
+                    <div class="salle-pulse"></div>
+                    <div class="salle-pin"><i class="fa-solid ${iconClass}"></i></div>
+                  </div>`,
+            iconSize: [24, 24],
+            iconAnchor: [12, 12] // Adjusted anchor to half of iconSize for centering
+          });
+        
+          marker = L.marker([site.lat, site.lng], { icon, zIndexOffset: 1000 });
+          this.cluster.addLayer(marker);
+        }
 
       // Clic → panel directement, pas de popup Leaflet
       marker.on("click", () => openSitePanel(site, color))

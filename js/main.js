@@ -21,8 +21,7 @@ async function start() {
   window.mapInstance = map; // Important pour que ui.theme.js puisse y accéder
   map.renderSites()
   
-  // Correction : utiliser 'map' et non 'mapEngine'
-  map.updateMapTheme(getTheme())
+  map.updateTheme(getTheme())
 
   initFilters(map, zones)
   initSearch(map)

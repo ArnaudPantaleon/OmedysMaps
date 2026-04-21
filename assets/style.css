@@ -653,9 +653,9 @@ html.is-dark .bp3-pill-default .bp3-sdot { background: rgba(255,255,255,0.4); }
 .theme-switcher-inner {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    width: 100%; /* S'assure de prendre toute la largeur */
+    justify-content: space-between; /* Pousse les boutons à droite */
+    gap: 12px;
+    width: 100%;
 }
 
 .theme-switcher-title {
@@ -663,31 +663,28 @@ html.is-dark .bp3-pill-default .bp3-sdot { background: rgba(255,255,255,0.4); }
     font-weight: 600;
     color: var(--text-secondary);
     white-space: nowrap;
-    flex: 1; /* Prend l'espace restant sans pousser */
+    flex-shrink: 1; /* Permet au titre de laisser la place aux boutons */
 }
 
 .theme-switcher-btns {
     display: flex;
     gap: 6px;
-    flex-shrink: 0; /* Empêche les boutons de s'écraser */
+    flex-shrink: 0; /* Empêche le groupe de boutons de rétrécir */
 }
 
 .theme-btn {
-    width: 58px; /* Largeur fixe pour que l'icône ne disparaisse pas */
-    height: 48px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 2px;
-    padding: 0; /* Reset du padding pour la précision */
-    border-radius: 12px;
-    background: rgba(0, 0, 0, 0.04); /* Fond léger gris en mode clair */
-    border: 1px solid rgba(0, 0, 0, 0.08);
+    width: 52px; /* Largeur fixe pour stabiliser l'icône */
+    height: 44px;
+    padding: 4px;
+    border-radius: 10px;
+    background: var(--item-bg);
+    border: 1px solid var(--item-border);
     cursor: pointer;
     transition: all 0.2s ease;
-    font-family: 'DM Sans', sans-serif;
-    min-width: 54px;
 }
 
 .theme-btn:hover { 
@@ -729,18 +726,22 @@ html.is-dark .theme-btn.active .theme-btn-label {
 }
 @media (max-width: 480px) {
     .theme-switcher-inner {
-        flex-direction: column; /* Stack label above buttons */
-        align-items: flex-start;
-        gap: 8px;
+        flex-direction: row; /* Garde l'alignement horizontal */
+        flex-wrap: wrap;    /* Mais permet de passer à la ligne si besoin */
+    }
+    
+    .theme-switcher-title {
+        margin-bottom: 4px;
+        width: 100%; /* Le titre prend toute la ligne sur très petit écran */
     }
 
     .theme-switcher-btns {
         width: 100%;
-        justify-content: space-between; /* Spread buttons across the width */
+        justify-content: space-between;
     }
 
     .theme-btn {
-        flex: 1; /* Make buttons equal width */
+        flex: 1; /* Les boutons se partagent l'espace équitablement */
     }
 }
 

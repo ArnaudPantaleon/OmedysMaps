@@ -650,13 +650,38 @@ html.is-dark .bp3-pill-default .bp3-sdot { background: rgba(255,255,255,0.4); }
 /* ============================================================
    THEME SWITCHER — Correction visuelle Arnaud
    ============================================================ */
+.theme-switcher-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%; /* S'assure de prendre toute la largeur */
+}
+
+.theme-switcher-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    flex: 1; /* Prend l'espace restant sans pousser */
+}
+
+.theme-switcher-btns {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0; /* Empêche les boutons de s'écraser */
+}
+
 .theme-btn {
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    gap: 3px;
-    padding: 7px 10px; 
-    border-radius: 10px;
+    width: 58px; /* Largeur fixe pour que l'icône ne disparaisse pas */
+    height: 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 0; /* Reset du padding pour la précision */
+    border-radius: 12px;
     background: rgba(0, 0, 0, 0.04); /* Fond léger gris en mode clair */
     border: 1px solid rgba(0, 0, 0, 0.08);
     cursor: pointer;
@@ -719,18 +744,12 @@ html.is-dark .theme-btn.active .theme-btn-label {
     }
 }
 
-.theme-switcher-title {
-    background: var(--glass-bg);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--glass-border);
-    border-radius: 18px;
-    box-shadow: var(--shadow-float);
-    padding: 14px 16px;
-    pointer-events: auto;
-    position: relative;
-    overflow: hidden;
-    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.10) 0%, transparent 60%);
+.theme-switcher-title  {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: var(--text-secondary);
+    text-transform: none;
 }
 
 /* ============================================================

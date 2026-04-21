@@ -33,10 +33,37 @@ html.is-dark {
   color: var(--p-text);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-  display: flex;
+  
+  /* L'important est ici : */
+  display: flex; 
   flex-direction: column;
-  box-shadow: -10px 0 50px rgba(0,0,0,0.1);
+  
+  /* On le cache par défaut avec transform */
   transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Version Desktop */
+@media (min-width: 601px) {
+  #site-panel {
+    top: 0; right: 0; bottom: 0;
+    width: 400px;
+    transform: translateX(100%); /* Caché à droite */
+  }
+  #site-panel.open { 
+    transform: translateX(0); /* Affiché */
+  }
+}
+
+/* Version Mobile */
+@media (max-width: 600px) {
+  #site-panel {
+    left: 0; right: 0; bottom: 0;
+    height: 82vh;
+    transform: translateY(100%); /* Caché en bas */
+  }
+  #site-panel.open { 
+    transform: translateY(0); /* Affiché */
+  }
 }
 
 /* ── Header : Titre plus fort ─────────────────────────────────── */

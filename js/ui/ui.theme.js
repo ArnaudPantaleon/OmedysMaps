@@ -3,7 +3,7 @@ import { setTheme, getTheme } from "../core/theme.js"
 const LABELS = {
   light:  { icon: "fa-sun",     label: "Clair"  },
   dark:   { icon: "fa-moon",    label: "Sombre" },
-  system: { icon: "fa-display", label: "Auto"   }
+  system: { icon: "fa-circle-half-stroke", label: "Auto"   }
 }
 
 export function initThemeSwitcher() {
@@ -29,7 +29,7 @@ export function initThemeSwitcher() {
     const btn = document.createElement("button")
     btn.className = "theme-btn" + (key === current ? " active" : "")
     btn.dataset.theme = key
-    btn.innerHTML = `<i class="fa-regular ${icon} theme-btn-icon"></i><span class="theme-btn-label">${label}</span>`
+    btn.innerHTML = `<i class="fa-solid ${icon} theme-btn-icon"></i><span class="theme-btn-label">${label}</span>`
     
     btn.addEventListener("click", () => {
       setTheme(key); // Cela va maintenant déclencher l'événement global

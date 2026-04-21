@@ -55,8 +55,8 @@ export class MapEngine {
         const icon = L.divIcon({
           className: "",
           html: `<div class="cabinet-marker" style="--cm-color:${color}">
-            <div class="cabinet-pulse"></div>
-            <div class="cabinet-pin"><i class="fa-solid fa-briefcase-medical"></i></div>
+            <div class="salle-pulse"></div>
+            <div class="salle-pin"><i class="fa-solid fa-briefcase-medical"></i></div>
           </div>`,
           iconSize: [24, 24], iconAnchor: [18, 18]
         })

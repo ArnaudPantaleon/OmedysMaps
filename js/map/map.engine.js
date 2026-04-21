@@ -12,11 +12,11 @@ export class MapEngine {
     
     if(theme.getTheme() === "dark"){
         L.tileLayer(CONFIG.map.themedark, {
-          attribution: "&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>"
+          attribution: "OpenStreetMap CARTO"
         }).addTo(this.map)
     }else{
       L.tileLayer(CONFIG.map.themelight, {
-          attribution: "&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>"
+          attribution: "OpenStreetMap CARTO"
         }).addTo(this.map)
     }
 

@@ -15,16 +15,15 @@ function _apply(theme) {
 
   if (theme === "system") {
     isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    root.setAttribute("data-theme", isDark ? "dark" : "light");
   } else {
     isDark = theme === "dark";
-    root.setAttribute("data-theme", theme);
   }
 
+  root.setAttribute("data-theme", isDark ? "dark" : "light");
   root.classList.toggle("is-dark", isDark);
-
-  // AJOUT : Dispatch d'un événement personnalisé pour la carte
-  window.dispatchEvent(new CustomEvent("themechanged", { detail: { theme } }));
+  window.dispatchEvent(new CustomEvent("theme-changed", { 
+    detail: { theme, isDark } 
+  }));
 }
 
 // ── Écouter les changements système quand on est en mode "system" ────────────

@@ -8,14 +8,27 @@ export class MapEngine {
 
 constructor() {
     
-    const isMobile = window.innerWidth <= 768
+    const isMobile = window.matchMedia("(max-width: 768px)").matches
     
-      const zoom = isMobile
+    this.map = L.map("map", {
+      zoomControl: false,
+      minZoom: isMobile ? 10 : 12,
+      maxZoom:  maxZoom: 18
+    )
+    }).setView(
+      CONFIG.map.center,
+
+    
+    const mediaQuery = window.matchMedia("(max-width: 768px)")
+    
+    mediaQuery.addEventListener("change", e => {
+      this.map.setZoom(e.matches
         ? CONFIG.map.mobileZoom
         : CONFIG.map.zoom
+      )
+    })
 
-    this.map = L.map("map", { zoomControl: false })
-      .setView(CONFIG.map.center, CONFIG.map.zoom)
+
     
     // Déterminer l'URL initiale
     let initialTheme = getTheme();

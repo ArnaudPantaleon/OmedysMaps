@@ -7,6 +7,13 @@ import { setTheme, getTheme } from "../core/theme.js"
 export class MapEngine {
 
 constructor() {
+    
+    const isMobile = window.innerWidth <= 768
+    
+      const zoom = isMobile
+        ? CONFIG.map.mobileZoom
+        : CONFIG.map.zoom
+
     this.map = L.map("map", { zoomControl: false })
       .setView(CONFIG.map.center, CONFIG.map.zoom)
     

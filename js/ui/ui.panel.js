@@ -48,6 +48,7 @@ export function initSitePanel() {
   window.addEventListener("theme-changed", (e) => {
     const panel = document.getElementById("site-panel");
     if (!panel || !panel.classList.contains("panel--open")) return;
+    });
 }
 
 // ── Ouverture ─────────────────────────────────────────────────

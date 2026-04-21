@@ -1,6 +1,7 @@
 export const CONFIG = {
 
   map: {
+    theme: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
     center: [46.8, 2.5],
     zoom:   6
   },

@@ -34,7 +34,7 @@ async function start() {
   // Gestion du changement de mode système en temps réel
   window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
     if (getTheme() === "system") {
-      map.updateMapTheme("system")
+      map.updateTheme("system")
     }
   })
 }

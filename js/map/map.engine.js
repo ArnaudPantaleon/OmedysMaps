@@ -16,6 +16,7 @@ export class MapEngine {
     // Salles clusterisées
     this.cluster = L.markerClusterGroup({
         disableClusteringAtZoom: 1, // No clustering at zoom 5 and below
+        maxClusterRadius: 80,       // Default radius in pixels
         zoomToBoundsOnClick: true   // Click cluster to zoom in
     });
     this.map.addLayer(this.cluster)

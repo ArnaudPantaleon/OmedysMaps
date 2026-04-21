@@ -702,7 +702,22 @@ html.is-dark .theme-btn.active .theme-btn-icon,
 html.is-dark .theme-btn.active .theme-btn-label {
     color: var(--primary) !important;
 }
+@media (max-width: 480px) {
+    .theme-switcher-inner {
+        flex-direction: column; /* Stack label above buttons */
+        align-items: flex-start;
+        gap: 8px;
+    }
 
+    .theme-switcher-btns {
+        width: 100%;
+        justify-content: space-between; /* Spread buttons across the width */
+    }
+
+    .theme-btn {
+        flex: 1; /* Make buttons equal width */
+    }
+}
 /* ============================================================
    RESPONSIVE
    ============================================================ */

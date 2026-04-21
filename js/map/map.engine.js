@@ -1,5 +1,6 @@
 import { CONFIG }      from "../core/config.js"
 import { store }       from "../core/store.js"
+import { theme }       from "../core/theme.js"
 import { updateStats } from "../ui/ui.stats.js"
 import { openSitePanel } from "../ui/ui.panel.js"
 
@@ -8,10 +9,16 @@ export class MapEngine {
   constructor() {
     this.map = L.map("map", { zoomControl: false })
       .setView(CONFIG.map.center, CONFIG.map.zoom)
-
-    L.tileLayer(CONFIG.map.theme, {
-      attribution: "© OpenStreetMap"
-    }).addTo(this.map)
+    
+    if(theme.getTheme() === "dark"){
+        L.tileLayer(CONFIG.map.themedark, {
+          attribution: "&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>"
+        }).addTo(this.map)
+    }else{
+      L.tileLayer(CONFIG.map.themelight, {
+          attribution: "&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>"
+        }).addTo(this.map)
+    }
 
     // Salles clusterisées
     this.cluster = L.markerClusterGroup({

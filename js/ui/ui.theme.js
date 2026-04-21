@@ -32,14 +32,9 @@ export function initThemeSwitcher() {
     btn.innerHTML = `<i class="fa-regular ${icon} theme-btn-icon"></i><span class="theme-btn-label">${label}</span>`
     
     btn.addEventListener("click", () => {
-      setTheme(key);
+      setTheme(key); // Cela va maintenant déclencher l'événement global
       
-      // Utilisation de l'instance globale exposée dans main.js
-      if (window.mapInstance && typeof window.mapInstance.updateTheme === 'function') {
-        window.mapInstance.updateTheme(key);
-      }
-    
-      // Mise à jour visuelle des boutons
+      // Mise à jour visuelle des boutons uniquement
       btns.querySelectorAll(".theme-btn").forEach(b =>
         b.classList.toggle("active", b.dataset.theme === key)
       );

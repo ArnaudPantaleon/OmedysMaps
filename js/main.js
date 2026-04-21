@@ -1,4 +1,4 @@
-import { initTheme }        from "./core/theme.js"
+import { initTheme, getTheme } from "./core/theme.js" // Ajout de getTheme ici
 import { loadData }         from "./data/data.loader.js"
 import { MapEngine }        from "./map/map.engine.js"
 import { initFilters }      from "./ui/ui.filters.js"
@@ -10,7 +10,6 @@ import { initSitePanel }    from "./ui/ui.panel.js"
 initTheme()
 
 async function start() {
-
   initSitePanel()
 
   await loadData()
@@ -18,23 +17,24 @@ async function start() {
   const zones = await fetch("/data/json/zones.json").then(r => r.json()).catch(() => null)
   window._zonesCache = zones
 
-  const map = new MapEngine();
-  window.mapInstance = map; // On expose l'instance pour ui.theme.js
-  map.renderSites();
+  const map = new MapEngine()
+  window.mapInstance = map; // Important pour que ui.theme.js puisse y accéder
+  map.renderSites()
   
-  // Appel initial pour synchroniser au chargement
-  mapEngine.updateMapTheme(getTheme());
+  // Correction : utiliser 'map' et non 'mapEngine'
+  map.updateMapTheme(getTheme())
+
   initFilters(map, zones)
   initSearch(map)
   initStats()
   initThemeSwitcher()
 
+  // Gestion du changement de mode système en temps réel
   window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
-        if (getTheme() === "system") {
-            map.updateMapTheme("system");
-        }
-    });
-
+    if (getTheme() === "system") {
+      map.updateMapTheme("system")
+    }
+  })
 }
 
 start()

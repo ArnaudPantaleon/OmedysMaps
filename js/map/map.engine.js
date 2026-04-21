@@ -32,7 +32,21 @@ export class MapEngine {
     this.cabinetLayer = L.layerGroup()
     this.map.addLayer(this.cabinetLayer)
   }
-
+  updateTheme(theme) {
+    let target = theme;
+    
+    // Gestion du mode automatique (système)
+    if (theme === 'system') {
+      target = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+  
+    // Récupération de l'URL depuis la CONFIG
+    const newTileUrl = target === 'dark' ? CONFIG.map.themedark : CONFIG.map.themelight;
+  
+    if (this.baseLayer) {
+      this.baseLayer.setUrl(newTileUrl);
+    }
+  }
   renderSites() {
     this.cluster.clearLayers()
     this.cabinetLayer.clearLayers()

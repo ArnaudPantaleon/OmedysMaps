@@ -648,51 +648,60 @@ html.is-dark .bp3-pill-default { background: rgba(255,255,255,0.08); color: rgba
 html.is-dark .bp3-pill-default .bp3-sdot { background: rgba(255,255,255,0.4); }
 
 /* ============================================================
-   THEME SWITCHER
+   THEME SWITCHER — Correction visuelle Arnaud
    ============================================================ */
-.theme-switcher {
-    padding: 12px 14px;
-}
-.theme-switcher::before { display: none; } /* pas de glow sur cette tile */
-
-.theme-switcher-inner {
-    display: flex; align-items: center; justify-content: space-between; gap: 10px;
-}
-
-.theme-switcher-title {
-    font-size: 13px; font-weight: 500;
-    color: var(--text-secondary);
-    white-space: nowrap;
-}
-
-.theme-switcher-btns {
-    display: flex; gap: 6px;
-}
-
 .theme-btn {
-    display: flex; flex-direction: column; align-items: center; gap: 3px;
-    padding: 7px 10px; border-radius: 10px;
-    background: var(--item-bg);
-    border: 1px solid var(--item-border);
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    gap: 3px;
+    padding: 7px 10px; 
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.04); /* Fond léger gris en mode clair */
+    border: 1px solid rgba(0, 0, 0, 0.08);
     cursor: pointer;
-    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    transition: all 0.2s ease;
     font-family: 'DM Sans', sans-serif;
-}
-.theme-btn:hover  { background: var(--item-bg-hover); }
-.theme-btn:active { transform: scale(0.96); }
-.theme-btn.active {
-    background: var(--primary-dim);
-    border-color: var(--primary);
-    box-shadow: 0 0 0 2px rgba(0,149,151,0.15);
+    min-width: 54px;
 }
 
-.theme-btn-icon  { font-size: 13px; line-height: 1; color: var(--text-secondary); }
-.theme-btn.active .theme-btn-icon { color: var(--primary); }
-.theme-btn-label {
-    font-size: 10px; font-weight: 500;
-    color: var(--text-secondary);
+.theme-btn:hover { 
+    background: rgba(0, 0, 0, 0.08); 
 }
-.theme-btn.active .theme-btn-label { color: var(--primary); }
+
+/* Forcer la couleur des icônes/labels non-actifs en mode CLAIR */
+.theme-btn-icon, .theme-btn-label {
+    color: rgba(0, 0, 0, 0.5) !important; 
+    transition: color 0.2s;
+}
+
+/* État Actif (Clair et Sombre) */
+.theme-btn.active {
+    background: var(--primary-dim) !important;
+    border-color: var(--primary) !important;
+}
+
+.theme-btn.active .theme-btn-icon,
+.theme-btn.active .theme-btn-label {
+    color: var(--primary) !important;
+    font-weight: 700;
+}
+
+/* Ajustements spécifiques quand le MODE SOMBRE est actif */
+html.is-dark .theme-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+html.is-dark .theme-btn-icon, 
+html.is-dark .theme-btn-label {
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+
+html.is-dark .theme-btn.active .theme-btn-icon,
+html.is-dark .theme-btn.active .theme-btn-label {
+    color: var(--primary) !important;
+}
 
 /* ============================================================
    RESPONSIVE

@@ -18,11 +18,9 @@ async function start() {
   const zones = await fetch("/data/json/zones.json").then(r => r.json()).catch(() => null)
   window._zonesCache = zones
 
-  const map = new MapEngine()
-  map.renderSites()
-  window.addEventListener("themechanged", (e) => {
-  mapEngine.updateMapTheme(e.detail.theme);
-  });
+  const map = new MapEngine();
+  window.mapInstance = map; // On expose l'instance pour ui.theme.js
+  map.renderSites();
   
   // Appel initial pour synchroniser au chargement
   mapEngine.updateMapTheme(getTheme());
@@ -30,6 +28,12 @@ async function start() {
   initSearch(map)
   initStats()
   initThemeSwitcher()
+
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+        if (getTheme() === "system") {
+            map.updateMapTheme("system");
+        }
+    });
 
 }
 

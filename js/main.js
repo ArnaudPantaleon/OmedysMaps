@@ -28,6 +28,9 @@ async function start() {
   initStats()
   initThemeSwitcher()
 
+  window.addEventListener("theme-changed", (e) => {
+    map.updateTheme(e.detail.theme);
+  });
   // Gestion du changement de mode système en temps réel
   window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
     if (getTheme() === "system") {

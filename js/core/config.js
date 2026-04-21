@@ -8,15 +8,15 @@ export const CONFIG = {
   // Statuts cabinets
   statusCabinet: {
     "Ouvert":             { color: "#009597", checked: true  },
-    "Ouverture en cours": { color: "#f59e0b", checked: true  },
+    "Ouverture en cours": { color: "#ffcb00", checked: true  },
     "Virtuel":            { color: "#64748b", checked: false }
   },
 
   // Statuts salles
   statusSalle: {
-    "Ouvertes":               { color: "#579bfc", checked: true  },
-    "Ouverture en cours":     { color: "#f59e0b", checked: false  },
-    "Telesecretariat OMEDYS": { color: "#009597", checked: true  }
+    "Ouvertes":               { color: "#00c875", checked: true  },
+    "Ouverture en cours":     { color: "#ffcb00", checked: false  },
+    "Telesecretariat OMEDYS": { color: "#ff5ac4", checked: true  }
   },
 
   // Types de sites (salles)

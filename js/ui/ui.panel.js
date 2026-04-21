@@ -41,9 +41,13 @@ export function initSitePanel() {
 
   document.getElementById("panel-close-btn")
     .addEventListener("click", closePanel)
-
+  
   // Swipe down pour fermer (mobile)
   _initSwipe(panel)
+
+  window.addEventListener("theme-changed", (e) => {
+    const panel = document.getElementById("site-panel");
+    if (!panel || !panel.classList.contains("panel--open")) return;
 }
 
 // ── Ouverture ─────────────────────────────────────────────────

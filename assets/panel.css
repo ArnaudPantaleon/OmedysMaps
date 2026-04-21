@@ -1,181 +1,122 @@
 /* ═══════════════════════════════════════════════════════════════
-   SITE PANEL — Version Premium Bento (Apple Style)
+   SITE PANEL — LUXURY BENTO EDITION
    ═══════════════════════════════════════════════════════════════ */
-:root {
-    --primary:        #009597;
-    --primary-glow:   rgba(0, 149, 151, 0.35);
-    --primary-dim:    rgba(0, 149, 151, 0.15);
 
-    /* Tokens dynamiques optimisés */
-    --p-bg:           rgba(242, 242, 247, 0.8); /* Gris très léger style iOS */
-    --p-card:         #ffffff;
-    --p-text:         #1d1d1f;
-    --p-text-dim:     #86868b;
-    --p-border:       rgba(0, 0, 0, 0.04);
-    --p-shadow:       0 4px 14px rgba(0, 0, 0, 0.05);
-    --glass-blur:     blur(40px) saturate(210%);
-}
-
-html.is-dark {
-    --p-bg:           rgba(10, 18, 30, 0.85);
-    --p-card:         rgba(255, 255, 255, 0.06);
-    --p-text:         #f5f5f7;
-    --p-text-dim:     #a1a1a6;
-    --p-border:       rgba(255, 255, 255, 0.08);
-    --p-shadow:       0 4px 20px rgba(0, 0, 0, 0.2);
-}
-
-/* ── Panel base ───────────────────────────────────────────────── */
 #site-panel {
-  position: fixed;
-  z-index: 1200;
-  /* Correction : On s'assure que le fond est visible */
-  background: var(--p-bg, rgba(255, 255, 255, 0.95)) !important;
-  color: var(--p-text, #1d1d1f);
-  
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto; /* Permet le scroll si le contenu est long */
-  
-  backdrop-filter: blur(30px) saturate(180%);
-  -webkit-backdrop-filter: blur(30px) saturate(180%);
-  
-  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-  box-shadow: -10px 0 50px rgba(0,0,0,0.15);
+    position: fixed;
+    z-index: 1200;
+    background: rgba(242, 242, 247, 0.85); /* Gris soyeux iOS */
+    backdrop-filter: blur(40px) saturate(200%);
+    -webkit-backdrop-filter: blur(40px) saturate(200%);
+    color: #1d1d1f;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-shadow: -10px 0 50px rgba(0,0,0,0.08);
 }
 
-/* Positionnement Desktop */
+/* --- Structure Desktop --- */
 @media (min-width: 601px) {
-  #site-panel {
-    top: 0; 
-    right: 0; 
-    bottom: 0;
-    width: 400px;
-    transform: translateX(100%); /* Caché par défaut */
-    border-left: 1px solid rgba(0,0,0,0.05);
-  }
-}
-
-/* Positionnement Mobile */
-@media (max-width: 600px) {
-  #site-panel {
-    left: 0; 
-    right: 0; 
-    bottom: 0;
-    height: 85vh;
-    transform: translateY(100%); /* Caché en bas */
-    border-radius: 24px 24px 0 0;
-  }
-}
-
-/* La classe qui fait apparaître le panel */
-#site-panel.open {
-  transform: translateX(0) !important;
-  display: flex !important;
-}
-
-@media (max-width: 600px) {
-    #site-panel.open {
-        transform: translateY(0) !important;
+    #site-panel {
+        top: 0; right: 0; bottom: 0;
+        width: 420px;
+        transform: translateX(100%);
     }
 }
 
-/* ── Header : Titre plus fort ─────────────────────────────────── */
-.panel-header {
-  padding: 30px 24px 10px;
+/* --- Structure Mobile (Bottom Sheet) --- */
+@media (max-width: 600px) {
+    #site-panel {
+        left: 0; right: 0; bottom: 0;
+        height: 85vh;
+        border-radius: 28px 28px 0 0;
+        transform: translateY(100%);
+    }
 }
 
-.panel-title {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 22px; /* Plus grand */
-  font-weight: 800; /* Plus gras */
-  letter-spacing: -0.03em;
-  color: var(--p-text);
-}
+#site-panel.open { transform: translate(0, 0); }
 
-/* ── Les Bento Cards (Sections) ───────────────────────────────── */
+/* --- Contenu : L'effet Bento --- */
 .panel-content {
-    padding: 12px 20px;
+    padding: 10px 20px;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 12px; /* Espace entre les cartes */
 }
 
-/* Style commun pour chaque bloc d'info */
+/* La carte Bento */
 .panel-info-block, 
 .panel-contact-block, 
 .panel-schedule, 
 .panel-notes {
-  background: var(--p-card);
-  border: 1px solid var(--p-border);
-  border-radius: 18px; /* Arrondis Apple */
-  padding: 16px;
-  box-shadow: var(--p-shadow);
-  transition: transform 0.2s ease;
+    background: #ffffff !important;
+    border: none !important; /* On vire les bordures moches */
+    border-radius: 22px; /* Arrondis très doux */
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03); /* Ombre quasi invisible */
 }
 
-.panel-info-block:active {
-    transform: scale(0.98);
-}
-
-/* Labels de section (ex: Horaires, Contact) */
+/* Titres des sections */
 .panel-section-label {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
+    color: #86868b;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: var(--p-text-dim);
-    margin-bottom: 6px;
+    margin-bottom: 8px;
     display: block;
 }
 
-/* ── Statut Pill (Ouvert/Fermé) ───────────────────────────────── */
-.panel-statut-pill {
-    padding: 4px 12px;
-    font-size: 11px;
-    font-weight: 700;
-    border-radius: 100px;
-    background: var(--primary-dim);
-    color: var(--primary);
-    display: inline-flex;
-    margin-bottom: 8px;
+/* --- Header --- */
+.panel-header {
+    padding: 32px 24px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
 }
 
-/* ── Actions (Footer) ─────────────────────────────────────────── */
+.panel-title {
+    font-size: 26px; /* Très gros titre */
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1.1;
+}
+
+/* --- Footer & Boutons --- */
 .panel-actions {
-  display: flex;
-  gap: 12px;
-  padding: 24px;
-  margin-top: auto;
-  background: linear-gradient(to top, var(--p-bg) 80%, transparent);
+    padding: 24px;
+    display: flex;
+    gap: 12px;
+    background: linear-gradient(to top, rgba(242,242,247,1), transparent);
 }
 
 .panel-action-btn {
-  flex: 1;
-  height: 52px;
-  border-radius: 16px;
-  font-weight: 700;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: all 0.2s;
+    flex: 1;
+    height: 54px;
+    border-radius: 18px;
+    font-weight: 700;
+    border: none;
+    transition: transform 0.2s cubic-bezier(0.3, 0, 0.3, 1);
 }
 
-.panel-action--copy {
-  background: var(--p-card);
-  border: 1px solid var(--p-border);
-  color: var(--p-text) !important;
+.panel-action--link {
+    background: #009597;
+    color: white !important;
+    box-shadow: 0 10px 25px rgba(0, 149, 151, 0.3);
 }
 
-.panel-action--link { /* Le bouton principal */
-  background: var(--primary);
-  color: white !important;
-  box-shadow: 0 10px 25px var(--primary-glow);
+.panel-action--link:active { transform: scale(0.96); }
+
+/* --- Mode Sombre Premium --- */
+html.is-dark #site-panel {
+    background: rgba(20, 20, 25, 0.85);
+    color: #f5f5f7;
 }
 
-.panel-action--link:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 30px var(--primary-glow);
+html.is-dark .panel-info-block, 
+html.is-dark .panel-contact-block, 
+html.is-dark .panel-schedule {
+    background: rgba(255, 255, 255, 0.06) !important;
+    box-shadow: none;
 }

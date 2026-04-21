@@ -56,14 +56,13 @@ export class MapEngine {
           className: "",
           html: `<div class="cabinet-marker" style="--cm-color:${color}">
             <div class="salle-pulse"></div>
-            <div class="salle-pin">
+            <div class="salle-pin">`
             if (site.typeSite === "véhicule de télémédecine assitée") {
-              <i class="fa-solid fa-truck-medical"></i>
+               html: `<i class="fa-solid fa-truck-medical"></i>`
             else {
-              <i class="fa-solid fa-briefcase-medical"></i>
+               html: `<i class="fa-solid fa-briefcase-medical"></i>`
             }
-            </div>
-          </div>`,
+            html: `</div></div>`,
           iconSize: [24, 24], iconAnchor: [18, 18]
         })
         marker = L.marker([site.lat, site.lng], { icon, zIndexOffset: 1000 })

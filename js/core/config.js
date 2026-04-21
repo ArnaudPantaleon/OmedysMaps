@@ -4,7 +4,7 @@ export const CONFIG = {
     themelight: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
     themedark: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
     center: [46.8, 2.5],
-    zoom:   6
+    zoom:   8
   },
 
   // Statuts cabinets

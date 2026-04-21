@@ -1,49 +1,28 @@
 /* ═══════════════════════════════════════════════════════════════
-   SITE PANEL — Version Synchronisée (Correctif Sombre)
+   SITE PANEL — Version Premium Bento (Apple Style)
    ═══════════════════════════════════════════════════════════════ */
 :root {
     --primary:        #009597;
     --primary-glow:   rgba(0, 149, 151, 0.35);
     --primary-dim:    rgba(0, 149, 151, 0.15);
 
-    /* Tokens dynamiques (Clair par défaut) */
-    --p-bg:           rgba(255, 255, 255, 0.75);
-    --p-text:         #0f172a;
-    --p-text-dim:     #64748b;
-    --p-border:       rgba(0, 0, 0, 0.07);
-    --p-accent-bg:    rgba(0, 0, 0, 0.03);
-    --p-close-bg:     rgba(0, 0, 0, 0.04);
-    --p-handle:       rgba(0, 0, 0, 0.18);
-    
-    --glass-blur:     blur(28px) saturate(180%);
+    /* Tokens dynamiques optimisés */
+    --p-bg:           rgba(242, 242, 247, 0.8); /* Gris très léger style iOS */
+    --p-card:         #ffffff;
+    --p-text:         #1d1d1f;
+    --p-text-dim:     #86868b;
+    --p-border:       rgba(0, 0, 0, 0.04);
+    --p-shadow:       0 4px 14px rgba(0, 0, 0, 0.05);
+    --glass-blur:     blur(40px) saturate(210%);
 }
 
-/* ── Mode Sombre (Bascule automatique & manuelle) ────────────── */
 html.is-dark {
-    --p-bg:           rgba(10, 18, 35, 0.86);
-    --p-text:         #f1f5f9;
-    --p-text-dim:     #94a3b8;
-    --p-border:       rgba(255, 255, 255, 0.07);
-    --p-accent-bg:    rgba(255, 255, 255, 0.05);
-    --p-close-bg:     rgba(255, 255, 255, 0.05);
-    --p-handle:       rgba(255, 255, 255, 0.20);
-}
-
-/* ── Overlay ──────────────────────────────────────────────────── */
-#panel-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.30);
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
-  z-index: 1100;
-  opacity: 0;
-  transition: opacity 0.25s;
-}
-#panel-overlay.open {
-  display: block;
-  opacity: 1;
+    --p-bg:           rgba(10, 18, 30, 0.85);
+    --p-card:         rgba(255, 255, 255, 0.06);
+    --p-text:         #f5f5f7;
+    --p-text-dim:     #a1a1a6;
+    --p-border:       rgba(255, 255, 255, 0.08);
+    --p-shadow:       0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 /* ── Panel base ───────────────────────────────────────────────── */
@@ -56,124 +35,106 @@ html.is-dark {
   -webkit-backdrop-filter: var(--glass-blur);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  transition: transform 0.32s cubic-bezier(0.32,0.72,0,1), background 0.3s ease;
+  box-shadow: -10px 0 50px rgba(0,0,0,0.1);
+  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-/* ── Desktop & Mobile Layout ──────────────────────────────────── */
-@media (min-width: 601px) {
-  #site-panel {
-    top: 0; right: 0; bottom: 0;
-    width: 400px;
-    border-left: 1px solid var(--p-border);
-    box-shadow: -20px 0 60px rgba(0,0,0,0.15);
-    transform: translateX(100%);
-  }
-  #site-panel.open { transform: translateX(0); }
-  .panel-handle { display: none; }
-}
-
-@media (max-width: 600px) {
-  #site-panel {
-    left: 0; right: 0; bottom: 0;
-    max-height: 82vh;
-    border-radius: 20px 20px 0 0;
-    border-top: 1px solid var(--p-border);
-    box-shadow: 0 -12px 48px rgba(0,0,0,0.18);
-    transform: translateY(100%);
-  }
-  #site-panel.open { transform: translateY(0); }
-}
-
-.panel-handle {
-  width: 36px; height: 4px;
-  background: var(--p-handle);
-  border-radius: 2px;
-  margin: 12px auto 0;
-  flex-shrink: 0;
-}
-
-/* ── Composants Internes ───────────────────────────────────────── */
+/* ── Header : Titre plus fort ─────────────────────────────────── */
 .panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 18px 0;
-}
-
-.panel-close {
-  display: flex; align-items: center; justify-content: center;
-  width: 30px; height: 30px;
-  border-radius: 50%;
-  border: 1px solid var(--p-border);
-  background: var(--p-close-bg);
-  color: var(--p-text-dim);
-  cursor: pointer;
-}
-
-.panel-title-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 10px 18px 14px;
-  border-bottom: 1px solid var(--p-border);
+  padding: 30px 24px 10px;
 }
 
 .panel-title {
   font-family: 'DM Sans', sans-serif;
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 22px; /* Plus grand */
+  font-weight: 800; /* Plus gras */
+  letter-spacing: -0.03em;
   color: var(--p-text);
-  margin: 0;
 }
 
-.panel-info-block, .panel-contact-block, .panel-notes {
-  background: var(--p-accent-bg);
-  color: var(--p-text);
-  border-radius: 8px;
-  padding: 9px 12px;
+/* ── Les Bento Cards (Sections) ───────────────────────────────── */
+.panel-content {
+    padding: 12px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px; /* Espace entre les cartes */
 }
 
+/* Style commun pour chaque bloc d'info */
+.panel-info-block, 
+.panel-contact-block, 
+.panel-schedule, 
 .panel-notes {
-    border-left: 3px solid var(--primary-glow);
-    color: var(--p-text-dim);
-}
-
-.panel-schedule {
-  background: rgba(0,149,151,0.06);
+  background: var(--p-card);
   border: 1px solid var(--p-border);
-  border-radius: 8px;
-  padding: 10px 12px;
+  border-radius: 18px; /* Arrondis Apple */
+  padding: 16px;
+  box-shadow: var(--p-shadow);
+  transition: transform 0.2s ease;
 }
 
-/* ── Actions (footer) ─────────────────────────────────────────── */
+.panel-info-block:active {
+    transform: scale(0.98);
+}
+
+/* Labels de section (ex: Horaires, Contact) */
+.panel-section-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--p-text-dim);
+    margin-bottom: 6px;
+    display: block;
+}
+
+/* ── Statut Pill (Ouvert/Fermé) ───────────────────────────────── */
+.panel-statut-pill {
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 100px;
+    background: var(--primary-dim);
+    color: var(--primary);
+    display: inline-flex;
+    margin-bottom: 8px;
+}
+
+/* ── Actions (Footer) ─────────────────────────────────────────── */
 .panel-actions {
   display: flex;
+  gap: 12px;
+  padding: 24px;
+  margin-top: auto;
+  background: linear-gradient(to top, var(--p-bg) 80%, transparent);
+}
+
+.panel-action-btn {
+  flex: 1;
+  height: 52px;
+  border-radius: 16px;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   gap: 8px;
-  padding: 12px 18px;
-  border-top: 1px solid var(--p-border);
+  transition: all 0.2s;
 }
 
 .panel-action--copy {
-  background: var(--p-accent-bg);
+  background: var(--p-card);
+  border: 1px solid var(--p-border);
   color: var(--p-text) !important;
 }
 
-.panel-action--maps {
-  background: rgba(37,99,235,0.12);
-  color: #3b82f6 !important;
+.panel-action--link { /* Le bouton principal */
+  background: var(--primary);
+  color: white !important;
+  box-shadow: 0 10px 25px var(--primary-glow);
 }
 
-/* ── Toast ───────────────────────────────────────────────────── */
-#panel-toast {
-  position: fixed;
-  bottom: 88px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--p-text);
-  color: var(--p-bg);
-  padding: 9px 18px;
-  border-radius: 20px;
-  z-index: 1400;
-  transition: all 0.2s;
+.panel-action--link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px var(--primary-glow);
 }

@@ -45,7 +45,7 @@ export class MapEngine {
           className: "",
           html: `<div class="cabinet-marker" style="--cm-color:${color}">
             <div class="cabinet-pulse"></div>
-            <div class="cabinet-pin"><i class="fa-solid fa-briefcase-medical"></i></div>
+            <div class="cabinet-pin"><i class="fa-solid fa-hospital"></i></div>
           </div>`,
           iconSize: [36, 36], iconAnchor: [18, 18]
         })
@@ -56,7 +56,13 @@ export class MapEngine {
           className: "",
           html: `<div class="cabinet-marker" style="--cm-color:${color}">
             <div class="salle-pulse"></div>
-            <div class="salle-pin"><i class="fa-solid fa-briefcase-medical"></i></div>
+            <div class="salle-pin">
+            if (site.typeSite === "véhicule de télémédecine assitée") {
+              <i class="fa-solid fa-truck-medical"></i>
+            else {
+              <i class="fa-solid fa-briefcase-medical"></i>
+            }
+            </div>
           </div>`,
           iconSize: [24, 24], iconAnchor: [18, 18]
         })

@@ -30,12 +30,13 @@ export function initThemeSwitcher() {
     btn.className = "theme-btn" + (key === current ? " active" : "")
     btn.dataset.theme = key
     btn.innerHTML = `<i class="fa-regular ${icon} theme-btn-icon"></i><span class="theme-btn-label">${label}</span>`
+    
     btn.addEventListener("click", () => {
       setTheme(key);
       
-      // On appelle la mise à jour de la carte
-      if (map && typeof map.updateTheme === 'function') {
-        map.updateTheme(key);
+      // Utilisation de l'instance globale exposée dans main.js
+      if (window.mapInstance && typeof window.mapInstance.updateTheme === 'function') {
+        window.mapInstance.updateTheme(key);
       }
     
       // Mise à jour visuelle des boutons
@@ -52,5 +53,4 @@ export function initThemeSwitcher() {
   // Insérer à la fin du bento-wrapper
   const wrapper = document.querySelector(".bento-wrapper")
   if (wrapper) wrapper.appendChild(tile)
-
 }

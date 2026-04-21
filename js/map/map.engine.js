@@ -1,8 +1,8 @@
 import { CONFIG }      from "../core/config.js"
 import { store }       from "../core/store.js"
-import { theme }       from "../core/theme.js"
 import { updateStats } from "../ui/ui.stats.js"
 import { openSitePanel } from "../ui/ui.panel.js"
+import { setTheme, getTheme } from "../core/theme.js"
 
 export class MapEngine {
 
@@ -10,7 +10,7 @@ export class MapEngine {
     this.map = L.map("map", { zoomControl: false })
       .setView(CONFIG.map.center, CONFIG.map.zoom)
     
-    if(theme.getTheme() === "dark"){
+    if(getTheme() === "dark"){
         L.tileLayer(CONFIG.map.themedark, {
           attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
         }).addTo(this.map)

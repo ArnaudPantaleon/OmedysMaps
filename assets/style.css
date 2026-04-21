@@ -674,10 +674,10 @@ html.is-dark .bp3-pill-default .bp3-sdot { background: rgba(255,255,255,0.4); }
 
 .theme-btn {
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    gap: 5px;
+    flex-direction: row;
     justify-content: center;
-    width: 52px; /* Largeur fixe pour stabiliser l'icône */
+    width: 82px;
     height: 44px;
     padding: 4px;
     border-radius: 10px;
@@ -685,6 +685,7 @@ html.is-dark .bp3-pill-default .bp3-sdot { background: rgba(255,255,255,0.4); }
     border: 1px solid var(--item-border);
     cursor: pointer;
     transition: all 0.2s ease;
+    align-items: center;
 }
 
 .theme-btn:hover { 

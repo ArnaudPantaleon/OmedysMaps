@@ -490,6 +490,45 @@ body, html {
     color: #fff;
 }
 .cabinet-marker:hover .cabinet-pin { transform: scale(1.12); }
+/* ============================================================
+   MARQUEUR Salle — divIcon FA + halo pulsé
+   ============================================================ */
+.salle-marker {
+    position: relative;
+    width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center;
+}
+
+.salle-pulse {
+    position: absolute;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: var(--cm-color);
+    opacity: 0.35;
+    animation: cabinet-pulse 2s ease-out infinite;
+}
+
+@keyframes sallet-pulse {
+    0%   { transform: scale(0.7); opacity: 0.45; }
+    70%  { transform: scale(1.9); opacity: 0;    }
+    100% { transform: scale(1.9); opacity: 0;    }
+}
+
+.salle-pin {
+    position: relative; z-index: 1;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--cm-color);
+    border: 2.5px solid rgba(255,255,255,0.9);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.15s;
+}
+.salle-pin i {
+    font-size: 12px;
+    color: #fff;
+}
+.salle-marker:hover .salle-pin { transform: scale(1.12); }
 
 /* ============================================================
    ANIMATIONS

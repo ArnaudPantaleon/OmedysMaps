@@ -718,6 +718,21 @@ html.is-dark .theme-btn.active .theme-btn-label {
         flex: 1; /* Make buttons equal width */
     }
 }
+
+.theme-switcher-title {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: 18px;
+    box-shadow: var(--shadow-float);
+    padding: 14px 16px;
+    pointer-events: auto;
+    position: relative;
+    overflow: hidden;
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.10) 0%, transparent 60%);
+}
+
 /* ============================================================
    RESPONSIVE
    ============================================================ */

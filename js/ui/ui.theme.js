@@ -31,12 +31,18 @@ export function initThemeSwitcher() {
     btn.dataset.theme = key
     btn.innerHTML = `<i class="fa-regular ${icon} theme-btn-icon"></i><span class="theme-btn-label">${label}</span>`
     btn.addEventListener("click", () => {
-      setTheme(key)
-      // Mettre à jour l'état actif
+      setTheme(key);
+      
+      // On appelle la mise à jour de la carte
+      if (map && typeof map.updateTheme === 'function') {
+        map.updateTheme(key);
+      }
+    
+      // Mise à jour visuelle des boutons
       btns.querySelectorAll(".theme-btn").forEach(b =>
         b.classList.toggle("active", b.dataset.theme === key)
-      )
-    })
+      );
+    });
     btns.appendChild(btn)
   })
 

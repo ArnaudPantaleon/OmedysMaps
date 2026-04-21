@@ -52,10 +52,15 @@ export class MapEngine {
         marker = L.marker([site.lat, site.lng], { icon, zIndexOffset: 1000 })
         this.cabinetLayer.addLayer(marker)
       } else {
-        marker = L.circleMarker([site.lat, site.lng], {
-          radius: 7, fillColor: color,
-          color: "#fff", weight: 2, fillOpacity: .9
+        const icon = L.divIcon({
+          className: "",
+          html: `<div class="cabinet-marker" style="--cm-color:${color}">
+            <div class="cabinet-pulse"></div>
+            <div class="cabinet-pin"><i class="fa-solid fa-briefcase-medical"></i></div>
+          </div>`,
+          iconSize: [24, 24], iconAnchor: [18, 18]
         })
+        marker = L.marker([site.lat, site.lng], { icon, zIndexOffset: 1000 })
         this.cluster.addLayer(marker)
       }
 

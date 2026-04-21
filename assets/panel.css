@@ -29,41 +29,55 @@ html.is-dark {
 #site-panel {
   position: fixed;
   z-index: 1200;
-  background: var(--p-bg);
-  color: var(--p-text);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  /* Correction : On s'assure que le fond est visible */
+  background: var(--p-bg, rgba(255, 255, 255, 0.95)) !important;
+  color: var(--p-text, #1d1d1f);
   
-  /* L'important est ici : */
-  display: flex; 
+  display: flex;
   flex-direction: column;
+  overflow-y: auto; /* Permet le scroll si le contenu est long */
   
-  /* On le cache par défaut avec transform */
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  
   transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  box-shadow: -10px 0 50px rgba(0,0,0,0.15);
 }
 
-/* Version Desktop */
+/* Positionnement Desktop */
 @media (min-width: 601px) {
   #site-panel {
-    top: 0; right: 0; bottom: 0;
+    top: 0; 
+    right: 0; 
+    bottom: 0;
     width: 400px;
-    transform: translateX(100%); /* Caché à droite */
-  }
-  #site-panel.open { 
-    transform: translateX(0); /* Affiché */
+    transform: translateX(100%); /* Caché par défaut */
+    border-left: 1px solid rgba(0,0,0,0.05);
   }
 }
 
-/* Version Mobile */
+/* Positionnement Mobile */
 @media (max-width: 600px) {
   #site-panel {
-    left: 0; right: 0; bottom: 0;
-    height: 82vh;
+    left: 0; 
+    right: 0; 
+    bottom: 0;
+    height: 85vh;
     transform: translateY(100%); /* Caché en bas */
+    border-radius: 24px 24px 0 0;
   }
-  #site-panel.open { 
-    transform: translateY(0); /* Affiché */
-  }
+}
+
+/* La classe qui fait apparaître le panel */
+#site-panel.open {
+  transform: translateX(0) !important;
+  display: flex !important;
+}
+
+@media (max-width: 600px) {
+    #site-panel.open {
+        transform: translateY(0) !important;
+    }
 }
 
 /* ── Header : Titre plus fort ─────────────────────────────────── */

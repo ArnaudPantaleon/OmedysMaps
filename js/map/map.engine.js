@@ -6,20 +6,21 @@ import { setTheme, getTheme } from "../core/theme.js"
 
 export class MapEngine {
 
-  constructor() {
+constructor() {
     this.map = L.map("map", { zoomControl: false })
       .setView(CONFIG.map.center, CONFIG.map.zoom)
     
-    if(getTheme() === "dark"){
-        L.tileLayer(CONFIG.map.themedark, {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-        }).addTo(this.map)
-    }else{
-      L.tileLayer(CONFIG.map.themelight, {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-        }).addTo(this.map)
+    // Déterminer l'URL initiale
+    let initialTheme = getTheme();
+    if (initialTheme === "system") {
+      initialTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
     }
+    const url = initialTheme === "dark" ? CONFIG.map.themedark : CONFIG.map.themelight;
 
+    // CORRECTION : On stocke le layer dans this.baseLayer
+    this.baseLayer = L.tileLayer(url, {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    }).addTo(this.map)
     // Salles clusterisées
     this.cluster = L.markerClusterGroup({
         disableClusteringAtZoom: 18, // No clustering at zoom 5 and below

@@ -48,6 +48,7 @@ export function setTheme(theme) {
   localStorage.setItem(STORAGE_KEY, theme)
   _apply(theme)
   _watchSystem(theme === "system")
+  window.dispatchEvent(new CustomEvent("theme-changed", { detail: { theme } }));
 }
 
 export function getTheme() {

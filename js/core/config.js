@@ -16,6 +16,9 @@ export const CONFIG = {
   statusSalle: {
     "Ouvertes":               { color: "#00c875", checked: true  },
     "Ouverture en cours":     { color: "#ffcb00", checked: false  },
+    "Inactives":              { color: "#757575", checked: false  },
+    "Fermees ou refus OTTs":  { color: "#bb3354", checked: false  },
+    "En sourcing":            { color: "#ff642e", checked: false  },
     "Telesecretariat OMEDYS": { color: "#ff5ac4", checked: true  }
   },
 

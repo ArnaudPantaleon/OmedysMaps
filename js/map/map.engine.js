@@ -6,53 +6,68 @@ import { setTheme, getTheme } from "../core/theme.js"
 
 export class MapEngine {
 
-constructor() {
-    
-    const isMobile = window.matchMedia("(max-width: 768px)").matches
-    
-    this.map = L.map("map", {
-      zoomControl: false,
-      minZoom: isMobile ? 10 : 12,
-      maxZoom:  maxZoom: 18
-    )
-    }).setView(
-      CONFIG.map.center,
 
-    
-    const mediaQuery = window.matchMedia("(max-width: 768px)")
-    
-    mediaQuery.addEventListener("change", e => {
-      this.map.setZoom(e.matches
+constructor() {
+
+  const mediaQuery = window.matchMedia("(max-width: 768px)")
+  const isMobile = mediaQuery.matches
+
+  const initialZoom = isMobile
+    ? CONFIG.map.mobileZoom
+    : CONFIG.map.zoom
+
+  this.map = L.map("map", {
+    zoomControl: false,
+    minZoom: isMobile ? 10 : 12,
+    maxZoom: 18
+  }).setView(
+    CONFIG.map.center,
+    initialZoom
+  )
+
+  // Adapter le zoom si on change de breakpoint
+  mediaQuery.addEventListener("change", e => {
+    this.map.setZoom(
+      e.matches
         ? CONFIG.map.mobileZoom
         : CONFIG.map.zoom
-      )
-    })
+    )
+  })
 
-
-    
-    // Déterminer l'URL initiale
-    let initialTheme = getTheme();
-    if (initialTheme === "system") {
-      initialTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-    }
-    const url = initialTheme === "dark" ? CONFIG.map.themedark : CONFIG.map.themelight;
-
-    // CORRECTION : On stocke le layer dans this.baseLayer
-    this.baseLayer = L.tileLayer(url, {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-    }).addTo(this.map)
-    // Salles clusterisées
-    this.cluster = L.markerClusterGroup({
-        disableClusteringAtZoom: 18, // No clustering at zoom 5 and below
-        maxClusterRadius: 80,       // Default radius in pixels
-        zoomToBoundsOnClick: true   // Click cluster to zoom in
-    });
-    this.map.addLayer(this.cluster)
-
-    // Cabinets jamais clusterisés
-    this.cabinetLayer = L.layerGroup()
-    this.map.addLayer(this.cabinetLayer)
+  // ✅ Optionnel mais recommandé sur mobile
+  if (isMobile) {
+    this.map.scrollWheelZoom.disable()
   }
+
+  // Déterminer le thème initial
+  let initialTheme = getTheme()
+  if (initialTheme === "system") {
+    initialTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light"
+  }
+
+  const url = initialTheme === "dark"
+    ? CONFIG.map.themedark
+    : CONFIG.map.themelight
+
+  this.baseLayer = L.tileLayer(url, {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+  }).addTo(this.map)
+
+  // Cluster salles
+  this.cluster = L.markerClusterGroup({
+    disableClusteringAtZoom: 18,
+    maxClusterRadius: 80,
+    zoomToBoundsOnClick: true
+  })
+  this.map.addLayer(this.cluster)
+
+  // Cabinets non clusterisés
+  this.cabinetLayer = L.layerGroup()
+  this.map.addLayer(this.cabinetLayer)
+}
+
   updateTheme(theme) {
     let target = theme;
     

@@ -20,7 +20,12 @@ async function start() {
 
   const map = new MapEngine()
   map.renderSites()
-
+  window.addEventListener("themechanged", (e) => {
+  mapEngine.updateMapTheme(e.detail.theme);
+  });
+  
+  // Appel initial pour synchroniser au chargement
+  mapEngine.updateMapTheme(getTheme());
   initFilters(map, zones)
   initSearch(map)
   initStats()

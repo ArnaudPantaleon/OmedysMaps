@@ -9,7 +9,7 @@ export class MapEngine {
     this.map = L.map("map", { zoomControl: false })
       .setView(CONFIG.map.center, CONFIG.map.zoom)
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    L.tileLayer(CONFIG.map.theme, {
       attribution: "© OpenStreetMap"
     }).addTo(this.map)
 

@@ -495,13 +495,13 @@ body, html {
    ============================================================ */
 .salle-marker {
     position: relative;
-    width: 24px; height: 24px;
+    width: 36px; height: 36px;
     display: flex; align-items: center; justify-content: center;
 }
 
 .salle-pulse {
     position: absolute;
-    width: 24px; height: 24px;
+    width: 36px; height: 36px;
     border-radius: 50%;
     background: var(--cm-color);
     opacity: 0.35;
@@ -516,7 +516,7 @@ body, html {
 
 .salle-pin {
     position: relative; z-index: 1;
-    width: 20px; height: 20px;
+    width: 24px; height: 24px;
     border-radius: 50%;
     background: var(--cm-color);
     border: 2.5px solid rgba(255,255,255,0.9);
@@ -525,7 +525,7 @@ body, html {
     transition: transform 0.15s;
 }
 .salle-pin i {
-    font-size: 8px;
+    font-size: 10px;
     color: #fff;
 }
 .salle-marker:hover .salle-pin { transform: scale(1.12); }

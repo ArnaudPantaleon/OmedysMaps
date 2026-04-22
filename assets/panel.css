@@ -59,16 +59,41 @@ html.is-dark,
 }
 
 /* ── Shell ───────────────────────────────────────────────── */
+/*
+   ARCHITECTURE SCROLL — stratégie "absolute inset"
+   ─────────────────────────────────────────────────
+   Flex column + min-height:0 est théoriquement correct mais
+   cassé sur Safari/WebKit mobile avec position:fixed injecté
+   dynamiquement dans body.
+
+   Solution fiable cross-browser :
+   - Le shell est position:fixed, overflow:hidden
+   - header + title-row + actions = hauteur fixe connue via CSS var
+   - panel-body = position:absolute qui remplit exactement l'espace
+     restant entre le bas du title-row et le haut des actions
+*/
+:root {
+  --panel-header-h:    118px; /* handle + header + title-row (approx) */
+  --panel-actions-h:   76px;  /* actions + padding                     */
+}
+@media (max-width: 600px) {
+  :root {
+    --panel-header-h:  110px;
+    --panel-actions-h: 72px;
+  }
+}
+
 #site-panel {
   position: fixed;
   z-index: 1200;
-  display: flex;
-  flex-direction: column;
+
+  /* Pas de flex — on positionne les enfants en absolu */
+  display: block;
+
   font-family: 'DM Sans', -apple-system, sans-serif;
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
 
-  /* Glass — hérite des tokens globaux */
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
@@ -76,13 +101,7 @@ html.is-dark,
   box-shadow: var(--shadow-float), 0 0 60px rgba(0, 149, 151, 0.05);
 
   transition: transform 0.42s cubic-bezier(0.2, 0.8, 0.2, 1);
-
-  /* ── CRITIQUE : sans height explicite, flex:1 sur .panel-body
-     n'a pas de référence et le contenu déborde au lieu de scroller.
-     position:fixed + top/bottom définit la hauteur visuellement,
-     mais pas pour le moteur flexbox — height:100% la matérialise. ── */
-  height: 100%;
-  overflow: hidden; /* clip les décos, n'empêche pas le scroll de .panel-body */
+  overflow: hidden;
 }
 
 /* Reflet haut du panel */
@@ -113,7 +132,6 @@ html.is-dark,
   #site-panel {
     top: 0; right: 0; bottom: 0;
     width: 400px;
-    height: 100dvh;        /* hauteur explicite pour le moteur flex */
     border-radius: var(--panel-r) 0 0 var(--panel-r);
     border-right: none;
     transform: translateX(100%);
@@ -124,11 +142,10 @@ html.is-dark,
 @media (max-width: 600px) {
   #site-panel {
     left: 0; right: 0; bottom: 0;
-    height: 90dvh;         /* dvh = viewport dynamique, s'adapte à la barre nav */
+    height: 90dvh;
     border-radius: var(--panel-r) var(--panel-r) 0 0;
     border-bottom: none;
     transform: translateY(100%);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }
 
@@ -142,8 +159,7 @@ html.is-dark,
   width: 34px; height: 4px;
   border-radius: 100px;
   background: var(--panel-divider);
-  margin: 12px auto 0;
-  flex-shrink: 0;
+  margin: 12px auto 4px;
 }
 @media (min-width: 601px) { .panel-handle { display: none; } }
 
@@ -154,7 +170,6 @@ html.is-dark,
   align-items: center;
   padding: 16px 20px 10px;
   gap: 10px;
-  flex-shrink: 0;
 }
 
 .panel-header-left {
@@ -270,7 +285,6 @@ html.is-dark .bp3-pill-encours,
   align-items: flex-start;
   gap: 10px;
   padding: 0 20px 14px;
-  flex-shrink: 0;
   border-bottom: 1px solid var(--panel-divider);
 }
 
@@ -291,23 +305,33 @@ html.is-dark .bp3-pill-encours,
   color: var(--text-primary);
 }
 
-/* ── Body scroll ─────────────────────────────────────────── */
+/* ── Body scroll — architecture absolue ─────────────────── */
+/*
+   On abandonne flex:1/min-height:0 (cassé sur Safari/WebKit mobile).
+   À la place : position:absolute qui calcule son propre espace.
+   top = hauteur des éléments au-dessus (header + title-row)
+   bottom = hauteur des actions en bas
+   → fonctionne sur TOUS les navigateurs sans dépendre du moteur flex
+*/
 .panel-body {
-  padding: 12px 12px 4px;
+  position: absolute;
+  top: var(--panel-header-h);
+  bottom: var(--panel-actions-h);
+  left: 0;
+  right: 0;
+
   overflow-y: auto;
   overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 
-  /* Les deux lignes qui rendent le scroll possible dans un flex column :   */
-  flex: 1 1 0;     /* grow + shrink + base 0 : prend l'espace restant exact */
-  min-height: 0;   /* annule le min-height:auto implicite de flex qui déborde */
-
+  padding: 12px 12px 8px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+
   scrollbar-width: thin;
   scrollbar-color: var(--glass-border) transparent;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
 }
 .panel-body::-webkit-scrollbar { width: 3px; }
 .panel-body::-webkit-scrollbar-track { background: transparent; }
@@ -532,21 +556,23 @@ html.is-dark .panel-notes .panel-schedule-line,
   border-color: rgba(251,191,36,0.10);
 }
 
-/* ── Actions ─────────────────────────────────────────────── */
+/* ── Actions — position absolue en bas ───────────────────── */
 .panel-actions {
-  padding: 10px 12px 18px;
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: var(--panel-actions-h);
+
+  padding: 10px 12px;
+  padding-bottom: max(18px, env(safe-area-inset-bottom, 18px));
   display: flex;
   gap: 8px;
-  flex-shrink: 0;
-  /* Séparation visuelle du scroll */
+  align-items: center;
+
   border-top: 1px solid var(--panel-divider);
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-  /* Dégradé fondu vers le haut */
-  box-shadow: 0 -12px 24px -8px var(--glass-bg);
-  /* Safe area mobile */
-  padding-bottom: max(18px, env(safe-area-inset-bottom, 18px));
+  z-index: 2;
 }
 
 .panel-action-btn {
@@ -676,12 +702,11 @@ html.is-dark .panel-action--copy:hover,
   .panel-info-block { font-size: 13px; }
   .panel-contact-line { font-size: 12px; gap: 8px; }
   .panel-action-btn { height: 44px; font-size: 12.5px; border-radius: 12px; }
-  .panel-actions {
-    padding: 8px 10px;
-    padding-bottom: max(14px, env(safe-area-inset-bottom, 14px));
+  /* Recalcul des zones pour mobile */
+  .panel-body {
+    top: var(--panel-header-h);
+    bottom: var(--panel-actions-h);
+    padding: 10px 10px 6px;
+    gap: 7px;
   }
-  /* Moins de padding body sur mobile pour gagner de la place */
-  .panel-body { padding: 10px 10px 4px; gap: 7px; }
-  .panel-header { padding: 14px 16px 8px; }
-  .panel-title-row { padding: 0 16px 12px; }
 }

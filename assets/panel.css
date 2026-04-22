@@ -76,7 +76,8 @@ html.is-dark,
   box-shadow: var(--shadow-float), 0 0 60px rgba(0, 149, 151, 0.05);
 
   transition: transform 0.42s cubic-bezier(0.2, 0.8, 0.2, 1);
-  overflow: hidden;
+  /* overflow:hidden retiré — c'est .panel-body qui scroll, pas le shell */
+  overflow: visible;
 }
 
 /* Reflet haut du panel */
@@ -110,6 +111,7 @@ html.is-dark,
     border-radius: var(--panel-r) 0 0 var(--panel-r);
     border-right: none;
     transform: translateX(100%);
+    overflow: clip; /* clip = comme hidden mais sans bloquer sticky/scroll enfants */
   }
 }
 
@@ -117,10 +119,14 @@ html.is-dark,
 @media (max-width: 600px) {
   #site-panel {
     left: 0; right: 0; bottom: 0;
-    height: 88vh;
+    height: 90vh;
+    max-height: calc(100dvh - 40px); /* dvh = viewport dynamique, évite barre navigateur */
     border-radius: var(--panel-r) var(--panel-r) 0 0;
     border-bottom: none;
     transform: translateY(100%);
+    overflow: clip;
+    /* Safe area iPhone */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }
 
@@ -287,12 +293,17 @@ html.is-dark .bp3-pill-encours,
 .panel-body {
   padding: 12px 12px 4px;
   overflow-y: auto;
+  overflow-x: hidden;
   flex: 1;
+  min-height: 0; /* ← CRITIQUE : sans ça, flex:1 déborde au lieu de scroller */
   display: flex;
   flex-direction: column;
   gap: 8px;
   scrollbar-width: thin;
   scrollbar-color: var(--glass-border) transparent;
+  /* Scroll smooth natif */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 .panel-body::-webkit-scrollbar { width: 3px; }
 .panel-body::-webkit-scrollbar-track { background: transparent; }
@@ -519,10 +530,19 @@ html.is-dark .panel-notes .panel-schedule-line,
 
 /* ── Actions ─────────────────────────────────────────────── */
 .panel-actions {
-  padding: 8px 12px 18px;
+  padding: 10px 12px 18px;
   display: flex;
   gap: 8px;
   flex-shrink: 0;
+  /* Séparation visuelle du scroll */
+  border-top: 1px solid var(--panel-divider);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  /* Dégradé fondu vers le haut */
+  box-shadow: 0 -12px 24px -8px var(--glass-bg);
+  /* Safe area mobile */
+  padding-bottom: max(18px, env(safe-area-inset-bottom, 18px));
 }
 
 .panel-action-btn {
@@ -652,5 +672,12 @@ html.is-dark .panel-action--copy:hover,
   .panel-info-block { font-size: 13px; }
   .panel-contact-line { font-size: 12px; gap: 8px; }
   .panel-action-btn { height: 44px; font-size: 12.5px; border-radius: 12px; }
-  .panel-actions { padding: 6px 10px 16px; }
+  .panel-actions {
+    padding: 8px 10px;
+    padding-bottom: max(14px, env(safe-area-inset-bottom, 14px));
+  }
+  /* Moins de padding body sur mobile pour gagner de la place */
+  .panel-body { padding: 10px 10px 4px; gap: 7px; }
+  .panel-header { padding: 14px 16px 8px; }
+  .panel-title-row { padding: 0 16px 12px; }
 }

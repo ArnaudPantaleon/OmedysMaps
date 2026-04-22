@@ -8,6 +8,20 @@ const THEME_LABELS = {
   system: { icon: "fa-circle-half-stroke", label: "Auto"   }
 }
 
+// ─── Haversine ────────────────────────────────────────────────────────────────
+// Retourne la distance en km entre deux points GPS
+
+function _haversine(lat1, lng1, lat2, lng2) {
+  const R = 6371
+  const dLat = (lat2 - lat1) * Math.PI / 180
+  const dLng = (lng2 - lng1) * Math.PI / 180
+  const a = Math.sin(dLat/2) ** 2
+          + Math.cos(lat1 * Math.PI / 180)
+          * Math.cos(lat2 * Math.PI / 180)
+          * Math.sin(dLng/2) ** 2
+  return R * 2 * Math.asin(Math.sqrt(a))
+}
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function countVisible() {
@@ -27,6 +41,11 @@ function countVisible() {
     if (f.region) {
       const depts = store.deptsByRegion?.[f.region] || []
       if (!depts.includes(s.dept)) return false
+    }
+    // Filtre périmètre
+    if (f.radius && f.radiusCenter && s.lat && s.lng) {
+      const d = _haversine(f.radiusCenter.lat, f.radiusCenter.lng, s.lat, s.lng)
+      if (d > f.radius) return false
     }
     return true
   }).length
@@ -152,6 +171,89 @@ function makeThemeSection() {
   return section
 }
 
+// ─── Périmètre de recherche ───────────────────────────────────────────────────
+
+const RADIUS_OPTIONS = [5, 10, 20, 30, 50]
+
+function makeRadiusSection(refreshFn) {
+  const section = document.createElement("div")
+  section.className = "filter-section radius-section"
+  section.id = "radius-section"
+
+  // Label + ville sélectionnée
+  const titleRow = document.createElement("div")
+  titleRow.className = "section-title"
+  titleRow.innerHTML = `
+    <i class="fa-solid fa-circle-dot" style="font-size:11px;color:var(--primary);opacity:.8"></i>
+    Périmètre
+    <span class="radius-city-label" id="radius-city-label"></span>
+  `
+  section.appendChild(titleRow)
+
+  // Boutons km
+  const btns = document.createElement("div")
+  btns.className = "radius-btns"
+  btns.id = "radius-btns"
+
+  RADIUS_OPTIONS.forEach(km => {
+    const btn = document.createElement("button")
+    btn.className = "radius-btn"
+    btn.dataset.km = km
+    btn.textContent = `${km} km`
+    btn.addEventListener("click", () => {
+      const alreadyActive = btn.classList.contains("active")
+
+      // Toggle : cliquer sur le bouton actif = désactiver
+      btns.querySelectorAll(".radius-btn").forEach(b => b.classList.remove("active"))
+
+      if (alreadyActive) {
+        store.filters.radius = null
+      } else {
+        btn.classList.add("active")
+        store.filters.radius = km
+      }
+
+      refreshFn()
+    })
+    btns.appendChild(btn)
+  })
+
+  section.appendChild(btns)
+
+  // Désactivé par défaut — s'active à city-selected
+  section.classList.add("radius-disabled")
+
+  // Écoute la sélection d'une ville depuis ui.search.js
+  window.addEventListener("city-selected", e => {
+    const detail = e.detail
+
+    if (!detail) {
+      // Recherche effacée → réinitialiser
+      section.classList.add("radius-disabled")
+      btns.querySelectorAll(".radius-btn").forEach(b => b.classList.remove("active"))
+      store.filters.radius       = null
+      store.filters.radiusCenter = null
+      document.getElementById("radius-city-label").textContent = ""
+      refreshFn()
+      return
+    }
+
+    // Ville sélectionnée → activer
+    section.classList.remove("radius-disabled")
+    document.getElementById("radius-city-label").textContent = detail.name
+
+    // Optionnel : réactiver le dernier rayon sélectionné
+    if (store.filters.radius) {
+      btns.querySelectorAll(".radius-btn").forEach(b => {
+        b.classList.toggle("active", Number(b.dataset.km) === store.filters.radius)
+      })
+      refreshFn()
+    }
+  })
+
+  return section
+}
+
 // ─── Init principal ───────────────────────────────────────────────────────────
 
 export function initFilters(map, zones) {
@@ -212,6 +314,10 @@ export function initFilters(map, zones) {
 
   // ── Apparence (en tête de panneau) ──
   listWrap.appendChild(makeThemeSection())
+  listWrap.appendChild(makeDivider())
+
+  // ── Périmètre de recherche ──
+  listWrap.appendChild(makeRadiusSection(refresh))
   listWrap.appendChild(makeDivider())
 
   // ── Section 1 : Dataset ──

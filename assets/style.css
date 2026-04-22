@@ -695,17 +695,17 @@ html.is-dark .bp3-pill-default .bp3-sdot { background: rgba(255,255,255,0.4); }
   transform: scale(0.96);
 }
 
-/* Icône et label */
+/* Icône et label — couleur fixe pour éviter héritage blanc en mode clair */
 .theme-btn-icon {
   font-size: 12px;
-  color: var(--text-secondary);
+  color: rgba(0, 0, 0, 0.50) !important;
   transition: color 0.18s;
 }
 
 .theme-btn-label {
   font-size: 11.5px;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: rgba(0, 0, 0, 0.50) !important;
   transition: color 0.18s;
   white-space: nowrap;
 }
@@ -737,7 +737,7 @@ html.is-dark .theme-btn-icon,
 html.is-dark .theme-btn-label,
 [data-theme="dark"] .theme-btn-icon,
 [data-theme="dark"] .theme-btn-label {
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.50) !important;
 }
 
 html.is-dark .theme-btn.active,

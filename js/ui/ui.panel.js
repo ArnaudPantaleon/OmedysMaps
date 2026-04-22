@@ -1,285 +1,687 @@
-// ═══════════════════════════════════════════════════════════════
-// ui.panel.js — Panel latéral (desktop) / bottom sheet (mobile)
-// Remplace entièrement les popups Leaflet
-// Les détails enrichis (horaires, équipements, lien, notes)
-// sont lus directement depuis le site parsé (salles.json)
-// ═══════════════════════════════════════════════════════════════
+/* ============================================================
+   SITE PANEL — Glass Bento Edition
+   Intégré au Design System Omedys v2
+   Hérite des tokens :root de style.css
+   Compatible : html.is-dark / [data-theme="dark"]
+   Compatible : ui.panel.js (classes générées à la volée)
+   Font Awesome 6 requis
+   ============================================================ */
 
-// ── Init DOM ──────────────────────────────────────────────────
-export function initSitePanel() {
+/* ── Tokens spécifiques au panel ─────────────────────────── */
+:root {
+  --panel-accent:       var(--primary);      /* overridé dynamiquement via JS setProperty */
+  --panel-accent-glow:  var(--primary-glow);
+  --panel-accent-dim:   var(--primary-dim);
 
-  if (document.getElementById("site-panel")) return
+  --panel-card-bg:      rgba(255, 255, 255, 0.62);
+  --panel-card-border:  rgba(255, 255, 255, 0.22);
+  --panel-card-inset:   inset 0 1px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(0,0,0,0.03);
 
-  // Overlay
-  const overlay = document.createElement("div")
-  overlay.id = "panel-overlay"
-  overlay.addEventListener("click", closePanel)
-  document.body.appendChild(overlay)
+  --panel-card-bg-deep: rgba(255, 255, 255, 0.35);
+  --panel-card-note:    rgba(251, 191, 36, 0.09);
+  --panel-card-accent:  rgba(0, 149, 151, 0.10);
 
-  // Panel
-  const panel = document.createElement("div")
-  panel.id = "site-panel"
-  panel.innerHTML = `
-    <div class="panel-handle"></div>
-    <div class="panel-header">
-      <div class="panel-header-left">
-        <span class="panel-badge"></span>
-        <span class="panel-statut-pill"><span class="panel-sdot"></span><span class="panel-statut-label"></span></span>
-      </div>
-      <button class="panel-close" id="panel-close-btn">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-    </div>
-    <div class="panel-title-row">
-      <div class="panel-accent-dot"></div>
-      <h2 class="panel-title"></h2>
-    </div>
-    <div class="panel-body"></div>
-    <div class="panel-actions"></div>
-  `
-  document.body.appendChild(panel)
+  --panel-divider:      rgba(0, 0, 0, 0.06);
+  --panel-label-color:  var(--text-muted);
 
-  document.getElementById("panel-close-btn")
-    .addEventListener("click", closePanel)
-  
-  // Swipe down pour fermer (mobile)
-  _initSwipe(panel)
-
-  window.addEventListener("theme-changed", (e) => {
-    const panel = document.getElementById("site-panel");
-    if (!panel || !panel.classList.contains("panel--open")) return;
-    });
+  --panel-r:  28px;   /* radius shell */
+  --panel-rc: 16px;   /* radius card */
+  --panel-rs: 10px;   /* radius small */
 }
 
-// ── Ouverture ─────────────────────────────────────────────────
-export function openSitePanel(site, color) {
-
-  initSitePanel()
-
-  const panel   = document.getElementById("site-panel")
-  const overlay = document.getElementById("panel-overlay")
-
-  const pillClass = {
-    "Ouvert":                 "bp3-pill-ouvert",
-    "Ouvertes":               "bp3-pill-ouvert",
-    "ESMS ouvert au public":  "bp3-pill-ouvert",
-    "Ouverture en cours":     "bp3-pill-encours",
-    "Telesecretariat OMEDYS": "bp3-pill-tele"
-  }[site.status] || "bp3-pill-default"
-
-  panel.querySelector(".panel-badge").textContent        = site.dataset === "salle" ? "Salle télémédecine" : "Cabinet TMS"
-  panel.querySelector(".panel-statut-pill").className    = `panel-statut-pill ${pillClass}`
-  panel.querySelector(".panel-statut-label").textContent = site.status
-  panel.querySelector(".panel-accent-dot").style.background = color
-  panel.querySelector(".panel-title").textContent        = site.name
-  panel.style.setProperty("--panel-accent", color)
-
-  panel.querySelector(".panel-body").innerHTML    = _renderBase(site) + _renderDetails(site)
-  panel.querySelector(".panel-actions").innerHTML = _renderActions(site)
-
-  panel.classList.add("open")
-  overlay.classList.add("open")
+html.is-dark,
+[data-theme="dark"] {
+  --panel-card-bg:      rgba(255, 255, 255, 0.07);
+  --panel-card-border:  rgba(255, 255, 255, 0.10);
+  --panel-card-inset:   inset 0 1px 0 rgba(255,255,255,0.10), inset 0 -1px 0 rgba(0,0,0,0.18);
+  --panel-card-bg-deep: rgba(255, 255, 255, 0.04);
+  --panel-card-note:    rgba(251, 191, 36, 0.07);
+  --panel-card-accent:  rgba(0, 149, 151, 0.15);
+  --panel-divider:      rgba(255, 255, 255, 0.07);
+  --panel-label-color:  rgba(255, 255, 255, 0.28);
 }
 
-export function closePanel() {
-  document.getElementById("site-panel")?.classList.remove("open")
-  document.getElementById("panel-overlay")?.classList.remove("open")
+/* ── Overlay ─────────────────────────────────────────────── */
+#panel-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  background: rgba(0, 0, 0, 0.30);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+#panel-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
 }
 
-// ── Sections ──────────────────────────────────────────────────
+/* ── Shell ───────────────────────────────────────────────── */
+#site-panel {
+  position: fixed;
+  z-index: 1200;
+  display: flex;
+  flex-direction: column;
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
 
-function _renderBase(site) {
-  let html = ""
+  /* Glass — hérite des tokens globaux */
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-float), 0 0 60px rgba(0, 149, 151, 0.05);
 
-  // Adresse
-  if (site.address || site.city) {
-    html += `
-      <div class="panel-section">
-        <div class="panel-section-title">
-          <i class="fa-solid fa-location-dot"></i> Adresse
-        </div>
-        <div class="panel-info-block">${site.address || site.city}</div>
-      </div>`
-  }
+  transition: transform 0.42s cubic-bezier(0.2, 0.8, 0.2, 1);
 
-  // TMS rattaché
-  if (site.tms) {
-    let tmsHtml = `<div class="panel-contact-line"><i class="fa-solid fa-hospital"></i><span>${site.tms}</span></div>`
-    if (site.mss)  tmsHtml += `<div class="panel-contact-line"><i class="fa-regular fa-envelope"></i><a class="panel-link">${site.mss}</a></div>`
-    html += `
-      <div class="panel-section">
-        <div class="panel-section-title">
-          <i class="fa-solid fa-hospital"></i> Cabinet TMS
-        </div>
-        <div class="panel-contact-block">${tmsHtml}</div>
-      </div>`
-  }
-  
-  // référent ATT (att.name)
-  if (site.att) {
-    let attHtml = ``
-    if (site.att?.name)  attHtml += `<div class="panel-contact-line"><i class="fa-regular fa-user"></i><span>${site.att.name}</span></div>`
-    if (site.att?.mail)  attHtml += `<div class="panel-contact-line"><i class="fa-regular fa-envelope"></i><a class="panel-link" href="mailto:${site.att.mail}">${site.att.mail}</a></div>`
-    if (site.att?.phone)  attHtml += `<div class="panel-contact-line"><i class="fa-solid fa-phone"></i><a class="panel-link" href="tel:${site.att.phone}">${_formatPhone(site.att.phone)}</a></div>`
-    html += `
-      <div class="panel-section">
-        <div class="panel-section-title">
-          <i class="fa-solid fa-hospital"></i> Référent Cabinet
-        </div>
-        <div class="panel-contact-block">${attHtml}</div>
-      </div>`
-  }
-  // Type de structure
-  if (site.typeSite) {
-    html += `
-      <div class="panel-section">
-        <div class="panel-section-title">
-          <i class="fa-solid fa-tag"></i> Type
-        </div>
-        <div class="panel-info-block">${site.typeSite}</div>
-      </div>`
-  }
-
-    // Contact
-  if (site.contact?.phone) {
-    html += `
-      <div class="panel-section">
-        <div class="panel-section-title">
-          <i class="fa-solid fa-tag"></i> Contact
-        </div>
-          <div class="panel-contact-block">
-            <div class="panel-contact-line"><i class="fa-solid fa-phone"></i><a class="panel-link" href="tel:${site.contact.phone}">${_formatPhone(site.contact.phone)}</a></div>
-          </div>
-      </div>`
-  }
-
-
-  return html
+  /* ── CRITIQUE : sans height explicite, flex:1 sur .panel-body
+     n'a pas de référence et le contenu déborde au lieu de scroller.
+     position:fixed + top/bottom définit la hauteur visuellement,
+     mais pas pour le moteur flexbox — height:100% la matérialise. ── */
+  height: 100%;
+  overflow: hidden; /* clip les décos, n'empêche pas le scroll de .panel-body */
 }
 
-function _renderDetails(site) {
-  let html = ""
-
-  if (site.horaires) {
-    const lines = site.horaires.split("\n")
-      .map(l => `<div class="panel-schedule-line">${l}</div>`).join("")
-    html += `
-      <div class="panel-section">
-        <div class="panel-section-title">
-          <i class="fa-regular fa-clock"></i> Horaires
-        </div>
-        <div class="panel-schedule">${lines}</div>
-      </div>`
-  }
-
-  if (site.equipements?.length) {
-    const items = site.equipements.map(e => `
-      <div class="panel-equip-item">
-        <i class="fa-solid fa-circle-check"></i><span>${e}</span>
-      </div>`).join("")
-    html += `
-      <div class="panel-section">
-        <div class="panel-section-title">
-          <i class="fa-solid fa-stethoscope"></i> Équipements
-        </div>
-        <div class="panel-equip-list">${items}</div>
-      </div>`
-  }
-
-  if (site.notes) {
-    const lines = site.notes.split("\n")
-      .map(l => `<div class="panel-schedule-line">${l}</div>`).join("")
-    html += `
-      <div class="panel-section">
-        <div class="panel-section-title">
-          <i class="fa-regular fa-note-sticky"></i> Notes
-        </div>
-        <div class="panel-notes">${lines}</div>
-      </div>`
-  }
-
-  return html
+/* Reflet haut du panel */
+#site-panel::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 8%; right: 8%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent);
+  pointer-events: none;
+  z-index: 10;
 }
 
-function _renderActions(site) {
-  const addr    = site.address || site.city || ""
-  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${site.lat},${site.lng}`
+/* Lueur d'ambiance — même logique que .bento-tile::before */
+#site-panel::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -50px;
+  width: 180px; height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--panel-accent-glow) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
 
-  let html = `
-    <button class="panel-action-btn panel-action--copy"
-      onclick="window._panelCopy('${addr.replace(/'/g, "\\'")}')">
-      <i class="fa-regular fa-copy"></i><span>Copier</span>
-    </button>
-    <a class="panel-action-btn panel-action--maps" href="${mapsUrl}" target="_blank" rel="noopener">
-      <i class="fa-regular fa-map"></i><span>Maps</span>
-    </a>`
-
-  if (site.lien) {
-    html += `
-      <a class="panel-action-btn panel-action--link" href="${site.lien}" target="_blank" rel="noopener">
-        <i class="fa-solid fa-arrow-up-right-from-square"></i><span>Fiche</span>
-      </a>`
+/* Desktop — tiroir droit */
+@media (min-width: 601px) {
+  #site-panel {
+    top: 0; right: 0; bottom: 0;
+    width: 400px;
+    height: 100dvh;        /* hauteur explicite pour le moteur flex */
+    border-radius: var(--panel-r) 0 0 var(--panel-r);
+    border-right: none;
+    transform: translateX(100%);
   }
-
-  return html
 }
 
-// ── Swipe to close (mobile) ───────────────────────────────────
-function _initSwipe(panel) {
-  let startY = 0
-  let isDragging = false
-
-  panel.addEventListener("touchstart", e => {
-    if (!e.target.closest(".panel-handle, .panel-header, .panel-title-row")) return
-    startY = e.touches[0].clientY
-    isDragging = true
-    panel.style.transition = "none"
-  }, { passive: true })
-
-  panel.addEventListener("touchmove", e => {
-    if (!isDragging) return
-    const dy = e.touches[0].clientY - startY
-    if (dy > 0) panel.style.transform = `translateY(${dy}px)`
-  }, { passive: true })
-
-  panel.addEventListener("touchend", e => {
-    if (!isDragging) return
-    isDragging = false
-    panel.style.transition = ""
-    const dy = e.changedTouches[0].clientY - startY
-    if (dy > 100) {
-      panel.style.transform = ""
-      closePanel()
-    } else {
-      panel.style.transform = ""
-    }
-  })
-}
-
-// ── Utils ─────────────────────────────────────────────────────
-
-// Exposé sur window pour le onclick inline du bouton Copier
-window._panelCopy = function(text) {
-  navigator.clipboard.writeText(text).then(() => _showToast("Adresse copiée !"))
-}
-
-function _showToast(msg) {
-  let toast = document.getElementById("panel-toast")
-  if (!toast) {
-    toast = document.createElement("div")
-    toast.id = "panel-toast"
-    document.body.appendChild(toast)
+/* Mobile — bottom sheet */
+@media (max-width: 600px) {
+  #site-panel {
+    left: 0; right: 0; bottom: 0;
+    height: 90dvh;         /* dvh = viewport dynamique, s'adapte à la barre nav */
+    border-radius: var(--panel-r) var(--panel-r) 0 0;
+    border-bottom: none;
+    transform: translateY(100%);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
-  toast.textContent = msg
-  toast.classList.remove("panel-toast--out")
-  toast.classList.add("panel-toast--in")
-
-  clearTimeout(toast._timer)
-  toast._timer = setTimeout(() => {
-    toast.classList.replace("panel-toast--in", "panel-toast--out")
-  }, 2000)
 }
 
-function _formatPhone(p) {
-  return (p || "").replace(/(\d{2})(?=\d)/g, "$1 ").trim()
+#site-panel.open { transform: translate(0, 0); }
+
+/* Contenu au-dessus du ::before */
+#site-panel > * { position: relative; z-index: 1; }
+
+/* ── Handle mobile ───────────────────────────────────────── */
+.panel-handle {
+  width: 34px; height: 4px;
+  border-radius: 100px;
+  background: var(--panel-divider);
+  margin: 12px auto 0;
+  flex-shrink: 0;
+}
+@media (min-width: 601px) { .panel-handle { display: none; } }
+
+/* ── Header ──────────────────────────────────────────────── */
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px 10px;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.panel-header-left {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+/* Badge dataset */
+.panel-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--primary);
+  background: var(--panel-accent-dim);
+  border: 1px solid rgba(0, 149, 151, 0.25);
+  border-radius: 100px;
+  padding: 3px 9px;
+  line-height: 1.4;
+}
+
+/* Pill statut */
+.panel-statut-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 9px;
+  border-radius: 100px;
+  border: 1px solid transparent;
+  line-height: 1.4;
+}
+
+.panel-sdot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Variantes statut — reprend les couleurs de style.css */
+.bp3-pill-ouvert {
+  background: rgba(34, 197, 94, 0.10);
+  border-color: rgba(34, 197, 94, 0.25);
+  color: #16a34a;
+}
+.bp3-pill-ouvert .panel-sdot {
+  background: #22c55e;
+  box-shadow: 0 0 5px rgba(34,197,94,0.6);
+  animation: sdot-pulse 2s ease-in-out infinite;
+}
+
+.bp3-pill-encours {
+  background: rgba(251, 191, 36, 0.10);
+  border-color: rgba(251, 191, 36, 0.28);
+  color: #b45309;
+}
+.bp3-pill-encours .panel-sdot { background: #f59e0b; }
+
+.bp3-pill-tele {
+  background: var(--panel-accent-dim);
+  border-color: rgba(0, 149, 151, 0.25);
+  color: var(--primary);
+}
+.bp3-pill-tele .panel-sdot {
+  background: var(--primary);
+  box-shadow: 0 0 5px var(--primary-glow);
+  animation: sdot-pulse 2s ease-in-out infinite;
+}
+
+.bp3-pill-default {
+  background: var(--item-bg);
+  border-color: var(--item-border);
+  color: var(--text-secondary);
+}
+.bp3-pill-default .panel-sdot { background: var(--text-muted); }
+
+@keyframes sdot-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.35; }
+}
+
+/* Dark overrides statut pills */
+html.is-dark .bp3-pill-ouvert,
+[data-theme="dark"] .bp3-pill-ouvert  { background: rgba(34,197,94,0.12); color: #86efac; }
+html.is-dark .bp3-pill-encours,
+[data-theme="dark"] .bp3-pill-encours { background: rgba(251,191,36,0.12); color: #fcd34d; }
+
+/* Bouton fermer */
+.panel-close {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: var(--item-bg);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-size: 13px;
+  transition: background 0.18s, transform 0.18s;
+  line-height: 1;
+}
+.panel-close:hover {
+  background: var(--item-bg-hover);
+  transform: scale(1.10);
+}
+
+/* ── Title row ───────────────────────────────────────────── */
+.panel-title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 0 20px 14px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--panel-divider);
+}
+
+.panel-accent-dot {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--panel-accent);
+  box-shadow: 0 0 8px var(--panel-accent);
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+
+.panel-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+  color: var(--text-primary);
+}
+
+/* ── Body scroll ─────────────────────────────────────────── */
+.panel-body {
+  padding: 12px 12px 4px;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  /* Les deux lignes qui rendent le scroll possible dans un flex column :   */
+  flex: 1 1 0;     /* grow + shrink + base 0 : prend l'espace restant exact */
+  min-height: 0;   /* annule le min-height:auto implicite de flex qui déborde */
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--glass-border) transparent;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+.panel-body::-webkit-scrollbar { width: 3px; }
+.panel-body::-webkit-scrollbar-track { background: transparent; }
+.panel-body::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 4px; }
+
+/* ── Carte bento (panel-section) ─────────────────────────── */
+.panel-section {
+  background: var(--panel-card-bg);
+  border: 1px solid var(--panel-card-border);
+  border-radius: var(--panel-rc);
+  padding: 12px 14px;
+  position: relative;
+  overflow: hidden;
+
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: var(--panel-card-inset), var(--shadow-sm);
+
+  transition: transform 0.20s cubic-bezier(0.2,0,0.2,1), box-shadow 0.20s;
+  animation: panel-card-in 0.38s cubic-bezier(0.2,0.8,0.2,1) both;
+}
+
+/* Micro-reflet haut de carte */
+.panel-section::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 14%; right: 14%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.50), transparent);
+  pointer-events: none;
+}
+
+.panel-section:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--panel-card-inset), 0 10px 28px rgba(0,0,0,0.10);
+}
+
+/* Stagger d'entrée */
+.panel-section:nth-child(1) { animation-delay: 0.05s; }
+.panel-section:nth-child(2) { animation-delay: 0.09s; }
+.panel-section:nth-child(3) { animation-delay: 0.13s; }
+.panel-section:nth-child(4) { animation-delay: 0.17s; }
+.panel-section:nth-child(5) { animation-delay: 0.21s; }
+.panel-section:nth-child(6) { animation-delay: 0.25s; }
+.panel-section:nth-child(7) { animation-delay: 0.29s; }
+
+@keyframes panel-card-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Variantes de carte via :has() ───────────────────────── */
+
+/* Adresse → teinté teal */
+.panel-section:has(.fa-location-dot) {
+  background: linear-gradient(135deg, var(--panel-card-accent) 0%, rgba(0,149,151,0.03) 100%);
+  border-color: rgba(0, 149, 151, 0.20);
+  box-shadow: var(--panel-card-inset), 0 4px 18px rgba(0,149,151,0.08);
+}
+.panel-section:has(.fa-location-dot):hover {
+  box-shadow: var(--panel-card-inset), 0 8px 28px rgba(0,149,151,0.12);
+}
+
+/* Notes → teinté ambre */
+.panel-section:has(.fa-note-sticky) {
+  background: linear-gradient(135deg, var(--panel-card-note) 0%, rgba(245,130,32,0.04) 100%);
+  border-color: rgba(251, 191, 36, 0.20);
+}
+
+/* ── Section title ───────────────────────────────────────── */
+.panel-section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--panel-label-color);
+  margin-bottom: 9px;
+}
+
+.panel-section-title i {
+  font-size: 10px;
+  color: var(--primary);
+  opacity: 0.75;
+  width: 14px;
+  text-align: center;
+}
+
+/* ── Info block (adresse, type) ──────────────────────────── */
+.panel-info-block {
+  font-size: 13.5px;
+  font-weight: 400;
+  color: var(--text-primary);
+  line-height: 1.60;
+}
+
+/* Type → pill inline */
+.panel-section:has(.fa-tag) .panel-info-block {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--item-bg);
+  border: 1px solid var(--item-border);
+  border-radius: var(--panel-rs);
+  padding: 7px 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.panel-section:has(.fa-tag) .panel-info-block::before {
+  content: '\f0f1'; /* fa-stethoscope */
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  font-size: 11px;
+  color: var(--primary);
+}
+
+/* ── Contact block ───────────────────────────────────────── */
+.panel-contact-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-contact-line {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 0;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--panel-divider);
+}
+.panel-contact-line:last-child { border-bottom: none; padding-bottom: 0; }
+.panel-contact-line:first-child { padding-top: 0; }
+
+/* Icône dans un pill teal */
+.panel-contact-line > i:first-child {
+  width: 26px; height: 26px;
+  border-radius: 8px;
+  background: var(--panel-accent-dim);
+  border: 1px solid rgba(0, 149, 151, 0.18);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px;
+  color: var(--primary);
+  flex-shrink: 0;
+  /* FA icon inside flex */
+  line-height: 26px;
+  text-align: center;
+}
+
+.panel-link {
+  color: var(--primary);
+  text-decoration: none;
+  font-size: 12.5px;
+  font-weight: 500;
+  word-break: break-all;
+  transition: opacity 0.15s;
+}
+.panel-link:hover { opacity: 0.70; }
+
+/* ── Horaires ────────────────────────────────────────────── */
+.panel-schedule {
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-schedule-line {
+  font-size: 12.5px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--panel-divider);
+}
+.panel-schedule-line:last-child { border-bottom: none; padding-bottom: 0; }
+.panel-schedule-line:first-child { padding-top: 0; }
+
+/* ── Équipements ─────────────────────────────────────────── */
+.panel-equip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.panel-equip-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--item-bg);
+  border: 1px solid var(--item-border);
+  border-radius: var(--panel-rs);
+  padding: 4px 10px;
+  transition: background 0.15s;
+}
+.panel-equip-item:hover { background: var(--item-bg-hover); }
+
+.panel-equip-item i {
+  font-size: 10px;
+  color: var(--primary);
+}
+
+/* ── Notes ───────────────────────────────────────────────── */
+.panel-notes {
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-notes .panel-schedule-line {
+  font-style: italic;
+  color: rgba(120, 90, 20, 0.72);
+  border-color: rgba(251,191,36,0.15);
+}
+
+html.is-dark .panel-notes .panel-schedule-line,
+[data-theme="dark"] .panel-notes .panel-schedule-line {
+  color: rgba(253, 213, 100, 0.70);
+  border-color: rgba(251,191,36,0.10);
+}
+
+/* ── Actions ─────────────────────────────────────────────── */
+.panel-actions {
+  padding: 10px 12px 18px;
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+  /* Séparation visuelle du scroll */
+  border-top: 1px solid var(--panel-divider);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  /* Dégradé fondu vers le haut */
+  box-shadow: 0 -12px 24px -8px var(--glass-bg);
+  /* Safe area mobile */
+  padding-bottom: max(18px, env(safe-area-inset-bottom, 18px));
+}
+
+.panel-action-btn {
+  flex: 1;
+  height: 48px;
+  border-radius: 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  border: none;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  gap: 7px;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.18s cubic-bezier(0.3,0,0.3,1),
+              box-shadow 0.18s,
+              background 0.18s;
+}
+
+/* Reflet haut bouton */
+.panel-action-btn::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 10%; right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.40), transparent);
+  pointer-events: none;
+}
+
+.panel-action-btn:active { transform: scale(0.95); }
+
+/* Copier */
+.panel-action--copy {
+  background: var(--item-bg);
+  border: 1px solid var(--item-border);
+  backdrop-filter: blur(10px);
+  color: var(--text-secondary);
+}
+.panel-action--copy:hover { background: var(--item-bg-hover); color: var(--text-primary); }
+
+/* Maps */
+.panel-action--maps {
+  background: linear-gradient(135deg, var(--primary) 0%, #006f71 100%);
+  color: #fff;
+  box-shadow: 0 6px 20px var(--primary-glow);
+}
+.panel-action--maps:hover {
+  box-shadow: 0 10px 28px var(--primary-glow);
+}
+
+/* Fiche */
+.panel-action--link {
+  background: var(--panel-accent-dim);
+  border: 1px solid rgba(0, 149, 151, 0.22);
+  color: var(--primary);
+}
+.panel-action--link:hover { background: rgba(0,149,151,0.18); }
+
+/* ── Toast ───────────────────────────────────────────────── */
+#panel-toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(16px);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid rgba(0, 149, 151, 0.28);
+  color: var(--primary);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 20px;
+  border-radius: 100px;
+  z-index: 2000;
+  pointer-events: none;
+  opacity: 0;
+  box-shadow: var(--shadow-sm);
+  transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.2,0.8,0.2,1);
+  white-space: nowrap;
+}
+#panel-toast.panel-toast--in  { opacity: 1; transform: translateX(-50%) translateY(0); }
+#panel-toast.panel-toast--out { opacity: 0; transform: translateX(-50%) translateY(8px); }
+
+/* ── Dark mode overrides ─────────────────────────────────── */
+html.is-dark #site-panel,
+[data-theme="dark"] #site-panel {
+  box-shadow: var(--shadow-float), 0 0 80px rgba(0,149,151,0.06);
+}
+
+html.is-dark .panel-close,
+[data-theme="dark"] .panel-close {
+  background: var(--item-bg);
+  border-color: var(--item-border);
+  color: var(--text-secondary);
+}
+html.is-dark .panel-close:hover,
+[data-theme="dark"] .panel-close:hover {
+  background: var(--item-bg-hover);
+}
+
+html.is-dark .panel-section:has(.fa-location-dot),
+[data-theme="dark"] .panel-section:has(.fa-location-dot) {
+  box-shadow: var(--panel-card-inset), 0 4px 18px rgba(0,149,151,0.12);
+}
+
+html.is-dark .panel-action--copy,
+[data-theme="dark"] .panel-action--copy {
+  background: var(--item-bg);
+  border-color: var(--item-border);
+  color: var(--text-secondary);
+}
+html.is-dark .panel-action--copy:hover,
+[data-theme="dark"] .panel-action--copy:hover {
+  background: var(--item-bg-hover);
+  color: var(--text-primary);
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .panel-title { font-size: 16px; }
+  .panel-section { padding: 10px 12px; }
+  .panel-section-title { font-size: 9.5px; }
+  .panel-info-block { font-size: 13px; }
+  .panel-contact-line { font-size: 12px; gap: 8px; }
+  .panel-action-btn { height: 44px; font-size: 12.5px; border-radius: 12px; }
+  .panel-actions {
+    padding: 8px 10px;
+    padding-bottom: max(14px, env(safe-area-inset-bottom, 14px));
+  }
+  /* Moins de padding body sur mobile pour gagner de la place */
+  .panel-body { padding: 10px 10px 4px; gap: 7px; }
+  .panel-header { padding: 14px 16px 8px; }
+  .panel-title-row { padding: 0 16px 12px; }
 }

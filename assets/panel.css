@@ -1,51 +1,49 @@
 /* ============================================================
    SITE PANEL — Glass Bento Edition
-   Design System Omedys v2 — hérite des tokens :root style.css
-   Compatible : html.is-dark / [data-theme="dark"]
-   Font Awesome 6 requis
+   Design System Omedys v2
 
-   ARCHITECTURE SCROLL
-   ───────────────────
-   Flex column + min-height:0 est cassé sur Safari/WebKit mobile
-   quand le panel est injecté dynamiquement dans body via JS.
+   ARCHITECTURE SCROLL (définitive)
+   ──────────────────────────────────
+   Le problème précédent : mesurer offsetTop via JS avant que
+   le panel soit rendu donnait des valeurs fausses.
 
-   Solution retenue : position:absolute sur .panel-body
-     • .panel-header + .panel-title-row  → dans le flux normal
-     • .panel-body  → position:absolute, top/bottom = CSS vars
-     • .panel-actions → position:absolute, collé en bas
-   Les CSS vars --panel-header-h et --panel-actions-h sont
-   calculées au runtime par _measurePanelZones() dans ui.panel.js
-   → garanti cross-browser, sans approximation statique.
+   Solution : on enveloppe .panel-body dans .panel-scroll-area,
+   un conteneur flex qui prend tout l'espace disponible entre
+   le header et les actions. Le scroll est 100% CSS, zéro JS.
+
+   Structure HTML (générée par ui.panel.js) :
+   ┌─ #site-panel  (display:flex, flex-direction:column) ──────┐
+   │  .panel-handle          (flex-shrink:0)                   │
+   │  .panel-header          (flex-shrink:0)                   │
+   │  .panel-title-row       (flex-shrink:0)                   │
+   │  .panel-scroll-area     (flex:1, overflow-y:auto) ← SCROLL│
+   │    └─ .panel-body       (contenu dynamique)               │
+   │  .panel-actions         (flex-shrink:0)                   │
+   └───────────────────────────────────────────────────────────┘
    ============================================================ */
 
-/* ── Tokens panel ────────────────────────────────────────────
-   Valeurs par défaut — remplacées au runtime par JS           */
+/* ── Tokens panel ─────────────────────────────────────────── */
 :root {
-  --panel-accent:       var(--primary);
-  --panel-accent-dim:   var(--primary-dim);
-  --panel-accent-glow:  var(--primary-glow);
+  --panel-accent:      var(--primary);
+  --panel-accent-dim:  var(--primary-dim);
+  --panel-accent-glow: var(--primary-glow);
 
-  --panel-card-bg:      rgba(255, 255, 255, 0.65);
-  --panel-card-border:  rgba(255, 255, 255, 0.24);
-  --panel-card-inset:   inset 0 1px 0 rgba(255,255,255,0.55),
-                        inset 0 -1px 0 rgba(0,0,0,0.03);
-  --panel-card-accent:  rgba(0, 149, 151, 0.10);
-  --panel-card-note:    rgba(251, 191, 36, 0.09);
+  --panel-card-bg:     rgba(255, 255, 255, 0.65);
+  --panel-card-border: rgba(255, 255, 255, 0.24);
+  --panel-card-inset:  inset 0 1px 0 rgba(255,255,255,0.55),
+                       inset 0 -1px 0 rgba(0,0,0,0.03);
+  --panel-card-accent: rgba(0, 149, 151, 0.10);
+  --panel-card-note:   rgba(251, 191, 36, 0.09);
 
-  --panel-divider:      rgba(0, 0, 0, 0.06);
-  --panel-label-color:  var(--text-muted);
+  --panel-divider:     rgba(0, 0, 0, 0.06);
+  --panel-label-color: var(--text-muted);
 
   --panel-r:  28px;
   --panel-rc: 16px;
   --panel-rs: 10px;
-
-  /* Zones de scroll — recalculées par _measurePanelZones() */
-  --panel-header-h:  120px;
-  --panel-actions-h:  76px;
 }
 
-html.is-dark,
-[data-theme="dark"] {
+html.is-dark, [data-theme="dark"] {
   --panel-card-bg:     rgba(255, 255, 255, 0.07);
   --panel-card-border: rgba(255, 255, 255, 0.10);
   --panel-card-inset:  inset 0 1px 0 rgba(255,255,255,0.10),
@@ -56,7 +54,7 @@ html.is-dark,
   --panel-label-color: rgba(255, 255, 255, 0.28);
 }
 
-/* ── Overlay ─────────────────────────────────────────────────  */
+/* ── Overlay ─────────────────────────────────────────────── */
 #panel-overlay {
   position: fixed;
   inset: 0;
@@ -68,17 +66,20 @@ html.is-dark,
   pointer-events: none;
   transition: opacity 0.35s ease;
 }
-#panel-overlay.open {
-  opacity: 1;
-  pointer-events: auto;
-}
+#panel-overlay.open { opacity: 1; pointer-events: auto; }
 
-/* ── Shell ───────────────────────────────────────────────────  */
+/* ── Shell ───────────────────────────────────────────────── */
 #site-panel {
   position: fixed;
   z-index: 1200;
-  display: block;            /* pas de flex — enfants en absolu  */
-  overflow: hidden;
+
+  /* ╔══════════════════════════════════════════╗
+     ║  FLEX COLUMN sur le shell                ║
+     ║  Chaque enfant direct est flex-shrink:0  ║
+     ║  sauf .panel-scroll-area qui fait flex:1 ║
+     ╚══════════════════════════════════════════╝ */
+  display: flex;
+  flex-direction: column;
 
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
@@ -91,6 +92,11 @@ html.is-dark,
   -webkit-font-smoothing: antialiased;
 
   transition: transform 0.42s cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* overflow:hidden uniquement pour clipper les décos ::before/::after
+     Il ne bloque PAS le scroll de .panel-scroll-area car celui-ci
+     a son propre overflow-y:auto indépendant */
+  overflow: hidden;
 }
 
 /* Lueur d'ambiance */
@@ -116,10 +122,9 @@ html.is-dark,
   z-index: 10;
 }
 
-/* Tous les enfants directs au-dessus du ::before */
-#site-panel > * { position: revert-rule; z-index: 1; }
+#site-panel > * { position: relative; z-index: 1; }
 
-/* Desktop — tiroir droit */
+/* Desktop */
 @media (min-width: 601px) {
   #site-panel {
     top: 0; right: 0; bottom: 0;
@@ -143,22 +148,24 @@ html.is-dark,
 
 #site-panel.open { transform: translate(0, 0); }
 
-/* ── Handle mobile ───────────────────────────────────────────  */
+/* ── Handle ──────────────────────────────────────────────── */
 .panel-handle {
   width: 34px; height: 4px;
   border-radius: 100px;
   background: var(--panel-divider);
   margin: 12px auto 4px;
+  flex-shrink: 0;
 }
 @media (min-width: 601px) { .panel-handle { display: none; } }
 
-/* ── Header ──────────────────────────────────────────────────  */
+/* ── Header ──────────────────────────────────────────────── */
 .panel-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px 10px;
   gap: 10px;
+  flex-shrink: 0;   /* ← ne rétrécit jamais */
 }
 
 .panel-header-left {
@@ -194,11 +201,7 @@ html.is-dark,
   white-space: nowrap;
 }
 
-.panel-sdot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
+.panel-sdot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 
 .bp3-pill-ouvert  { background: rgba(34,197,94,0.10);  border-color: rgba(34,197,94,0.25);  color: #16a34a; }
 .bp3-pill-encours { background: rgba(251,191,36,0.10); border-color: rgba(251,191,36,0.28); color: #b45309; }
@@ -210,10 +213,7 @@ html.is-dark,
 .bp3-pill-tele .panel-sdot    { background: var(--primary); box-shadow: 0 0 5px var(--primary-glow); animation: sdot-pulse 2s ease-in-out infinite; }
 .bp3-pill-default .panel-sdot { background: var(--text-muted); }
 
-@keyframes sdot-pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.35; }
-}
+@keyframes sdot-pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
 
 html.is-dark .bp3-pill-ouvert,
 [data-theme="dark"] .bp3-pill-ouvert  { background: rgba(34,197,94,0.12);  color: #86efac; }
@@ -234,13 +234,14 @@ html.is-dark .bp3-pill-encours,
 }
 .panel-close:hover { background: var(--item-bg-hover); transform: scale(1.10); }
 
-/* ── Title row ───────────────────────────────────────────────  */
+/* ── Title row ───────────────────────────────────────────── */
 .panel-title-row {
   display: flex;
   align-items: flex-start;
   gap: 10px;
   padding: 0 20px 14px;
   border-bottom: 1px solid var(--panel-divider);
+  flex-shrink: 0;   /* ← ne rétrécit jamais */
 }
 
 .panel-accent-dot {
@@ -260,40 +261,47 @@ html.is-dark .bp3-pill-encours,
   word-break: break-word;
 }
 
-/* ── Body scroll ─────────────────────────────────────────────
-   position:absolute = seule méthode fiable cross-browser
-   top/bottom = injectées par _measurePanelZones() via JS       */
-.panel-body {
-  position: absolute;
-  top: var(--panel-header-h);
-  bottom: var(--panel-actions-h);
-  left: 0;
-  right: 0;
+/* ── Zone de scroll ──────────────────────────────────────────
+   C'est LE seul élément qui grossit pour remplir l'espace.
+   overflow-y:auto déclenche le scroll quand le contenu dépasse.
 
+   flex: 1 1 0  =  grow(1) shrink(1) basis(0)
+     → prend tout l'espace restant après header + actions
+     → base 0 force le calcul depuis zéro (pas de contenu auto)
+
+   min-height: 0
+     → annule min-height:auto implicite des items flex
+     → INDISPENSABLE pour que overflow-y:auto fonctionne
+   ──────────────────────────────────────────────────────────── */
+.panel-scroll-area {
+  flex: 1 1 0;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,0,0,0.10) transparent;
+}
+html.is-dark .panel-scroll-area,
+[data-theme="dark"] .panel-scroll-area {
+  scrollbar-color: rgba(255,255,255,0.10) transparent;
+}
+.panel-scroll-area::-webkit-scrollbar { width: 3px; }
+.panel-scroll-area::-webkit-scrollbar-track { background: transparent; }
+.panel-scroll-area::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 4px; }
+html.is-dark .panel-scroll-area::-webkit-scrollbar-thumb,
+[data-theme="dark"] .panel-scroll-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); }
 
+/* ── Body (contenu interne) ──────────────────────────────── */
+.panel-body {
   padding: 12px 12px 8px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0,0,0,0.12) transparent;
 }
-html.is-dark .panel-body,
-[data-theme="dark"] .panel-body {
-  scrollbar-color: rgba(255,255,255,0.12) transparent;
-}
-.panel-body::-webkit-scrollbar { width: 3px; }
-.panel-body::-webkit-scrollbar-track { background: transparent; }
-.panel-body::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 4px; }
-html.is-dark .panel-body::-webkit-scrollbar-thumb,
-[data-theme="dark"] .panel-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); }
 
-/* ── Cartes Bento ────────────────────────────────────────────  */
+/* ── Cartes Bento ────────────────────────────────────────── */
 .panel-section {
   background: var(--panel-card-bg);
   border: 1px solid var(--panel-card-border);
@@ -301,17 +309,15 @@ html.is-dark .panel-body::-webkit-scrollbar-thumb,
   padding: 12px 14px;
   position: relative;
   overflow: hidden;
-  flex-shrink: 0;           /* empêche la compression dans le flex column */
+  flex-shrink: 0;
 
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   box-shadow: var(--panel-card-inset), var(--shadow-sm);
-
   transition: transform 0.20s cubic-bezier(0.2,0,0.2,1), box-shadow 0.20s;
   animation: panel-card-in 0.38s cubic-bezier(0.2,0.8,0.2,1) both;
 }
 
-/* Reflet haut de carte */
 .panel-section::after {
   content: '';
   position: absolute;
@@ -326,22 +332,21 @@ html.is-dark .panel-body::-webkit-scrollbar-thumb,
   box-shadow: var(--panel-card-inset), 0 10px 28px rgba(0,0,0,0.10);
 }
 
-/* Stagger d'entrée */
-.panel-section:nth-child(1) { animation-delay: 0.04s; }
-.panel-section:nth-child(2) { animation-delay: 0.08s; }
-.panel-section:nth-child(3) { animation-delay: 0.12s; }
-.panel-section:nth-child(4) { animation-delay: 0.16s; }
-.panel-section:nth-child(5) { animation-delay: 0.20s; }
-.panel-section:nth-child(6) { animation-delay: 0.24s; }
-.panel-section:nth-child(7) { animation-delay: 0.28s; }
-.panel-section:nth-child(8) { animation-delay: 0.32s; }
+.panel-section:nth-child(1){animation-delay:.04s}
+.panel-section:nth-child(2){animation-delay:.08s}
+.panel-section:nth-child(3){animation-delay:.12s}
+.panel-section:nth-child(4){animation-delay:.16s}
+.panel-section:nth-child(5){animation-delay:.20s}
+.panel-section:nth-child(6){animation-delay:.24s}
+.panel-section:nth-child(7){animation-delay:.28s}
+.panel-section:nth-child(8){animation-delay:.32s}
 
 @keyframes panel-card-in {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Variante teal — section adresse */
+/* Variante teal — adresse */
 .panel-section:has(.fa-location-dot) {
   background: linear-gradient(135deg, var(--panel-card-accent) 0%, rgba(0,149,151,0.03) 100%);
   border-color: rgba(0,149,151,0.20);
@@ -351,13 +356,13 @@ html.is-dark .panel-body::-webkit-scrollbar-thumb,
   box-shadow: var(--panel-card-inset), 0 8px 28px rgba(0,149,151,0.12);
 }
 
-/* Variante ambre — section notes */
+/* Variante ambre — notes */
 .panel-section:has(.fa-note-sticky) {
   background: linear-gradient(135deg, var(--panel-card-note) 0%, rgba(245,130,32,0.04) 100%);
   border-color: rgba(251,191,36,0.20);
 }
 
-/* ── Section title ───────────────────────────────────────────  */
+/* ── Section title ───────────────────────────────────────── */
 .panel-section-title {
   display: flex;
   align-items: center;
@@ -378,14 +383,14 @@ html.is-dark .panel-body::-webkit-scrollbar-thumb,
   flex-shrink: 0;
 }
 
-/* ── Info block ──────────────────────────────────────────────  */
+/* ── Info block ──────────────────────────────────────────── */
 .panel-info-block {
   font-size: 13.5px;
   color: var(--text-primary);
   line-height: 1.60;
 }
 
-/* Type → pill avec icône auto */
+/* Type → pill */
 .panel-section:has(.fa-tag) .panel-info-block {
   display: inline-flex;
   align-items: center;
@@ -400,17 +405,14 @@ html.is-dark .panel-body::-webkit-scrollbar-thumb,
 .panel-section:has(.fa-tag) .panel-info-block::before {
   font-family: 'Font Awesome 6 Free';
   font-weight: 900;
-  content: '\f0f1';    /* stethoscope */
+  content: '\f0f1';
   font-size: 11px;
   color: var(--primary);
   flex-shrink: 0;
 }
 
-/* ── Contact block ───────────────────────────────────────────  */
-.panel-contact-block {
-  display: flex;
-  flex-direction: column;
-}
+/* ── Contact block ───────────────────────────────────────── */
+.panel-contact-block { display: flex; flex-direction: column; }
 
 .panel-contact-line {
   display: flex;
@@ -425,7 +427,6 @@ html.is-dark .panel-body::-webkit-scrollbar-thumb,
 .panel-contact-line:first-child { padding-top: 0; }
 .panel-contact-line:last-child  { border-bottom: none; padding-bottom: 0; }
 
-/* Icône pill teal */
 .panel-contact-line > i:first-child {
   width: 26px; height: 26px;
   border-radius: 8px;
@@ -448,7 +449,7 @@ html.is-dark .panel-body::-webkit-scrollbar-thumb,
 }
 .panel-link:hover { opacity: 0.70; }
 
-/* ── Horaires ────────────────────────────────────────────────  */
+/* ── Horaires ────────────────────────────────────────────── */
 .panel-schedule { display: flex; flex-direction: column; }
 
 .panel-schedule-line {
@@ -461,12 +462,8 @@ html.is-dark .panel-body::-webkit-scrollbar-thumb,
 .panel-schedule-line:first-child { padding-top: 0; }
 .panel-schedule-line:last-child  { border-bottom: none; padding-bottom: 0; }
 
-/* ── Équipements ─────────────────────────────────────────────  */
-.panel-equip-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
+/* ── Équipements ─────────────────────────────────────────── */
+.panel-equip-list { display: flex; flex-wrap: wrap; gap: 6px; }
 
 .panel-equip-item {
   display: inline-flex;
@@ -484,7 +481,7 @@ html.is-dark .panel-body::-webkit-scrollbar-thumb,
 .panel-equip-item:hover { background: var(--item-bg-hover); }
 .panel-equip-item i { font-size: 10px; color: var(--primary); }
 
-/* ── Notes ───────────────────────────────────────────────────  */
+/* ── Notes ───────────────────────────────────────────────── */
 .panel-notes { display: flex; flex-direction: column; }
 
 .panel-notes .panel-schedule-line {
@@ -498,19 +495,14 @@ html.is-dark .panel-notes .panel-schedule-line,
   border-color: rgba(251,191,36,0.10);
 }
 
-/* ── Actions — collées en bas du panel ──────────────────────
-   position:absolute → toujours visibles, jamais sous le scroll  */
+/* ── Actions ─────────────────────────────────────────────── */
 .panel-actions {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  z-index: 2;
-
+  flex-shrink: 0;   /* ← ne rétrécit jamais */
   padding: 10px 12px;
   padding-bottom: max(18px, env(safe-area-inset-bottom, 18px));
   display: flex;
   gap: 8px;
   align-items: center;
-
   border-top: 1px solid var(--panel-divider);
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
@@ -530,13 +522,11 @@ html.is-dark .panel-notes .panel-schedule-line,
   display: flex; align-items: center; justify-content: center;
   gap: 7px;
   text-decoration: none;
+  white-space: nowrap;
   position: relative;
   overflow: hidden;
-  white-space: nowrap;
   transition: transform 0.18s cubic-bezier(0.3,0,0.3,1), box-shadow 0.18s, background 0.18s;
 }
-
-/* Reflet haut bouton */
 .panel-action-btn::after {
   content: '';
   position: absolute;
@@ -545,7 +535,6 @@ html.is-dark .panel-notes .panel-schedule-line,
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.40), transparent);
   pointer-events: none;
 }
-
 .panel-action-btn:active { transform: scale(0.95); }
 
 .panel-action--copy {
@@ -569,16 +558,14 @@ html.is-dark .panel-notes .panel-schedule-line,
 }
 .panel-action--link:hover { background: rgba(0,149,151,0.18); }
 
-/* ── Toast ───────────────────────────────────────────────────  */
+/* ── Toast ───────────────────────────────────────────────── */
 #panel-toast {
   position: fixed;
-  bottom: 28px;
-  left: 50%;
+  bottom: 28px; left: 50%;
   transform: translateX(-50%) translateY(16px);
   z-index: 2000;
   pointer-events: none;
   opacity: 0;
-
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
@@ -591,46 +578,35 @@ html.is-dark .panel-notes .panel-schedule-line,
   border-radius: 100px;
   box-shadow: var(--shadow-sm);
   white-space: nowrap;
-
   transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.2,0.8,0.2,1);
 }
 #panel-toast.panel-toast--in  { opacity: 1; transform: translateX(-50%) translateY(0); }
 #panel-toast.panel-toast--out { opacity: 0; transform: translateX(-50%) translateY(8px); }
 
-/* ── Dark overrides ──────────────────────────────────────────  */
+/* ── Dark overrides ──────────────────────────────────────── */
 html.is-dark #site-panel,
 [data-theme="dark"] #site-panel {
   box-shadow: var(--shadow-float), 0 0 80px rgba(0,149,151,0.07);
 }
 html.is-dark .panel-close,
-[data-theme="dark"] .panel-close {
-  background: var(--item-bg);
-  border-color: var(--item-border);
-}
+[data-theme="dark"] .panel-close { background: var(--item-bg); border-color: var(--item-border); }
 html.is-dark .panel-close:hover,
 [data-theme="dark"] .panel-close:hover { background: var(--item-bg-hover); }
-
 html.is-dark .panel-action--copy,
-[data-theme="dark"] .panel-action--copy {
-  background: var(--item-bg);
-  border-color: var(--item-border);
-}
+[data-theme="dark"] .panel-action--copy { background: var(--item-bg); border-color: var(--item-border); }
 html.is-dark .panel-action--copy:hover,
-[data-theme="dark"] .panel-action--copy:hover {
-  background: var(--item-bg-hover);
-  color: var(--text-primary);
-}
+[data-theme="dark"] .panel-action--copy:hover { background: var(--item-bg-hover); color: var(--text-primary); }
 
-/* ── Responsive ──────────────────────────────────────────────  */
+/* ── Responsive ──────────────────────────────────────────── */
 @media (max-width: 480px) {
-  .panel-title        { font-size: 16px; }
-  .panel-section      { padding: 10px 12px; }
-  .panel-section-title{ font-size: 9.5px; }
-  .panel-info-block   { font-size: 13px; }
-  .panel-contact-line { font-size: 12px; gap: 8px; }
-  .panel-body         { padding: 10px 10px 6px; gap: 7px; }
-  .panel-header       { padding: 14px 16px 8px; }
-  .panel-title-row    { padding: 0 16px 12px; }
-  .panel-action-btn   { height: 44px; font-size: 12px; border-radius: 12px; }
-  .panel-actions      { padding: 8px 10px; padding-bottom: max(14px, env(safe-area-inset-bottom, 14px)); }
+  .panel-title         { font-size: 16px; }
+  .panel-section       { padding: 10px 12px; }
+  .panel-section-title { font-size: 9.5px; }
+  .panel-info-block    { font-size: 13px; }
+  .panel-contact-line  { font-size: 12px; gap: 8px; }
+  .panel-body          { padding: 10px 10px 6px; gap: 7px; }
+  .panel-header        { padding: 14px 16px 8px; }
+  .panel-title-row     { padding: 0 16px 12px; }
+  .panel-action-btn    { height: 44px; font-size: 12px; border-radius: 12px; }
+  .panel-actions       { padding: 8px 10px; padding-bottom: max(14px, env(safe-area-inset-bottom, 14px)); }
 }

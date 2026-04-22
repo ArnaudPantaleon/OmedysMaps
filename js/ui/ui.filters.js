@@ -245,6 +245,29 @@ function makeRadiusSection(refreshFn) {
       store.filters.radiusCenter = null
       document.getElementById("radius-city-label").textContent = ""
       refreshFn()
+      const nearestWrap = document.getElementById("nearest-salles")
+
+      if (!detail) {
+        nearestWrap.innerHTML = "<h3>Salles proches</h3><p>Aucune ville sélectionnée.</p>"
+        return
+      }
+      
+      // Calcul des 5 salles les plus proches
+      const nearest = getNearestSalles(detail, 5)
+      
+      nearestWrap.innerHTML = `
+        <h3>Salles proches de ${detail.name}</h3>
+        <div class="nearest-list">
+          ${nearest.map(s => `
+            <div class="nearest-item">
+              <strong>${s.nom || "Salle"}</strong>
+              <span>${s.distance.toFixed(1)} km</span>
+              <small>${s.status}</small>
+            </div>
+          `).join("")}
+        </div>
+      `
+
       return
     }
 

@@ -1,8 +1,8 @@
 // ═══════════════════════════════════════════════════════════════
 // ui.panel.js — Panel latéral (desktop) / bottom sheet (mobile)
-// Remplace entièrement les popups Leaflet
-// Les détails enrichis (horaires, équipements, lien, notes)
-// sont lus directement depuis le site parsé (salles.json)
+// Glass Bento Edition — scroll garanti cross-browser
+// Architecture : position:absolute sur .panel-body
+//   → hauteurs mesurées au runtime via _measurePanelZones()
 // ═══════════════════════════════════════════════════════════════
 
 // ── Init DOM ──────────────────────────────────────────────────
@@ -24,9 +24,12 @@ export function initSitePanel() {
     <div class="panel-header">
       <div class="panel-header-left">
         <span class="panel-badge"></span>
-        <span class="panel-statut-pill"><span class="panel-sdot"></span><span class="panel-statut-label"></span></span>
+        <span class="panel-statut-pill">
+          <span class="panel-sdot"></span>
+          <span class="panel-statut-label"></span>
+        </span>
       </div>
-      <button class="panel-close" id="panel-close-btn">
+      <button class="panel-close" id="panel-close-btn" aria-label="Fermer">
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
@@ -41,14 +44,18 @@ export function initSitePanel() {
 
   document.getElementById("panel-close-btn")
     .addEventListener("click", closePanel)
-  
+
   // Swipe down pour fermer (mobile)
   _initSwipe(panel)
 
-  window.addEventListener("theme-changed", (e) => {
-    const panel = document.getElementById("site-panel");
-    if (!panel || !panel.classList.contains("panel--open")) return;
-    });
+  // Recalcul des zones si la fenêtre change de taille
+  window.addEventListener("resize", () => _measurePanelZones(panel))
+
+  // Sync thème
+  window.addEventListener("theme-changed", () => {
+    const p = document.getElementById("site-panel")
+    if (p && p.classList.contains("open")) _measurePanelZones(p)
+  })
 }
 
 // ── Ouverture ─────────────────────────────────────────────────
@@ -59,6 +66,7 @@ export function openSitePanel(site, color) {
   const panel   = document.getElementById("site-panel")
   const overlay = document.getElementById("panel-overlay")
 
+  // Pill statut
   const pillClass = {
     "Ouvert":                 "bp3-pill-ouvert",
     "Ouvertes":               "bp3-pill-ouvert",
@@ -67,18 +75,28 @@ export function openSitePanel(site, color) {
     "Telesecretariat OMEDYS": "bp3-pill-tele"
   }[site.status] || "bp3-pill-default"
 
+  // Remplissage header
   panel.querySelector(".panel-badge").textContent        = site.dataset === "salle" ? "Salle télémédecine" : "Cabinet TMS"
   panel.querySelector(".panel-statut-pill").className    = `panel-statut-pill ${pillClass}`
-  panel.querySelector(".panel-statut-label").textContent = site.status
-  panel.querySelector(".panel-accent-dot").style.background = color
+  panel.querySelector(".panel-statut-label").textContent = site.status || ""
+  panel.querySelector(".panel-accent-dot").style.background  = color
+  panel.querySelector(".panel-accent-dot").style.boxShadow   = `0 0 8px ${color}`
   panel.querySelector(".panel-title").textContent        = site.name
   panel.style.setProperty("--panel-accent", color)
 
+  // Contenu
   panel.querySelector(".panel-body").innerHTML    = _renderBase(site) + _renderDetails(site)
   panel.querySelector(".panel-actions").innerHTML = _renderActions(site)
 
+  // Scroll en haut à chaque ouverture
+  panel.querySelector(".panel-body").scrollTop = 0
+
+  // Ouvrir
   panel.classList.add("open")
   overlay.classList.add("open")
+
+  // ← CLEF DU SCROLL : mesurer les zones après que le DOM est rendu
+  requestAnimationFrame(() => _measurePanelZones(panel))
 }
 
 export function closePanel() {
@@ -86,12 +104,30 @@ export function closePanel() {
   document.getElementById("panel-overlay")?.classList.remove("open")
 }
 
-// ── Sections ──────────────────────────────────────────────────
+// ── Mesure des zones (la vraie solution au scroll) ────────────
+// Calcule la hauteur exacte du header (tout ce qui est au-dessus
+// de .panel-body) et des actions (tout ce qui est en dessous),
+// puis les injecte comme CSS custom properties sur le panel.
+// Ça remplace toute approximation CSS statique.
+function _measurePanelZones(panel) {
+  const body    = panel.querySelector(".panel-body")
+  const actions = panel.querySelector(".panel-actions")
+  if (!body || !actions) return
+
+  // offsetTop = distance depuis le haut du panel jusqu'au body
+  const headerH  = body.offsetTop
+  // offsetHeight = hauteur réelle des boutons d'action
+  const actionsH = actions.offsetHeight
+
+  panel.style.setProperty("--panel-header-h",  headerH  + "px")
+  panel.style.setProperty("--panel-actions-h", actionsH + "px")
+}
+
+// ── Rendu HTML ────────────────────────────────────────────────
 
 function _renderBase(site) {
   let html = ""
 
-  // Adresse
   if (site.address || site.city) {
     html += `
       <div class="panel-section">
@@ -102,34 +138,46 @@ function _renderBase(site) {
       </div>`
   }
 
-  // TMS rattaché
   if (site.tms) {
-    let tmsHtml = `<div class="panel-contact-line"><i class="fa-solid fa-hospital"></i><span>${site.tms}</span></div>`
-    if (site.mss)  tmsHtml += `<div class="panel-contact-line"><i class="fa-regular fa-envelope"></i><a class="panel-link">${site.mss}</a></div>`
+    let inner = `<div class="panel-contact-line">
+                   <i class="fa-solid fa-hospital"></i><span>${site.tms}</span>
+                 </div>`
+    if (site.mss) inner += `<div class="panel-contact-line">
+                              <i class="fa-regular fa-envelope"></i>
+                              <a class="panel-link">${site.mss}</a>
+                            </div>`
     html += `
       <div class="panel-section">
         <div class="panel-section-title">
           <i class="fa-solid fa-hospital"></i> Cabinet TMS
         </div>
-        <div class="panel-contact-block">${tmsHtml}</div>
+        <div class="panel-contact-block">${inner}</div>
       </div>`
   }
-  
-  // référent ATT (att.name)
+
   if (site.att) {
-    let attHtml = ``
-    if (site.att?.name)  attHtml += `<div class="panel-contact-line"><i class="fa-regular fa-user"></i><span>${site.att.name}</span></div>`
-    if (site.att?.mail)  attHtml += `<div class="panel-contact-line"><i class="fa-regular fa-envelope"></i><a class="panel-link" href="mailto:${site.att.mail}">${site.att.mail}</a></div>`
-    if (site.att?.phone)  attHtml += `<div class="panel-contact-line"><i class="fa-solid fa-phone"></i><a class="panel-link" href="tel:${site.att.phone}">${_formatPhone(site.att.phone)}</a></div>`
+    let inner = ""
+    if (site.att.name)  inner += `<div class="panel-contact-line">
+                                    <i class="fa-regular fa-user"></i>
+                                    <span>${site.att.name}</span>
+                                  </div>`
+    if (site.att.mail)  inner += `<div class="panel-contact-line">
+                                    <i class="fa-regular fa-envelope"></i>
+                                    <a class="panel-link" href="mailto:${site.att.mail}">${site.att.mail}</a>
+                                  </div>`
+    if (site.att.phone) inner += `<div class="panel-contact-line">
+                                    <i class="fa-solid fa-phone"></i>
+                                    <a class="panel-link" href="tel:${site.att.phone}">${_formatPhone(site.att.phone)}</a>
+                                  </div>`
     html += `
       <div class="panel-section">
         <div class="panel-section-title">
-          <i class="fa-solid fa-hospital"></i> Référent Cabinet
+          <i class="fa-regular fa-user"></i> Référent Cabinet
         </div>
-        <div class="panel-contact-block">${attHtml}</div>
+        <div class="panel-contact-block">${inner}</div>
       </div>`
   }
-  // Type de structure
+
   if (site.typeSite) {
     html += `
       <div class="panel-section">
@@ -140,19 +188,20 @@ function _renderBase(site) {
       </div>`
   }
 
-    // Contact
   if (site.contact?.phone) {
     html += `
       <div class="panel-section">
         <div class="panel-section-title">
-          <i class="fa-solid fa-tag"></i> Contact
+          <i class="fa-solid fa-phone"></i> Contact
         </div>
-          <div class="panel-contact-block">
-            <div class="panel-contact-line"><i class="fa-solid fa-phone"></i><a class="panel-link" href="tel:${site.contact.phone}">${_formatPhone(site.contact.phone)}</a></div>
+        <div class="panel-contact-block">
+          <div class="panel-contact-line">
+            <i class="fa-solid fa-phone"></i>
+            <a class="panel-link" href="tel:${site.contact.phone}">${_formatPhone(site.contact.phone)}</a>
           </div>
+        </div>
       </div>`
   }
-
 
   return html
 }
@@ -173,10 +222,10 @@ function _renderDetails(site) {
   }
 
   if (site.equipements?.length) {
-    const items = site.equipements.map(e => `
-      <div class="panel-equip-item">
-        <i class="fa-solid fa-circle-check"></i><span>${e}</span>
-      </div>`).join("")
+    const items = site.equipements
+      .map(e => `<div class="panel-equip-item">
+                   <i class="fa-solid fa-circle-check"></i><span>${e}</span>
+                 </div>`).join("")
     html += `
       <div class="panel-section">
         <div class="panel-section-title">
@@ -210,13 +259,15 @@ function _renderActions(site) {
       onclick="window._panelCopy('${addr.replace(/'/g, "\\'")}')">
       <i class="fa-regular fa-copy"></i><span>Copier</span>
     </button>
-    <a class="panel-action-btn panel-action--maps" href="${mapsUrl}" target="_blank" rel="noopener">
+    <a class="panel-action-btn panel-action--maps"
+      href="${mapsUrl}" target="_blank" rel="noopener">
       <i class="fa-regular fa-map"></i><span>Maps</span>
     </a>`
 
   if (site.lien) {
     html += `
-      <a class="panel-action-btn panel-action--link" href="${site.lien}" target="_blank" rel="noopener">
+      <a class="panel-action-btn panel-action--link"
+        href="${site.lien}" target="_blank" rel="noopener">
         <i class="fa-solid fa-arrow-up-right-from-square"></i><span>Fiche</span>
       </a>`
   }
@@ -226,12 +277,13 @@ function _renderActions(site) {
 
 // ── Swipe to close (mobile) ───────────────────────────────────
 function _initSwipe(panel) {
-  let startY = 0
+  let startY     = 0
   let isDragging = false
 
   panel.addEventListener("touchstart", e => {
+    // Swipe uniquement depuis le handle / header / title — pas depuis le body scrollable
     if (!e.target.closest(".panel-handle, .panel-header, .panel-title-row")) return
-    startY = e.touches[0].clientY
+    startY     = e.touches[0].clientY
     isDragging = true
     panel.style.transition = "none"
   }, { passive: true })
@@ -244,7 +296,7 @@ function _initSwipe(panel) {
 
   panel.addEventListener("touchend", e => {
     if (!isDragging) return
-    isDragging = false
+    isDragging             = false
     panel.style.transition = ""
     const dy = e.changedTouches[0].clientY - startY
     if (dy > 100) {
@@ -258,22 +310,22 @@ function _initSwipe(panel) {
 
 // ── Utils ─────────────────────────────────────────────────────
 
-// Exposé sur window pour le onclick inline du bouton Copier
 window._panelCopy = function(text) {
-  navigator.clipboard.writeText(text).then(() => _showToast("Adresse copiée !"))
+  navigator.clipboard.writeText(text)
+    .then(() => _showToast("Adresse copiée !"))
+    .catch(() => _showToast("Copie impossible"))
 }
 
 function _showToast(msg) {
   let toast = document.getElementById("panel-toast")
   if (!toast) {
-    toast = document.createElement("div")
+    toast    = document.createElement("div")
     toast.id = "panel-toast"
     document.body.appendChild(toast)
   }
   toast.textContent = msg
   toast.classList.remove("panel-toast--out")
   toast.classList.add("panel-toast--in")
-
   clearTimeout(toast._timer)
   toast._timer = setTimeout(() => {
     toast.classList.replace("panel-toast--in", "panel-toast--out")

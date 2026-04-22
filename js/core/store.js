@@ -23,7 +23,9 @@ export const store = {
 
     // Filtres géo — null = pas de filtre actif
     region:     null,    // code région ex: "84"
-    departement: null    // code dept ex: "31"
+    departement: null,    // code dept ex: "31"
+    radius:     null,
+    radiusCenter:     null, 
   }
 
 }

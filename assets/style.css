@@ -720,7 +720,90 @@ html.is-dark .theme-btn.active,
   .theme-btn-icon  { font-size: 14px; }
   .theme-btn       { height: 36px; }
 }
+/* ============================================================
+   RADIUS FILTER — Périmètre de recherche
+   À ajouter dans style.css
+   ============================================================ */
 
+/* Section conteneur */
+.radius-section {
+  transition: opacity 0.25s ease;
+}
+
+/* État désactivé — avant qu'une ville soit sélectionnée */
+.radius-section.radius-disabled {
+  opacity: 0.40;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Label ville sélectionnée dans le titre */
+.radius-city-label {
+  margin-left: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--primary);
+  background: var(--primary-dim);
+  border: 1px solid rgba(0,149,151,0.25);
+  border-radius: 100px;
+  padding: 1px 8px;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Groupe de boutons km */
+.radius-btns {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.radius-btn {
+  flex: 1;
+  min-width: 48px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--item-border);
+  background: var(--item-bg);
+  color: rgba(0, 0, 0, 0.55);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.12s;
+}
+
+.radius-btn:hover {
+  background: var(--item-bg-hover);
+}
+
+.radius-btn:active {
+  transform: scale(0.95);
+}
+
+/* Actif */
+.radius-btn.active {
+  background: var(--primary-dim);
+  border-color: var(--primary);
+  color: var(--primary);
+  box-shadow: 0 2px 8px rgba(0,149,151,0.20);
+}
+
+/* Dark mode */
+html.is-dark .radius-btn,
+[data-theme="dark"] .radius-btn {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+html.is-dark .radius-btn.active,
+[data-theme="dark"] .radius-btn.active {
+  color: var(--primary);
+}
 /* ============================================================
    RESPONSIVE
    ============================================================ */

@@ -117,7 +117,7 @@ html.is-dark,
 }
 
 /* Tous les enfants directs au-dessus du ::before */
-#site-panel > * { position: absolute; z-index: 1; }
+#site-panel > * { position: revert-rule; z-index: 1; }
 
 /* Desktop — tiroir droit */
 @media (min-width: 601px) {

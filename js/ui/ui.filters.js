@@ -443,6 +443,15 @@ export function initFilters(map, zones) {
   })
 
   document.body.appendChild(wrapper)
+  // Bloc affichage des salles proches
+  const nearestWrap = document.createElement("div")
+  nearestWrap.id = "nearest-salles"
+  nearestWrap.className = "nearest-salles"
+  nearestWrap.innerHTML = `
+    <h3>Salles proches</h3>
+    <p>Aucune ville sélectionnée.</p>
+  `
+  document.body.appendChild(nearestWrap)
 
   // Compteur initial
   const el = document.getElementById("site-count")

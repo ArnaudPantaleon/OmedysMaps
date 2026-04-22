@@ -210,6 +210,10 @@ export function initFilters(map, zones) {
     if (el) el.textContent = countVisible()
   }
 
+  // ── Apparence (en tête de panneau) ──
+  listWrap.appendChild(makeThemeSection())
+  listWrap.appendChild(makeDivider())
+
   // ── Section 1 : Dataset ──
   const ds = makeSection("Type de dataset", 2)
   ds.grid.appendChild(makeToggleFilter(
@@ -304,9 +308,7 @@ export function initFilters(map, zones) {
   dp.grid.appendChild(deptWrap)
   listWrap.appendChild(dp.section)
 
-  // ── Séparateur + Apparence + Reset ──
-  listWrap.appendChild(makeDivider())
-  listWrap.appendChild(makeThemeSection())
+  // ── Séparateur + Reset ──
   listWrap.appendChild(makeDivider())
 
   const resetBtn = document.createElement("button")

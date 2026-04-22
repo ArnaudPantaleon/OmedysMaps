@@ -4,7 +4,6 @@ import { MapEngine }        from "./map/map.engine.js"
 import { initFilters }      from "./ui/ui.filters.js"
 import { initSearch }       from "./ui/ui.search.js"
 import { initStats }        from "./ui/ui.stats.js"
-import { initThemeSwitcher } from "./ui/ui.theme.js"
 import { initSitePanel }    from "./ui/ui.panel.js"
 
 initTheme()
@@ -26,7 +25,6 @@ async function start() {
   initFilters(map, zones)
   initSearch(map)
   initStats()
-  initThemeSwitcher()
 
   window.addEventListener("theme-changed", (e) => {
     map.updateTheme(e.detail.theme);

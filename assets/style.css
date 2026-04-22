@@ -649,11 +649,8 @@ html.is-dark .bp3-pill-default .bp3-sdot { background: rgba(255,255,255,0.4); }
 
 /* ============================================================
    THEME SWITCHER — intégré dans le panneau filtres
-   À ajouter dans style.css, remplace le bloc .theme-switcher-*
-   existant si présent.
    ============================================================ */
 
-/* Section conteneur dans le panneau filtres */
 .theme-section {
   margin-bottom: 0;
 }
@@ -665,13 +662,15 @@ html.is-dark .bp3-pill-default .bp3-sdot { background: rgba(255,255,255,0.4); }
   margin-bottom: 10px;
 }
 
-/* Groupe de boutons — pleine largeur */
 .theme-switcher-btns {
   display: flex;
   gap: 6px;
   width: 100%;
 }
 
+/* ── Bouton base ──
+   On pose color directement ici — pas sur les enfants.
+   Les i et span héritent. Plus de guerre de spécificité. */
 .theme-btn {
   flex: 1;
   height: 40px;
@@ -684,76 +683,38 @@ html.is-dark .bp3-pill-default .bp3-sdot { background: rgba(255,255,255,0.4); }
   align-items: center;
   justify-content: center;
   gap: 5px;
-  transition: background 0.18s, border-color 0.18s, transform 0.12s;
+  /* Couleur fixe — ne dépend PAS d'un token qui pourrait être blanc */
+  color: rgba(0, 0, 0, 0.55);
+  transition: background 0.18s, border-color 0.18s, color 0.18s, transform 0.12s;
 }
 
-.theme-btn:hover {
-  background: var(--item-bg-hover);
-}
+.theme-btn:hover  { background: var(--item-bg-hover); }
+.theme-btn:active { transform: scale(0.96); }
 
-.theme-btn:active {
-  transform: scale(0.96);
-}
+.theme-btn-icon  { font-size: 12px; }
+.theme-btn-label { font-size: 11.5px; font-weight: 600; white-space: nowrap; }
 
-/* Icône et label — couleur fixe pour éviter héritage blanc en mode clair */
-.theme-btn-icon {
-  font-size: 12px;
-  color: rgba(0, 0, 0, 0.50) !important;
-  transition: color 0.18s;
-}
-
-.theme-btn-label {
-  font-size: 11.5px;
-  font-weight: 600;
-  color: rgba(0, 0, 0, 0.50) !important;
-  transition: color 0.18s;
-  white-space: nowrap;
-}
-
-/* État actif */
+/* ── Actif ── */
 .theme-btn.active {
   background: var(--primary-dim);
   border-color: var(--primary);
-}
-
-.theme-btn.active .theme-btn-icon,
-.theme-btn.active .theme-btn-label {
   color: var(--primary);
 }
 
-/* Dark mode */
+/* ── Dark mode ── */
 html.is-dark .theme-btn,
 [data-theme="dark"] .theme-btn {
-  background: var(--item-bg);
-  border-color: var(--item-border);
-}
-
-html.is-dark .theme-btn:hover,
-[data-theme="dark"] .theme-btn:hover {
-  background: var(--item-bg-hover);
-}
-
-html.is-dark .theme-btn-icon,
-html.is-dark .theme-btn-label,
-[data-theme="dark"] .theme-btn-icon,
-[data-theme="dark"] .theme-btn-label {
-  color: rgba(255, 255, 255, 0.50) !important;
+  color: rgba(255, 255, 255, 0.55);
 }
 
 html.is-dark .theme-btn.active,
 [data-theme="dark"] .theme-btn.active {
+  color: var(--primary);
   background: var(--primary-dim);
   border-color: var(--primary);
 }
 
-html.is-dark .theme-btn.active .theme-btn-icon,
-html.is-dark .theme-btn.active .theme-btn-label,
-[data-theme="dark"] .theme-btn.active .theme-btn-icon,
-[data-theme="dark"] .theme-btn.active .theme-btn-label {
-  color: var(--primary);
-}
-
-/* Responsive très petit écran */
+/* ── Responsive ── */
 @media (max-width: 360px) {
   .theme-btn-label { display: none; }
   .theme-btn-icon  { font-size: 14px; }

@@ -76,8 +76,13 @@ html.is-dark,
   box-shadow: var(--shadow-float), 0 0 60px rgba(0, 149, 151, 0.05);
 
   transition: transform 0.42s cubic-bezier(0.2, 0.8, 0.2, 1);
-  /* overflow:hidden retiré — c'est .panel-body qui scroll, pas le shell */
-  overflow: visible;
+
+  /* ── CRITIQUE : sans height explicite, flex:1 sur .panel-body
+     n'a pas de référence et le contenu déborde au lieu de scroller.
+     position:fixed + top/bottom définit la hauteur visuellement,
+     mais pas pour le moteur flexbox — height:100% la matérialise. ── */
+  height: 100%;
+  overflow: hidden; /* clip les décos, n'empêche pas le scroll de .panel-body */
 }
 
 /* Reflet haut du panel */
@@ -108,10 +113,10 @@ html.is-dark,
   #site-panel {
     top: 0; right: 0; bottom: 0;
     width: 400px;
+    height: 100dvh;        /* hauteur explicite pour le moteur flex */
     border-radius: var(--panel-r) 0 0 var(--panel-r);
     border-right: none;
     transform: translateX(100%);
-    overflow: clip; /* clip = comme hidden mais sans bloquer sticky/scroll enfants */
   }
 }
 
@@ -119,13 +124,10 @@ html.is-dark,
 @media (max-width: 600px) {
   #site-panel {
     left: 0; right: 0; bottom: 0;
-    height: 90vh;
-    max-height: calc(100dvh - 40px); /* dvh = viewport dynamique, évite barre navigateur */
+    height: 90dvh;         /* dvh = viewport dynamique, s'adapte à la barre nav */
     border-radius: var(--panel-r) var(--panel-r) 0 0;
     border-bottom: none;
     transform: translateY(100%);
-    overflow: clip;
-    /* Safe area iPhone */
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }
@@ -294,14 +296,16 @@ html.is-dark .bp3-pill-encours,
   padding: 12px 12px 4px;
   overflow-y: auto;
   overflow-x: hidden;
-  flex: 1;
-  min-height: 0; /* ← CRITIQUE : sans ça, flex:1 déborde au lieu de scroller */
+
+  /* Les deux lignes qui rendent le scroll possible dans un flex column :   */
+  flex: 1 1 0;     /* grow + shrink + base 0 : prend l'espace restant exact */
+  min-height: 0;   /* annule le min-height:auto implicite de flex qui déborde */
+
   display: flex;
   flex-direction: column;
   gap: 8px;
   scrollbar-width: thin;
   scrollbar-color: var(--glass-border) transparent;
-  /* Scroll smooth natif */
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
 }

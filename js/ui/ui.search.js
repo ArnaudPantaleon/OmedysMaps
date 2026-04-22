@@ -58,9 +58,6 @@ export function initSearch(map) {
 }
 
 // ── Positionnement dynamique ──────────────────────────────────
-// Calcule la position exacte sous le slot à chaque affichage,
-// fonctionne que le wrapper soit à gauche (app) ou centré (embed)
-
 function _reposition() {
   if (!_tileEl || !_suggestEl) return
   const rect = _tileEl.getBoundingClientRect()
@@ -72,7 +69,6 @@ function _reposition() {
 }
 
 // ── Recherche ─────────────────────────────────────────────────
-
 async function _search(q) {
 
   const results = []
@@ -113,11 +109,9 @@ async function _search(q) {
   } catch {}
 
   _renderSuggestions(results, q)
-
 }
 
-// ── Rendu ─────────────────────────────────────────────────────
-
+// ── Rendu suggestions ─────────────────────────────────────────
 function _renderSuggestions(results, q) {
 
   _suggestEl.innerHTML = ""
@@ -157,28 +151,41 @@ function _renderSuggestions(results, q) {
     })
 
   _suggestEl.style.display = "block"
-
 }
 
 // ── Sélection ─────────────────────────────────────────────────
-
 function _select(r) {
   if (r.lat && r.lng) _map.flyTo(r.lat, r.lng, r.local ? 14 : 12)
   _inputEl.value = r.label
   _hideSug()
+
+  // Stocker le centre dans le store
+  store.filters.radiusCenter = (r.lat && r.lng)
+    ? { lat: r.lat, lng: r.lng, name: r.label }
+    : null
+
+  // Émettre l'event — ui.filters.js l'écoute pour activer le sélecteur périmètre
+  window.dispatchEvent(new CustomEvent("city-selected", {
+    detail: { lat: r.lat, lng: r.lng, name: r.label }
+  }))
 }
 
 // ── Utils ─────────────────────────────────────────────────────
-
 function _clear() {
   _inputEl.value = ""
   _hideSug()
   document.querySelector(".inner-search-btn").style.display = "none"
+
+  // Réinitialiser le filtre périmètre
+  store.filters.radiusCenter = null
+  store.filters.radius       = null
+
+  window.dispatchEvent(new CustomEvent("city-selected", { detail: null }))
 }
 
 function _hideSug() {
   if (_suggestEl) {
-    _suggestEl.innerHTML = ""
+    _suggestEl.innerHTML    = ""
     _suggestEl.style.display = "none"
   }
 }

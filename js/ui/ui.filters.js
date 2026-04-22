@@ -21,6 +21,16 @@ function _haversine(lat1, lng1, lat2, lng2) {
           * Math.sin(dLng/2) ** 2
   return R * 2 * Math.asin(Math.sqrt(a))
 }
+function getNearestSalles(center, limit = 5) {
+  return store.sites
+    .filter(s => s.type === "salle" && s.lat && s.lng)
+    .map(s => ({
+      ...s,
+      distance: _haversine(center.lat, center.lng, s.lat, s.lng)
+    }))
+    .sort((a, b) => a.distance - b.distance)
+    .slice(0, limit)
+}
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

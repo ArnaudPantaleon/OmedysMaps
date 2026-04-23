@@ -83,6 +83,11 @@ body, html {
     );
 }
 
+/* En mode salles proches, on laisse la tile s'étendre naturellement */
+.bento-stats.stats-nearest-mode {
+    overflow: visible;
+}
+
 /* Lueur d'ambiance dans le coin — comme bp3-header::before */
 .bento-tile::before {
     content: '';
@@ -133,6 +138,14 @@ body, html {
     align-items: center; justify-content: center;
     text-align: center; gap: 2px;
     padding: 10px 14px;
+    transition: padding 0.2s ease;
+}
+
+/* En mode liste, on désactive le centrage vertical */
+.bento-stats.stats-nearest-mode {
+    align-items: stretch;
+    justify-content: flex-start;
+    text-align: left;
 }
 
 .bento-stats small {
@@ -723,28 +736,7 @@ html.is-dark .theme-btn.active,
 
 
 
-#nearest-salles {
-  margin: 20px;
-  padding: 15px;
-  background: var(--tile-bg);
-  border-radius: 10px;
-  box-shadow: var(--tile-shadow);
-}
 
-.nearest-list {
-  margin-top: 10px;
-}
-
-.nearest-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 6px 0;
-  border-bottom: 1px solid #ddd2;
-}
-
-.nearest-item:last-child {
-  border-bottom: none;
-}
 
 /* ============================================================
    RESPONSIVE
@@ -780,4 +772,178 @@ html.is-dark .theme-btn.active,
     #site-count { font-size: 20px; }
     .bp3 { width: 280px; }
     .bp3-popup .leaflet-popup-content { width: 280px !important; }
+}
+/* ════════════════════════════════════════════════════════════════
+   SEARCH PIN — marker temporaire posé lors d'une recherche
+   ════════════════════════════════════════════════════════════════ */
+
+.search-pin {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  transform: translate(-50%, -100%);
+}
+
+.search-pin-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50% 50% 50% 0;
+  background: var(--primary, #009597);
+  transform: rotate(-45deg);
+  box-shadow: 0 2px 8px rgba(0,149,151,.5);
+  animation: pin-drop .35s cubic-bezier(.34,1.56,.64,1) both;
+}
+
+.search-pin-label {
+  margin-top: 6px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  background: var(--primary, #009597);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 2px 10px rgba(0,149,151,.35);
+  animation: pin-label-in .25s .1s ease both;
+}
+
+@keyframes pin-drop {
+  from { transform: rotate(-45deg) scale(0) translateY(-12px); opacity: 0; }
+  to   { transform: rotate(-45deg) scale(1) translateY(0);     opacity: 1; }
+}
+
+@keyframes pin-label-in {
+  from { opacity: 0; transform: translateY(4px) scale(.9); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);  }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   STATS TILE — mode "salles proches"
+   ════════════════════════════════════════════════════════════════ */
+
+.nearest-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+
+.nearest-header i {
+  color: var(--primary);
+  font-size: 12px;
+}
+
+.nearest-header strong {
+  color: var(--text-primary);
+  font-weight: 700;
+  text-transform: none;
+}
+
+.nearest-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 280px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--glass-border) transparent;
+}
+
+.nearest-list::-webkit-scrollbar        { width: 4px; }
+.nearest-list::-webkit-scrollbar-track  { background: transparent; }
+.nearest-list::-webkit-scrollbar-thumb  { background: var(--glass-border); border-radius: 2px; }
+
+.nearest-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 10px;
+  background: var(--item-bg, rgba(255,255,255,.08));
+  cursor: pointer;
+  transition: background .15s, transform .1s;
+  border-bottom: none;
+}
+
+.nearest-item:hover {
+  background: rgba(0,149,151,.12);
+  transform: translateX(2px);
+}
+
+.nearest-rank {
+  min-width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.nearest-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.nearest-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nearest-city {
+  font-size: 10px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nearest-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.nearest-dist {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primary);
+  white-space: nowrap;
+}
+
+.nearest-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Dark mode — nearest items */
+html.is-dark .nearest-item,
+[data-theme="dark"] .nearest-item {
+  background: rgba(255,255,255,.06);
+}
+
+html.is-dark .nearest-item:hover,
+[data-theme="dark"] .nearest-item:hover {
+  background: rgba(0,149,151,.18);
 }

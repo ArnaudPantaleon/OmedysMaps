@@ -328,6 +328,7 @@ export function initFilters(map, zones) {
   // Ligne 2 : stats
   const statsTile = document.createElement("div")
   statsTile.className = "bento-tile bento-stats"
+  statsTile.id = "stats-tile"
   statsTile.innerHTML = `<small>SITES AFFICHÉS</small><span id="site-count">0</span>`
   wrapper.appendChild(statsTile)
 
@@ -466,15 +467,12 @@ export function initFilters(map, zones) {
   })
 
   document.body.appendChild(wrapper)
-  // Bloc affichage des salles proches
-  const nearestWrap = document.createElement("div")
-  nearestWrap.id = "nearest-salles"
-  nearestWrap.className = "nearest-salles"
-  nearestWrap.innerHTML = `
-    <h3>Salles proches</h3>
-    <p>Aucune ville sélectionnée.</p>
-  `
-  document.body.appendChild(nearestWrap)
+
+  // Écoute flyto-site émis par ui.stats.js au clic sur une salle proche
+  window.addEventListener("flyto-site", e => {
+    const { lat, lng, zoom } = e.detail || {}
+    if (lat && lng) map.flyTo(lat, lng, zoom || 15)
+  })
 
   // Compteur initial
   const el = document.getElementById("site-count")

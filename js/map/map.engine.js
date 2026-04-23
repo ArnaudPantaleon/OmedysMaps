@@ -55,6 +55,12 @@ constructor() {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
   }).addTo(this.map)
 
+  // Écoute flyto-site émis depuis ui.stats (clic salle proche)
+  window.addEventListener("flyto-site", e => {
+    const { lat, lng, zoom } = e.detail || {}
+    if (lat && lng) this.flyTo(lat, lng, zoom || 15)
+  })
+
   // Cluster salles
   this.cluster = L.markerClusterGroup({
     disableClusteringAtZoom: 18,

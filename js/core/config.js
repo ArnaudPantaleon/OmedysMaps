@@ -1,8 +1,8 @@
 export const CONFIG = {
 
   map: {
-    themelight: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-    themedark: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+    themelight: "https://tiles.openfreemap.org/styles/liberty/{z}/{x}/{y}.png",
+    themedark: "https://tiles.openfreemap.org/styles/cyborg/{z}/{x}/{y}.png",
     center: [46.85, 2.3518],
     zoom:   7,
     mobileZoom:   6

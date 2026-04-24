@@ -1,8 +1,8 @@
 export const CONFIG = {
 
   map: {
-    themelight: "https://api.maptiler.com/maps/streets-v4/256/{z}/{x}/{y}.png?key=VDMp7fQwGTYGlt6XZoZ9",
-    themedark: "https://api.maptiler.com/maps/streets-v4-dark/256/{z}/{x}/{y}.png?key=VDMp7fQwGTYGlt6XZoZ9",
+    themelight: "https://api.maptiler.com/maps/streets-v4/256/{z}/{x}/{y}.webp?key=VDMp7fQwGTYGlt6XZoZ9",
+    themedark: "https://api.maptiler.com/maps/streets-v4-dark/256/{z}/{x}/{y}.webp?key=VDMp7fQwGTYGlt6XZoZ9",
     center: [46.85, 2.3518],
     zoom:   7,
     mobileZoom:   6

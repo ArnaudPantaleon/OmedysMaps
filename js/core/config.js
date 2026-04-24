@@ -1,11 +1,11 @@
 export const CONFIG = {
 
   map: {
-    themelight: "https://api.maptiler.com/maps/streets-v4/256/{z}/{x}/{y}.webp?key=VDMp7fQwGTYGlt6XZoZ9",
-    themedark: "https://api.maptiler.com/maps/streets-v4-dark/256/{z}/{x}/{y}.webp?key=VDMp7fQwGTYGlt6XZoZ9",
-    center: [46.85, 2.3518],
-    zoom:   7,
-    mobileZoom:   6
+	  themelight: "https://api.maptiler.com/maps/streets-v4/style.json?key=VDMp7fQwGTYGlt6XZoZ9",
+    themedark: "https://api.maptiler.com/maps/streets-v4-dark/style.json?key=VDMp7fQwGTYGlt6XZoZ9",
+    center: [2.3518, 46.85], // Inversé pour MapLibre: [Lng, Lat]
+    zoom: 5.5,
+    mobileZoom: 5
   },
 
   // Statuts cabinets

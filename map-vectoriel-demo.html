@@ -80,6 +80,7 @@ header {
 #map-gl {
   position: absolute; inset: 0;
   z-index: 1;
+  transition: opacity .3s ease;
 }
 #map {
   position: absolute; inset: 0;
@@ -204,7 +205,7 @@ header {
 
 <header>
   <div class="logo">Omedys <em>Carto</em></div>
-  <span class="badge">Tuiles vectorielles · OpenFreeMap</span>
+  <span class="badge" id="mode-badge">Vectoriel · OpenFreeMap Liberty</span>
 
   <div class="theme-toggle">
     <button class="theme-btn active" data-theme="light" onclick="switchTheme('light', this)">☀ Clair</button>
@@ -229,65 +230,70 @@ header {
 </div>
 
 <script>
-// ── STYLES MapLibre (OpenFreeMap — sans clé API) ──────────────────────────
-const STYLES = {
-  light: "https://tiles.openfreemap.org/styles/bright",
-  dark:  "https://tiles.openfreemap.org/styles/dark"
-}
+// ─────────────────────────────────────────────────────────────────────────
+// MODE CLAIR  → MapLibre GL JS  + OpenFreeMap Liberty  (vectoriel, POI complets)
+// MODE SOMBRE → Leaflet tileLayer + Stadia Alidade Smooth Dark (raster, propre)
+// Les markers Leaflet sont communs aux deux modes.
+// ─────────────────────────────────────────────────────────────────────────
 
 const ML_ZOOM_OFFSET = 1
+let currentTheme = "light"
 
-// ── DONNÉES DEMO (simule des sites Omedys en France) ─────────────────────
+// ── DONNÉES DÉMO ─────────────────────────────────────────────────────────
 const DEMO_SITES = [
-  { id:1, type:"cabinet", name:"Cabinet Dr. Martin", status:"actif",      lat:48.8600, lng:2.3450, tms:"TMS Nord" },
-  { id:2, type:"cabinet", name:"Cabinet Dr. Dupont", status:"actif",      lat:48.8530, lng:2.3580, tms:"TMS Est"  },
-  { id:3, type:"cabinet", name:"Cabinet Dr. Leroy",  status:"inactif",    lat:48.8490, lng:2.3300, tms:"TMS Sud"  },
-  { id:4, type:"salle",   name:"Salle EHPAD Riviera",status:"actif",      lat:48.8650, lng:2.3600, typeSite:"salle de télémédecine" },
-  { id:5, type:"salle",   name:"Véhicule Mobile 01", status:"actif",      lat:48.8710, lng:2.3200, typeSite:"véhicule de télémédecine assitée" },
-  { id:6, type:"salle",   name:"Salle EHPAD Soleil",  status:"en cours",  lat:48.8460, lng:2.3700, typeSite:"salle de télémédecine" },
-  { id:7, type:"salle",   name:"Salle Clinique Est",  status:"actif",     lat:48.8570, lng:2.3780, typeSite:"salle de télémédecine" },
-  { id:8, type:"cabinet", name:"Cabinet Dr. Bernard", status:"en cours",  lat:48.8620, lng:2.3100, tms:"TMS Ouest" },
-  { id:9, type:"salle",   name:"Véhicule Mobile 02",  status:"inactif",   lat:48.8480, lng:2.3500, typeSite:"véhicule de télémédecine assitée" },
+  { id:1, type:"cabinet", name:"Cabinet Dr. Martin",  status:"actif",    lat:48.8600, lng:2.3450, tms:"TMS Nord"  },
+  { id:2, type:"cabinet", name:"Cabinet Dr. Dupont",  status:"actif",    lat:48.8530, lng:2.3580, tms:"TMS Est"   },
+  { id:3, type:"cabinet", name:"Cabinet Dr. Leroy",   status:"inactif",  lat:48.8490, lng:2.3300, tms:"TMS Sud"   },
+  { id:4, type:"salle",   name:"Salle EHPAD Riviera", status:"actif",    lat:48.8650, lng:2.3600, typeSite:"salle de télémédecine" },
+  { id:5, type:"salle",   name:"Véhicule Mobile 01",  status:"actif",    lat:48.8710, lng:2.3200, typeSite:"véhicule de télémédecine assitée" },
+  { id:6, type:"salle",   name:"Salle EHPAD Soleil",  status:"en cours", lat:48.8460, lng:2.3700, typeSite:"salle de télémédecine" },
+  { id:7, type:"salle",   name:"Salle Clinique Est",  status:"actif",    lat:48.8570, lng:2.3780, typeSite:"salle de télémédecine" },
+  { id:8, type:"cabinet", name:"Cabinet Dr. Bernard", status:"en cours", lat:48.8620, lng:2.3100, tms:"TMS Ouest" },
+  { id:9, type:"salle",   name:"Véhicule Mobile 02",  status:"inactif",  lat:48.8480, lng:2.3500, typeSite:"véhicule de télémédecine assitée" },
 ]
 
 const STATUS_CABINET = {
-  actif:     { color: "#16a34a", label: "Actif"     },
-  inactif:   { color: "#dc2626", label: "Inactif"   },
-  "en cours":{ color: "#d97706", label: "En cours"  },
+  actif:      { color: "#16a34a", label: "Actif"    },
+  inactif:    { color: "#dc2626", label: "Inactif"  },
+  "en cours": { color: "#d97706", label: "En cours" },
 }
 const STATUS_SALLE = {
-  actif:     { color: "#2563eb", label: "Actif"     },
-  inactif:   { color: "#94a3b8", label: "Inactif"   },
-  "en cours":{ color: "#f59e0b", label: "En cours"  },
+  actif:      { color: "#2563eb", label: "Actif"    },
+  inactif:    { color: "#94a3b8", label: "Inactif"  },
+  "en cours": { color: "#f59e0b", label: "En cours" },
 }
 
-// ── INIT MAPLIBRE ─────────────────────────────────────────────────────────
+// ── 1. MAPLIBRE — fond vectoriel (mode clair) ─────────────────────────────
 const mlMap = new maplibregl.Map({
   container:   "map-gl",
-  style:       STYLES.light,
+  style:       "https://tiles.openfreemap.org/styles/liberty",
   center:      [2.3522, 48.8566],
   zoom:        13 - ML_ZOOM_OFFSET,
   interactive: false,
   attributionControl: false
 })
 
-// ── INIT LEAFLET ──────────────────────────────────────────────────────────
+// ── 2. LEAFLET — markers + fond raster sombre ─────────────────────────────
 const map = L.map("map", {
   zoomControl: true,
   minZoom: 6,
   maxZoom: 18
 }).setView([48.8566, 2.3522], 13)
 
-// Supprimer les tuiles Leaflet (on utilise MapLibre pour le fond)
-// On n'ajoute aucun tileLayer → Leaflet gère uniquement les markers
+// Couche Stadia dark (masquée au départ, activée en mode sombre)
+const stadiaLayer = L.tileLayer(
+  "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png",
+  {
+    attribution: '© <a href="https://stadiamaps.com/">Stadia Maps</a> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 20,
+    opacity: 0
+  }
+).addTo(map)
 
 // ── SYNC Leaflet → MapLibre ───────────────────────────────────────────────
 function syncML() {
   const c = map.getCenter()
-  mlMap.jumpTo({
-    center: [c.lng, c.lat],
-    zoom:   map.getZoom() - ML_ZOOM_OFFSET
-  })
+  mlMap.jumpTo({ center: [c.lng, c.lat], zoom: map.getZoom() - ML_ZOOM_OFFSET })
   document.getElementById("zoom-val").textContent = map.getZoom()
 }
 map.on("move", syncML)
@@ -301,15 +307,12 @@ const cluster = L.markerClusterGroup({
   zoomToBoundsOnClick: true
 })
 map.addLayer(cluster)
-
 const cabinetLayer = L.layerGroup().addTo(map)
 
 // ── RENDU DES MARKERS ─────────────────────────────────────────────────────
 DEMO_SITES.forEach(site => {
   const isCabinet = site.type === "cabinet"
-  const statusMap = isCabinet ? STATUS_CABINET : STATUS_SALLE
-  const color = statusMap[site.status]?.color || "#94a3b8"
-
+  const color = (isCabinet ? STATUS_CABINET : STATUS_SALLE)[site.status]?.color || "#94a3b8"
   let marker
 
   if (isCabinet) {
@@ -325,8 +328,7 @@ DEMO_SITES.forEach(site => {
     cabinetLayer.addLayer(marker)
   } else {
     const iconClass = site.typeSite === "véhicule de télémédecine assitée"
-      ? "fa-truck-medical"
-      : "fa-briefcase-medical"
+      ? "fa-truck-medical" : "fa-briefcase-medical"
     const icon = L.divIcon({
       className: "",
       html: `<div class="cabinet-marker" style="--cm-color:${color}">
@@ -338,16 +340,13 @@ DEMO_SITES.forEach(site => {
     marker = L.marker([site.lat, site.lng], { icon, zIndexOffset: 1000 })
     cluster.addLayer(marker)
   }
-
   marker.on("click", () => openPanel(site, color))
 })
 
 // ── PANEL SITE ────────────────────────────────────────────────────────────
 function openPanel(site, color) {
   const isCabinet = site.type === "cabinet"
-  const statusMap = isCabinet ? STATUS_CABINET : STATUS_SALLE
-  const statusInfo = statusMap[site.status] || {}
-
+  const statusInfo = (isCabinet ? STATUS_CABINET : STATUS_SALLE)[site.status] || {}
   document.getElementById("panel-title").textContent = site.name
   document.getElementById("panel-body").innerHTML = `
     <div class="panel-row">
@@ -360,8 +359,8 @@ function openPanel(site, color) {
         <span class="status-dot" style="background:${color}"></span>${statusInfo.label || site.status}
       </span>
     </div>
-    ${site.tms ? `<div class="panel-row"><span class="panel-label">TMS</span><span class="panel-val">${site.tms}</span></div>` : ""}
-    ${site.typeSite ? `<div class="panel-row"><span class="panel-label">Type site</span><span class="panel-val">${site.typeSite}</span></div>` : ""}
+    ${site.tms     ? `<div class="panel-row"><span class="panel-label">TMS</span><span class="panel-val">${site.tms}</span></div>` : ""}
+    ${site.typeSite? `<div class="panel-row"><span class="panel-label">Type site</span><span class="panel-val">${site.typeSite}</span></div>` : ""}
     <div class="panel-row">
       <span class="panel-label">Position</span>
       <span class="panel-val" style="font-family:monospace;font-size:11px;">${site.lat.toFixed(4)}, ${site.lng.toFixed(4)}</span>
@@ -370,29 +369,44 @@ function openPanel(site, color) {
   document.getElementById("site-panel").classList.add("open")
   map.flyTo([site.lat, site.lng], 16, { duration: .8 })
 }
-
 window.closePanel = () => document.getElementById("site-panel").classList.remove("open")
 
 // ── SWITCH THÈME ──────────────────────────────────────────────────────────
 window.switchTheme = (theme, btn) => {
+  currentTheme = theme
   document.querySelectorAll(".theme-btn").forEach(b => b.classList.remove("active"))
   btn.classList.add("active")
-  mlMap.setStyle(STYLES[theme])
 
-  // Adapter les couleurs CSS au thème
   const root = document.documentElement
+  const mapGl = document.getElementById("map-gl")
+  const badge = document.getElementById("mode-badge")
+
   if (theme === "dark") {
-    root.style.setProperty("--bg", "#18181b")
+    // Masquer MapLibre, afficher Stadia dark via Leaflet
+    mapGl.style.opacity = "0"
+    stadiaLayer.setOpacity(1)
+    badge.textContent = "Raster · Stadia Alidade Smooth Dark"
+    badge.style.background = "#3f3f46"
+    badge.style.color = "#a1a1aa"
+
+    root.style.setProperty("--bg",      "#18181b")
     root.style.setProperty("--surface", "#27272a")
-    root.style.setProperty("--border", "#3f3f46")
-    root.style.setProperty("--text", "#fafafa")
-    root.style.setProperty("--text2", "#a1a1aa")
+    root.style.setProperty("--border",  "#3f3f46")
+    root.style.setProperty("--text",    "#fafafa")
+    root.style.setProperty("--text2",   "#a1a1aa")
   } else {
-    root.style.setProperty("--bg", "#f7f6f2")
+    // Réafficher MapLibre, masquer Stadia
+    mapGl.style.opacity = "1"
+    stadiaLayer.setOpacity(0)
+    badge.textContent = "Vectoriel · OpenFreeMap Liberty"
+    badge.style.background = "#e8f0fe"
+    badge.style.color = "#1a56db"
+
+    root.style.setProperty("--bg",      "#f7f6f2")
     root.style.setProperty("--surface", "#ffffff")
-    root.style.setProperty("--border", "#e5e2da")
-    root.style.setProperty("--text", "#1c1b18")
-    root.style.setProperty("--text2", "#7a7670")
+    root.style.setProperty("--border",  "#e5e2da")
+    root.style.setProperty("--text",    "#1c1b18")
+    root.style.setProperty("--text2",   "#7a7670")
   }
 }
 </script>

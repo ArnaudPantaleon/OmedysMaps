@@ -4,10 +4,6 @@ import { updateStats } from "../ui/ui.stats.js"
 import { openSitePanel } from "../ui/ui.panel.js"
 import { setTheme, getTheme } from "../core/theme.js"
 
-import { CONFIG } from "../core/config.js"
-import { store } from "../core/store.js"
-// ... tes autres imports
-
 export class MapEngine {
   constructor() {
     const mediaQuery = window.matchMedia("(max-width: 768px)")

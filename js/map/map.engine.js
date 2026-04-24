@@ -52,7 +52,7 @@ constructor() {
     : CONFIG.map.themelight
 
   this.baseLayer = L.tileLayer(url, {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy;',
   }).addTo(this.map)
 
   // Écoute flyto-site émis depuis ui.stats (clic salle proche)

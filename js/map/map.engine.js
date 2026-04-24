@@ -18,6 +18,10 @@ constructor() {
 
   this.map = L.map("map", {
     zoomControl: false,
+    fadeAnimation: true,
+    markerZoomAnimation: true,
+    updateWhenIdle: true, // Charge les tuiles uniquement quand le pan est fini
+    updateWhenZooming: false
   }).setView(
     CONFIG.map.center,
     initialZoom

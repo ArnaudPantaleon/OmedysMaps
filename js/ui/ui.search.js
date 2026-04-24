@@ -174,22 +174,19 @@ function _select(r) {
   }))
 }
 
-// ── Pin temporaire ────────────────────────────────────────────
+// ── Pin temporaire (MapLibre) ─────────────────────────────────
 function _placePin(lat, lng, label) {
   _removePin()
 
-  const icon = L.divIcon({
-    className: "",
-    html: `<div class="search-pin">
-             <div class="search-pin-dot"></div>
-             <div class="search-pin-label">${label}</div>
-           </div>`,
-    iconSize: [0, 0],
-    iconAnchor: [0, 0]
-  })
+  const el = document.createElement("div")
+  el.innerHTML = `<div class="search-pin">
+    <div class="search-pin-dot"></div>
+    <div class="search-pin-label">${label}</div>
+  </div>`
 
-  _locationPin = L.marker([lat, lng], { icon, zIndexOffset: 2000, interactive: false })
-  _locationPin.addTo(_map.map)
+  _locationPin = new maplibregl.Marker({ element: el, anchor: "bottom" })
+    .setLngLat([lng, lat])
+    .addTo(_map.map)
 }
 
 function _removePin() {

@@ -99,29 +99,29 @@ function _renderNearest(el, center) {
 
 // ─── API publique ─────────────────────────────────────────────────────────────
 export function initStats() {
-  updateStats()
+  // Attendre que le DOM bento soit injecté par ui.filters.js
+  requestAnimationFrame(() => {
+    updateStats()
 
-  // Bascule en mode "salles proches" ou compteur selon la ville sélectionnée
-  window.addEventListener("city-selected", e => {
-    const el = document.getElementById("stats-tile")
-    if (!el) return
-    e.detail ? _renderNearest(el, e.detail) : _renderCount(el)
+    // Bascule en mode "salles proches" ou compteur selon la ville sélectionnée
+    window.addEventListener("city-selected", e => {
+      const el = document.getElementById("stats-tile")
+      if (!el) return
+      e.detail ? _renderNearest(el, e.detail) : _renderCount(el)
+    })
   })
 }
 
 export function updateStats() {
-  // Si ville sélectionnée → mode nearest
+  const tile = document.getElementById("stats-tile")
+  if (!tile) return
+
+  // Si on est déjà en mode nearest ET qu'un centre est défini → rafraîchir nearest
   if (store.filters.radiusCenter) {
-    const el = document.getElementById("stats-tile")
-    if (el) _renderNearest(el, store.filters.radiusCenter)
+    _renderNearest(tile, store.filters.radiusCenter)
     return
   }
 
   // Mode compteur standard
-  const count = _countVisible()
-  const countEl = document.getElementById("site-count")
-  if (countEl) { countEl.textContent = count; return }
-
-  const tile = document.getElementById("stats-tile")
-  if (tile) _renderCount(tile)
+  _renderCount(tile)
 }

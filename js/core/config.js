@@ -1,8 +1,8 @@
 export const CONFIG = {
 
   map: {
-    themelight: "https://tile.tracesmap.com/topo/{z}/{x}/{y}.png",
-    themedark: "https://tile.tracesmap.com/topo/{z}/{x}/{y}.png",
+    themelight: "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+    themedark: "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
     center: [46.85, 2.3518],
     zoom:   7,
     mobileZoom:   6

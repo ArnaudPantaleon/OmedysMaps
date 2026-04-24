@@ -2,7 +2,7 @@ export const CONFIG = {
 
   map: {
     themelight: "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
-    themedark: "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+    themedark: "https://api.maptiler.com/maps/dataviz-v4/{z}/{x}/{y}@2x.png?key=VDMp7fQwGTYGlt6XZoZ9",
     center: [46.85, 2.3518],
     zoom:   7,
     mobileZoom:   6

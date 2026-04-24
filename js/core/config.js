@@ -1,8 +1,8 @@
 export const CONFIG = {
 
   map: {
-	themelight: "https://api.maptiler.com/maps/streets-v2/style.json?key=VDMp7fQwGTYGlt6XZoZ9",
-    themedark: "https://api.maptiler.com/maps/darkmatter/style.json?key=VDMp7fQwGTYGlt6XZoZ9",
+	themelight: "https://api.maptiler.com/maps/streets-v4/style.json?key=VDMp7fQwGTYGlt6XZoZ9",
+    themedark: "https://api.maptiler.com/maps/streets-v4-dark/style.json?key=VDMp7fQwGTYGlt6XZoZ9",
     center: [2.3518, 46.85], // Inversé pour MapLibre: [Lng, Lat]
     zoom: 5.5,
     mobileZoom: 5

@@ -1,8 +1,8 @@
 export const CONFIG = {
 
   map: {
-    themelight: "https://tiles.openfreemap.org/styles/liberty/{z}/{x}/{y}.png",
-    themedark: "https://tiles.openfreemap.org/styles/cyborg/{z}/{x}/{y}.png",
+    themelight: "https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png",
+    themedark: "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png",
     center: [46.85, 2.3518],
     zoom:   7,
     mobileZoom:   6

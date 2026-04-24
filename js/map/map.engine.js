@@ -2,6 +2,7 @@ import { CONFIG }      from "../core/config.js"
 import { store }       from "../core/store.js"
 import { updateStats } from "../ui/ui.stats.js"
 import { openSitePanel } from "../ui/ui.panel.js"
+
 import { getTheme }    from "../core/theme.js"
 
 export class MapEngine {
@@ -75,6 +76,7 @@ export class MapEngine {
     // Nettoyage des anciens marqueurs
     this.markers.forEach(m => m.remove())
     this.markers = []
+
     store.markers.length = 0
 
     store.sites.forEach(site => {
@@ -111,6 +113,7 @@ export class MapEngine {
       // Stockage pour accès ultérieur (stats/filtres)
       marker.site = site 
       this.markers.push(marker)
+
       store.markers.push(marker)
     })
 

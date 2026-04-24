@@ -13,10 +13,23 @@ function _haversine(lat1, lng1, lat2, lng2) {
   return R * 2 * Math.asin(Math.sqrt(a))
 }
 
-// ─── Salles proches ───────────────────────────────────────────────────────────
+// ─── Salles proches (filtrées) ────────────────────────────────────────────────
 function _getNearestSalles(center, limit = 8) {
+  const f = store.filters
   return store.sites
-    .filter(s => s.type === "salle" && s.lat && s.lng)
+    .filter(s => {
+      if (s.type !== "salle" || !s.lat || !s.lng) return false
+      if (!f.dataset.salle) return false
+      if (f.statusSalle[s.status] === false) return false
+      if (s.typeSite && f.typeSite[s.typeSite] === false) return false
+      if (s.tms && f.tms[s.tms] === false) return false
+      if (f.departement && s.dept !== f.departement) return false
+      if (f.region) {
+        const depts = store.deptsByRegion?.[f.region] || []
+        if (!depts.includes(s.dept)) return false
+      }
+      return true
+    })
     .map(s => ({ ...s, distance: _haversine(center.lat, center.lng, s.lat, s.lng) }))
     .sort((a, b) => a.distance - b.distance)
     .slice(0, limit)

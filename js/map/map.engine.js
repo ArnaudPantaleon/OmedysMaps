@@ -19,7 +19,7 @@ constructor() {
   this.map = L.map("map", {
     zoomControl: false,
     minZoom: 6,
-    maxZoom: 18
+    maxZoom: 50
   }).setView(
     CONFIG.map.center,
     initialZoom

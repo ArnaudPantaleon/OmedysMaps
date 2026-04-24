@@ -10,19 +10,20 @@ let _mq       = null  // MediaQueryList pour le mode system
 
 // ── Appliquer le thème effectif sur <html> ──────────────────────────────────
 function _apply(theme) {
-  const root = document.documentElement
-  let isDark
+  const root = document.documentElement;
+  let isDark;
 
   if (theme === "system") {
-    isDark = window.matchMedia("(prefers-color-scheme: dark)").matches
-    root.setAttribute("data-theme", isDark ? "dark" : "light")
+    isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
   } else {
-    isDark = theme === "dark"
-    root.setAttribute("data-theme", theme)
+    isDark = theme === "dark";
   }
 
-  // Classe utilitaire pour les sélecteurs CSS html.is-dark
-  root.classList.toggle("is-dark", isDark)
+  root.setAttribute("data-theme", isDark ? "dark" : "light");
+  root.classList.toggle("is-dark", isDark);
+  window.dispatchEvent(new CustomEvent("theme-changed", { 
+    detail: { theme, isDark } 
+  }));
 }
 
 // ── Écouter les changements système quand on est en mode "system" ────────────
@@ -46,6 +47,7 @@ export function setTheme(theme) {
   localStorage.setItem(STORAGE_KEY, theme)
   _apply(theme)
   _watchSystem(theme === "system")
+  window.dispatchEvent(new CustomEvent("theme-changed", { detail: { theme } }));
 }
 
 export function getTheme() {

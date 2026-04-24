@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Démo — Tuiles vectorielles + Markers Leaflet</title>
+
+<!-- MapLibre GL JS -->
+<link href="https://unpkg.com/maplibre-gl@4/dist/maplibre-gl.css" rel="stylesheet"/>
+<script src="https://unpkg.com/maplibre-gl@4/dist/maplibre-gl.js"></script>
+
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- Leaflet MarkerCluster -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f7f6f2;
+  --surface: #ffffff;
+  --border: #e5e2da;
+  --text: #1c1b18;
+  --text2: #7a7670;
+  --accent: #1a56db;
+  --radius: 10px;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── HEADER ── */
+header {
+  display: flex; align-items: center; gap: 14px;
+  padding: 10px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  z-index: 2000; flex-shrink: 0;
+}
+.logo { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: -.02em; }
+.logo em { color: var(--accent); font-style: normal; }
+
+.theme-toggle {
+  margin-left: auto;
+  display: flex; gap: 4px;
+  background: var(--bg); border-radius: 8px; padding: 3px;
+  border: 1px solid var(--border);
+}
+.theme-btn {
+  padding: 4px 10px; border-radius: 6px; border: none;
+  background: transparent; cursor: pointer;
+  font-size: 12px; font-weight: 500; color: var(--text2);
+  transition: all .15s;
+}
+.theme-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+
+.badge {
+  font-size: 11px; padding: 3px 8px; border-radius: 20px;
+  background: #e8f0fe; color: #1a56db; font-weight: 500;
+}
+
+/* ── CARTE ── */
+.map-wrap {
+  flex: 1; position: relative; overflow: hidden;
+}
+#map-gl {
+  position: absolute; inset: 0;
+  z-index: 1;
+  transition: opacity .3s ease;
+}
+#map {
+  position: absolute; inset: 0;
+  z-index: 2;
+  background: transparent !important;
+}
+/* Rendre le canvas Leaflet transparent */
+#map .leaflet-tile-pane { display: none; }
+#map .leaflet-map-pane canvas { background: transparent; }
+
+/* ── MARKERS ── */
+.cabinet-marker {
+  width: 36px; height: 36px;
+  position: relative; display: flex;
+  align-items: center; justify-content: center;
+}
+.cabinet-pin {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--cm-color, #2563eb);
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 13px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.25);
+  border: 2px solid white;
+  position: relative; z-index: 2;
+}
+.salle-pin {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--cm-color, #2563eb);
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.2);
+  border: 2px solid white;
+  position: relative; z-index: 2;
+}
+.cabinet-pulse, .salle-pulse {
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  background: var(--cm-color, #2563eb);
+  opacity: .25;
+  animation: pulse 2s ease-out infinite;
+}
+.salle-pulse { animation-delay: .5s; }
+@keyframes pulse {
+  0%   { transform: scale(1); opacity: .25; }
+  70%  { transform: scale(1.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 0; }
+}
+
+/* ── PANEL SITE ── */
+#site-panel {
+  position: absolute; top: 12px; right: 12px;
+  width: 280px; z-index: 3000;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 24px rgba(0,0,0,.1);
+  overflow: hidden;
+  transform: translateX(320px);
+  transition: transform .25s cubic-bezier(.4,0,.2,1);
+}
+#site-panel.open { transform: translateX(0); }
+
+.panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.panel-header h3 { font-size: 13px; font-weight: 600; color: var(--text); }
+.panel-close {
+  width: 24px; height: 24px; border-radius: 6px; border: none;
+  background: var(--bg); cursor: pointer; color: var(--text2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+}
+.panel-close:hover { background: var(--border); }
+.panel-body { padding: 12px 14px; }
+.panel-row {
+  display: flex; gap: 8px; align-items: flex-start;
+  margin-bottom: 8px; font-size: 12px;
+}
+.panel-label { color: var(--text2); min-width: 64px; flex-shrink: 0; }
+.panel-val { color: var(--text); font-weight: 500; }
+.status-dot {
+  display: inline-block; width: 8px; height: 8px;
+  border-radius: 50%; margin-right: 6px; flex-shrink: 0; margin-top: 3px;
+}
+
+/* ── INFO BULLE ZOOM ── */
+#zoom-info {
+  position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+  background: rgba(28,27,24,.78); color: #fff;
+  backdrop-filter: blur(6px);
+  padding: 6px 14px; border-radius: 20px;
+  font-size: 12px; font-weight: 500;
+  z-index: 2500; pointer-events: none;
+  white-space: nowrap;
+}
+
+/* Leaflet zoom control */
+.leaflet-control-zoom {
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08) !important;
+}
+.leaflet-control-zoom a {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  border-bottom-color: var(--border) !important;
+}
+.leaflet-control-zoom a:hover { background: var(--bg) !important; }
+
+/* Attribution */
+.leaflet-control-attribution {
+  font-size: 10px !important;
+  background: rgba(255,255,255,.8) !important;
+  backdrop-filter: blur(4px);
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Omedys <em>Carto</em></div>
+  <span class="badge" id="mode-badge">Vectoriel · OpenFreeMap Liberty</span>
+
+  <div class="theme-toggle">
+    <button class="theme-btn active" data-theme="light" onclick="switchTheme('light', this)">☀ Clair</button>
+    <button class="theme-btn" data-theme="dark"  onclick="switchTheme('dark', this)">☾ Sombre</button>
+  </div>
+</header>
+
+<div class="map-wrap">
+  <div id="map-gl"></div>
+  <div id="map"></div>
+
+  <!-- Panel site -->
+  <div id="site-panel">
+    <div class="panel-header">
+      <h3 id="panel-title">—</h3>
+      <button class="panel-close" onclick="closePanel()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="panel-body" id="panel-body"></div>
+  </div>
+
+  <div id="zoom-info">Zoom : <span id="zoom-val">13</span></div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────
+// MODE CLAIR  → MapLibre GL JS  + OpenFreeMap Liberty  (vectoriel, POI complets)
+// MODE SOMBRE → Leaflet tileLayer + Stadia Alidade Smooth Dark (raster, propre)
+// Les markers Leaflet sont communs aux deux modes.
+// ─────────────────────────────────────────────────────────────────────────
+
+const ML_ZOOM_OFFSET = 1
+let currentTheme = "light"
+
+// ── DONNÉES DÉMO ─────────────────────────────────────────────────────────
+const DEMO_SITES = [
+  { id:1, type:"cabinet", name:"Cabinet Dr. Martin",  status:"actif",    lat:48.8600, lng:2.3450, tms:"TMS Nord"  },
+  { id:2, type:"cabinet", name:"Cabinet Dr. Dupont",  status:"actif",    lat:48.8530, lng:2.3580, tms:"TMS Est"   },
+  { id:3, type:"cabinet", name:"Cabinet Dr. Leroy",   status:"inactif",  lat:48.8490, lng:2.3300, tms:"TMS Sud"   },
+  { id:4, type:"salle",   name:"Salle EHPAD Riviera", status:"actif",    lat:48.8650, lng:2.3600, typeSite:"salle de télémédecine" },
+  { id:5, type:"salle",   name:"Véhicule Mobile 01",  status:"actif",    lat:48.8710, lng:2.3200, typeSite:"véhicule de télémédecine assitée" },
+  { id:6, type:"salle",   name:"Salle EHPAD Soleil",  status:"en cours", lat:48.8460, lng:2.3700, typeSite:"salle de télémédecine" },
+  { id:7, type:"salle",   name:"Salle Clinique Est",  status:"actif",    lat:48.8570, lng:2.3780, typeSite:"salle de télémédecine" },
+  { id:8, type:"cabinet", name:"Cabinet Dr. Bernard", status:"en cours", lat:48.8620, lng:2.3100, tms:"TMS Ouest" },
+  { id:9, type:"salle",   name:"Véhicule Mobile 02",  status:"inactif",  lat:48.8480, lng:2.3500, typeSite:"véhicule de télémédecine assitée" },
+]
+
+const STATUS_CABINET = {
+  actif:      { color: "#16a34a", label: "Actif"    },
+  inactif:    { color: "#dc2626", label: "Inactif"  },
+  "en cours": { color: "#d97706", label: "En cours" },
+}
+const STATUS_SALLE = {
+  actif:      { color: "#2563eb", label: "Actif"    },
+  inactif:    { color: "#94a3b8", label: "Inactif"  },
+  "en cours": { color: "#f59e0b", label: "En cours" },
+}
+
+// ── 1. MAPLIBRE — fond vectoriel (mode clair) ─────────────────────────────
+const mlMap = new maplibregl.Map({
+  container:   "map-gl",
+  style:       "https://tiles.openfreemap.org/styles/liberty",
+  center:      [2.3522, 48.8566],
+  zoom:        13 - ML_ZOOM_OFFSET,
+  interactive: false,
+  attributionControl: false
+})
+
+// ── 2. LEAFLET — markers + fond raster sombre ─────────────────────────────
+const map = L.map("map", {
+  zoomControl: true,
+  minZoom: 6,
+  maxZoom: 18
+}).setView([48.8566, 2.3522], 13)
+
+// Couche Stadia dark (masquée au départ, activée en mode sombre)
+const stadiaLayer = L.tileLayer(
+  "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png",
+  {
+    attribution: '© <a href="https://stadiamaps.com/">Stadia Maps</a> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 20,
+    opacity: 0
+  }
+).addTo(map)
+
+// ── SYNC Leaflet → MapLibre ───────────────────────────────────────────────
+function syncML() {
+  const c = map.getCenter()
+  mlMap.jumpTo({ center: [c.lng, c.lat], zoom: map.getZoom() - ML_ZOOM_OFFSET })
+  document.getElementById("zoom-val").textContent = map.getZoom()
+}
+map.on("move", syncML)
+map.on("zoom", syncML)
+mlMap.once("load", syncML)
+
+// ── CLUSTERS + LAYERS ─────────────────────────────────────────────────────
+const cluster = L.markerClusterGroup({
+  disableClusteringAtZoom: 17,
+  maxClusterRadius: 80,
+  zoomToBoundsOnClick: true
+})
+map.addLayer(cluster)
+const cabinetLayer = L.layerGroup().addTo(map)
+
+// ── RENDU DES MARKERS ─────────────────────────────────────────────────────
+DEMO_SITES.forEach(site => {
+  const isCabinet = site.type === "cabinet"
+  const color = (isCabinet ? STATUS_CABINET : STATUS_SALLE)[site.status]?.color || "#94a3b8"
+  let marker
+
+  if (isCabinet) {
+    const icon = L.divIcon({
+      className: "",
+      html: `<div class="cabinet-marker" style="--cm-color:${color}">
+               <div class="cabinet-pulse"></div>
+               <div class="cabinet-pin"><i class="fa-solid fa-hospital"></i></div>
+             </div>`,
+      iconSize: [36,36], iconAnchor: [18,18]
+    })
+    marker = L.marker([site.lat, site.lng], { icon, zIndexOffset: 1000 })
+    cabinetLayer.addLayer(marker)
+  } else {
+    const iconClass = site.typeSite === "véhicule de télémédecine assitée"
+      ? "fa-truck-medical" : "fa-briefcase-medical"
+    const icon = L.divIcon({
+      className: "",
+      html: `<div class="cabinet-marker" style="--cm-color:${color}">
+               <div class="salle-pulse"></div>
+               <div class="salle-pin"><i class="fa-solid ${iconClass}"></i></div>
+             </div>`,
+      iconSize: [24,24], iconAnchor: [12,12]
+    })
+    marker = L.marker([site.lat, site.lng], { icon, zIndexOffset: 1000 })
+    cluster.addLayer(marker)
+  }
+  marker.on("click", () => openPanel(site, color))
+})
+
+// ── PANEL SITE ────────────────────────────────────────────────────────────
+function openPanel(site, color) {
+  const isCabinet = site.type === "cabinet"
+  const statusInfo = (isCabinet ? STATUS_CABINET : STATUS_SALLE)[site.status] || {}
+  document.getElementById("panel-title").textContent = site.name
+  document.getElementById("panel-body").innerHTML = `
+    <div class="panel-row">
+      <span class="panel-label">Type</span>
+      <span class="panel-val">${isCabinet ? "Cabinet" : "Salle / Véhicule"}</span>
+    </div>
+    <div class="panel-row">
+      <span class="panel-label">Statut</span>
+      <span class="panel-val">
+        <span class="status-dot" style="background:${color}"></span>${statusInfo.label || site.status}
+      </span>
+    </div>
+    ${site.tms     ? `<div class="panel-row"><span class="panel-label">TMS</span><span class="panel-val">${site.tms}</span></div>` : ""}
+    ${site.typeSite? `<div class="panel-row"><span class="panel-label">Type site</span><span class="panel-val">${site.typeSite}</span></div>` : ""}
+    <div class="panel-row">
+      <span class="panel-label">Position</span>
+      <span class="panel-val" style="font-family:monospace;font-size:11px;">${site.lat.toFixed(4)}, ${site.lng.toFixed(4)}</span>
+    </div>
+  `
+  document.getElementById("site-panel").classList.add("open")
+  map.flyTo([site.lat, site.lng], 16, { duration: .8 })
+}
+window.closePanel = () => document.getElementById("site-panel").classList.remove("open")
+
+// ── SWITCH THÈME ──────────────────────────────────────────────────────────
+window.switchTheme = (theme, btn) => {
+  currentTheme = theme
+  document.querySelectorAll(".theme-btn").forEach(b => b.classList.remove("active"))
+  btn.classList.add("active")
+
+  const root = document.documentElement
+  const mapGl = document.getElementById("map-gl")
+  const badge = document.getElementById("mode-badge")
+
+  if (theme === "dark") {
+    // Masquer MapLibre, afficher Stadia dark via Leaflet
+    mapGl.style.opacity = "0"
+    stadiaLayer.setOpacity(1)
+    badge.textContent = "Raster · Stadia Alidade Smooth Dark"
+    badge.style.background = "#3f3f46"
+    badge.style.color = "#a1a1aa"
+
+    root.style.setProperty("--bg",      "#18181b")
+    root.style.setProperty("--surface", "#27272a")
+    root.style.setProperty("--border",  "#3f3f46")
+    root.style.setProperty("--text",    "#fafafa")
+    root.style.setProperty("--text2",   "#a1a1aa")
+  } else {
+    // Réafficher MapLibre, masquer Stadia
+    mapGl.style.opacity = "1"
+    stadiaLayer.setOpacity(0)
+    badge.textContent = "Vectoriel · OpenFreeMap Liberty"
+    badge.style.background = "#e8f0fe"
+    badge.style.color = "#1a56db"
+
+    root.style.setProperty("--bg",      "#f7f6f2")
+    root.style.setProperty("--surface", "#ffffff")
+    root.style.setProperty("--border",  "#e5e2da")
+    root.style.setProperty("--text",    "#1c1b18")
+    root.style.setProperty("--text2",   "#7a7670")
+  }
+}
+</script>
+</body>
+</html>

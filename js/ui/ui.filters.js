@@ -1,7 +1,14 @@
 import { CONFIG } from "../core/config.js"
 import { store }  from "../core/store.js"
+import { setTheme, getTheme } from "../core/theme.js"
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
+const THEME_LABELS = {
+  light:  { icon: "fa-sun",               label: "Clair"  },
+  dark:   { icon: "fa-moon",              label: "Sombre" },
+  system: { icon: "fa-circle-half-stroke", label: "Auto"   }
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function countVisible() {
   return store.sites.filter(s => {
@@ -31,7 +38,7 @@ function countBy(key, val, type = null) {
   ).length
 }
 
-// ─── Builders ───────────────────────────────────────────────────────────────
+// ─── Builders ────────────────────────────────────────────────────────────────
 
 function makeColorFilter(label, color, count, active, onToggle) {
   const el = document.createElement("div")
@@ -106,7 +113,48 @@ function makeSelect(placeholder, options, value, onChange) {
   return { wrap, sel }
 }
 
-// ─── Init principal ──────────────────────────────────────────────────────────
+// ─── Theme switcher (intégré dans le panneau filtres) ─────────────────────────
+
+function makeThemeSection() {
+  const section = document.createElement("div")
+  section.className = "filter-section theme-section"
+
+  section.innerHTML = `
+    <div class="section-title">
+      <i class="fa-solid fa-palette" style="font-size:11px;color:var(--primary);opacity:.8"></i>
+      Apparence
+    </div>
+  `
+
+  const btns = document.createElement("div")
+  btns.className = "theme-switcher-btns"
+
+  const current = getTheme()
+
+  Object.entries(THEME_LABELS).forEach(([key, { icon, label }]) => {
+    const btn = document.createElement("button")
+    btn.className = "theme-btn" + (key === current ? " active" : "")
+    btn.dataset.theme = key
+    btn.innerHTML = `
+      <i class="fa-solid ${icon} theme-btn-icon"></i>
+      <span class="theme-btn-label">${label}</span>
+    `
+    btn.addEventListener("click", () => {
+      setTheme(key)
+      btns.querySelectorAll(".theme-btn").forEach(b =>
+        b.classList.toggle("active", b.dataset.theme === key)
+      )
+    })
+    btns.appendChild(btn)
+  })
+
+  section.appendChild(btns)
+  return section
+}
+
+
+
+// ─── Init principal ───────────────────────────────────────────────────────────
 
 export function initFilters(map, zones) {
 
@@ -126,7 +174,7 @@ export function initFilters(map, zones) {
   const wrapper = document.createElement("div")
   wrapper.className = "bento-wrapper"
 
-  // Ligne 1 : hamburger + search (la search sera injectée par ui.search.js)
+  // Ligne 1 : hamburger + search
   const row = document.createElement("div")
   row.className = "bento-row"
 
@@ -135,7 +183,6 @@ export function initFilters(map, zones) {
   menuBtn.id = "menu-btn"
   menuBtn.innerHTML = `<span class="bar"></span><span class="bar"></span><span class="bar"></span>`
 
-  // Slot search — ui.search.js viendra s'y greffer via id
   const searchSlot = document.createElement("div")
   searchSlot.id = "search-slot"
   searchSlot.className = "bento-tile bento-search"
@@ -145,9 +192,10 @@ export function initFilters(map, zones) {
   row.appendChild(searchSlot)
   wrapper.appendChild(row)
 
-  // Ligne 2 : stats seule
+  // Ligne 2 : stats
   const statsTile = document.createElement("div")
   statsTile.className = "bento-tile bento-stats"
+  statsTile.id = "stats-tile"
   statsTile.innerHTML = `<small>SITES AFFICHÉS</small><span id="site-count">0</span>`
   wrapper.appendChild(statsTile)
 
@@ -165,7 +213,11 @@ export function initFilters(map, zones) {
     if (el) el.textContent = countVisible()
   }
 
-  // ── Section 1 : Dataset (Cabinet / Salle) ──
+  // ── Apparence (en tête de panneau) ──
+  listWrap.appendChild(makeThemeSection())
+  listWrap.appendChild(makeDivider())
+
+  // ── Section 1 : Dataset ──
   const ds = makeSection("Type de dataset", 2)
   ds.grid.appendChild(makeToggleFilter(
     "Cabinets TMS",
@@ -189,11 +241,7 @@ export function initFilters(map, zones) {
       key, val.color,
       countBy("status", key, "cabinet"),
       store.filters.statusCabinet[key],
-      () => {
-        store.filters.statusCabinet[key] = !store.filters.statusCabinet[key]
-        refresh()
-        return store.filters.statusCabinet[key]
-      }
+      () => { store.filters.statusCabinet[key] = !store.filters.statusCabinet[key]; refresh(); return store.filters.statusCabinet[key] }
     ))
   })
   listWrap.appendChild(sc.section)
@@ -206,11 +254,7 @@ export function initFilters(map, zones) {
       key, val.color,
       countBy("status", key, "salle"),
       store.filters.statusSalle[key],
-      () => {
-        store.filters.statusSalle[key] = !store.filters.statusSalle[key]
-        refresh()
-        return store.filters.statusSalle[key]
-      }
+      () => { store.filters.statusSalle[key] = !store.filters.statusSalle[key]; refresh(); return store.filters.statusSalle[key] }
     ))
   })
   listWrap.appendChild(ss.section)
@@ -224,11 +268,7 @@ export function initFilters(map, zones) {
     ts.grid.appendChild(makeColorFilter(
       key, "#2563eb", c,
       val.checked,
-      () => {
-        store.filters.typeSite[key] = !store.filters.typeSite[key]
-        refresh()
-        return store.filters.typeSite[key]
-      }
+      () => { store.filters.typeSite[key] = !store.filters.typeSite[key]; refresh(); return store.filters.typeSite[key] }
     ))
   })
   listWrap.appendChild(ts.section)
@@ -241,11 +281,7 @@ export function initFilters(map, zones) {
     tm.grid.appendChild(makeColorFilter(
       tms, "#8b5cf6", c,
       store.filters.tms[tms],
-      () => {
-        store.filters.tms[tms] = !store.filters.tms[tms]
-        refresh()
-        return store.filters.tms[tms]
-      }
+      () => { store.filters.tms[tms] = !store.filters.tms[tms]; refresh(); return store.filters.tms[tms] }
     ))
   })
   listWrap.appendChild(tm.section)
@@ -275,8 +311,9 @@ export function initFilters(map, zones) {
   dp.grid.appendChild(deptWrap)
   listWrap.appendChild(dp.section)
 
-  // ── Bouton reset ──
+  // ── Séparateur + Reset ──
   listWrap.appendChild(makeDivider())
+
   const resetBtn = document.createElement("button")
   resetBtn.textContent = "↺ Réinitialiser les filtres"
   resetBtn.className = "filter-reset-btn"
@@ -294,16 +331,20 @@ export function initFilters(map, zones) {
 
   document.body.appendChild(wrapper)
 
-  // Mise à jour initiale du compteur
+  // Écoute flyto-site émis par ui.stats.js au clic sur une salle proche
+  window.addEventListener("flyto-site", e => {
+    const { lat, lng, zoom } = e.detail || {}
+    if (lat && lng) map.flyTo(lat, lng, zoom || 15)
+  })
+
+  // Compteur initial
   const el = document.getElementById("site-count")
   if (el) el.textContent = countVisible()
-
 }
 
 // ─── Reset ────────────────────────────────────────────────────────────────────
 
 function _resetFilters(map, wrapper) {
-
   Object.entries(CONFIG.statusCabinet).forEach(([k, v]) => store.filters.statusCabinet[k] = v.checked)
   Object.entries(CONFIG.statusSalle).forEach(([k, v])   => store.filters.statusSalle[k]   = v.checked)
   Object.entries(CONFIG.typeSite).forEach(([k, v])      => store.filters.typeSite[k]       = v.checked)
@@ -314,25 +355,15 @@ function _resetFilters(map, wrapper) {
   store.filters.region          = null
   store.filters.departement     = null
 
-  // Reconstruire l'UI (moyen le plus simple pour resynchroniser les états visuels)
   wrapper.remove()
   initFilters(map, window._zonesCache)
-
   map.applyFilters()
-
 }
 
-// ─── Utilitaires géo ─────────────────────────────────────────────────────────
+// ─── Utilitaires géo ──────────────────────────────────────────────────────────
 
 function _buildDeptsByRegion(zones) {
-
   if (!zones) return
-
-  // Map code_region → [code_dept, ...]
-  // On utilise zones.departements et on détermine la région via le prefix connu
-  // (zones.json ne fait pas le lien explicite dept→region, on le déduit via les codes INSEE)
-
-  const map = {}
 
   const REGION_DEPT = {
     "84": ["01","03","07","15","26","38","42","43","63","69","73","74"],
@@ -351,5 +382,4 @@ function _buildDeptsByRegion(zones) {
   }
 
   store.deptsByRegion = REGION_DEPT
-
 }

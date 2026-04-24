@@ -1,23 +1,28 @@
 export const CONFIG = {
 
   map: {
-    center: [46.8, 2.5],
-    zoom:   6
+    themelight: "https://api.maptiler.com/maps/streets-v4/256/{z}/{x}/{y}.webp?key=VDMp7fQwGTYGlt6XZoZ9",
+    themedark: "https://api.maptiler.com/maps/streets-v4-dark/256/{z}/{x}/{y}.webp?key=VDMp7fQwGTYGlt6XZoZ9",
+    center: [46.85, 2.3518],
+    zoom:   7,
+    mobileZoom:   6
   },
 
   // Statuts cabinets
   statusCabinet: {
     "Ouvert":             { color: "#009597", checked: true  },
-    "Ouverture en cours": { color: "#f59e0b", checked: true  },
+    "Ouverture en cours": { color: "#ffcb00", checked: true  },
     "Virtuel":            { color: "#64748b", checked: false }
   },
 
   // Statuts salles
   statusSalle: {
-    "Ouvertes":               { color: "#2563eb", checked: true  },
-    "ESMS ouvert au public":  { color: "#f59e0b", checked: true  },
-    "Ouverture en cours":     { color: "#f59e0b", checked: false  },
-    "Telesecretariat OMEDYS": { color: "#8b5cf6", checked: true  }
+    "Ouvertes":               { color: "#00c875", checked: true  },
+    "Ouverture en cours":     { color: "#ffcb00", checked: false  },
+    "Inactives":              { color: "#757575", checked: false  },
+    "Fermees ou refus OTTs":  { color: "#bb3354", checked: false  },
+    "En sourcing":            { color: "#ff642e", checked: false  },
+    "Telesecretariat OMEDYS": { color: "#ff5ac4", checked: true  }
   },
 
   // Types de sites (salles)

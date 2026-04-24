@@ -1,8 +1,6 @@
 // ═══════════════════════════════════════════════════════════════
 // ui.panel.js — Panel latéral (desktop) / bottom sheet (mobile)
-// Remplace entièrement les popups Leaflet
-// Les détails enrichis (horaires, équipements, lien, notes)
-// sont lus directement depuis le site parsé (salles.json)
+// Scroll géré entièrement en CSS — aucune mesure JS
 // ═══════════════════════════════════════════════════════════════
 
 // ── Init DOM ──────────────────────────────────────────────────
@@ -10,13 +8,11 @@ export function initSitePanel() {
 
   if (document.getElementById("site-panel")) return
 
-  // Overlay
   const overlay = document.createElement("div")
   overlay.id = "panel-overlay"
   overlay.addEventListener("click", closePanel)
   document.body.appendChild(overlay)
 
-  // Panel
   const panel = document.createElement("div")
   panel.id = "site-panel"
   panel.innerHTML = `
@@ -24,9 +20,12 @@ export function initSitePanel() {
     <div class="panel-header">
       <div class="panel-header-left">
         <span class="panel-badge"></span>
-        <span class="panel-statut-pill"><span class="panel-sdot"></span><span class="panel-statut-label"></span></span>
+        <span class="panel-statut-pill">
+          <span class="panel-sdot"></span>
+          <span class="panel-statut-label"></span>
+        </span>
       </div>
-      <button class="panel-close" id="panel-close-btn">
+      <button class="panel-close" id="panel-close-btn" aria-label="Fermer">
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
@@ -34,7 +33,9 @@ export function initSitePanel() {
       <div class="panel-accent-dot"></div>
       <h2 class="panel-title"></h2>
     </div>
-    <div class="panel-body"></div>
+    <div class="panel-scroll-area">
+      <div class="panel-body"></div>
+    </div>
     <div class="panel-actions"></div>
   `
   document.body.appendChild(panel)
@@ -42,7 +43,6 @@ export function initSitePanel() {
   document.getElementById("panel-close-btn")
     .addEventListener("click", closePanel)
 
-  // Swipe down pour fermer (mobile)
   _initSwipe(panel)
 }
 
@@ -62,19 +62,22 @@ export function openSitePanel(site, color) {
     "Telesecretariat OMEDYS": "bp3-pill-tele"
   }[site.status] || "bp3-pill-default"
 
-  panel.querySelector(".panel-badge").textContent        = site.type === "salle" ? "Salle télémédecine" : "Cabinet TMS"
-  panel.querySelector(".panel-statut-pill").className    = `panel-statut-pill ${pillClass}`
-  panel.querySelector(".panel-statut-label").textContent = site.status
-  panel.querySelector(".panel-accent-dot").style.background = color
-  panel.querySelector(".panel-title").textContent        = site.name
+  panel.querySelector(".panel-badge").textContent          = site.dataset === "salle" ? "Salle télémédecine" : "Cabinet TMS"
+  panel.querySelector(".panel-statut-pill").className      = `panel-statut-pill ${pillClass}`
+  panel.querySelector(".panel-statut-label").textContent   = site.status || ""
+  panel.querySelector(".panel-accent-dot").style.background  = color
+  panel.querySelector(".panel-accent-dot").style.boxShadow   = `0 0 8px ${color}`
+  panel.querySelector(".panel-title").textContent          = site.name
   panel.style.setProperty("--panel-accent", color)
 
   panel.querySelector(".panel-body").innerHTML    = _renderBase(site) + _renderDetails(site)
   panel.querySelector(".panel-actions").innerHTML = _renderActions(site)
 
+  // Remonter en haut à chaque ouverture
+  panel.querySelector(".panel-scroll-area").scrollTop = 0
+
   panel.classList.add("open")
   overlay.classList.add("open")
-
 }
 
 export function closePanel() {
@@ -82,64 +85,59 @@ export function closePanel() {
   document.getElementById("panel-overlay")?.classList.remove("open")
 }
 
-// ── Sections ──────────────────────────────────────────────────
+// ── Rendu HTML ────────────────────────────────────────────────
 
 function _renderBase(site) {
   let html = ""
 
-  // Adresse
   if (site.address || site.city) {
     html += `
       <div class="panel-section">
-        <div class="panel-section-title">
-          <i class="fa-solid fa-location-dot"></i> Adresse
-        </div>
+        <div class="panel-section-title"><i class="fa-solid fa-location-dot"></i> Adresse</div>
         <div class="panel-info-block">${site.address || site.city}</div>
       </div>`
   }
 
-  // TMS rattaché
   if (site.tms) {
+    let inner = `<div class="panel-contact-line"><i class="fa-solid fa-hospital"></i><span>${site.tms}</span></div>`
+    if (site.mss) inner += `<div class="panel-contact-line"><i class="fa-regular fa-envelope"></i><a class="panel-link">${site.mss}</a></div>`
     html += `
       <div class="panel-section">
-        <div class="panel-section-title">
-          <i class="fa-solid fa-hospital"></i> Cabinet TMS
-        </div>
-        <div class="panel-info-block">${site.tms}</div>
+        <div class="panel-section-title"><i class="fa-solid fa-hospital"></i> Cabinet TMS</div>
+        <div class="panel-contact-block">${inner}</div>
       </div>`
   }
 
-  // Type de structure
+  if (site.att) {
+    let inner = ""
+    if (site.att.name)  inner += `<div class="panel-contact-line"><i class="fa-regular fa-user"></i><span>${site.att.name}</span></div>`
+    if (site.att.mail)  inner += `<div class="panel-contact-line"><i class="fa-regular fa-envelope"></i><a class="panel-link" href="mailto:${site.att.mail}">${site.att.mail}</a></div>`
+    if (site.att.phone) inner += `<div class="panel-contact-line"><i class="fa-solid fa-phone"></i><a class="panel-link" href="tel:${site.att.phone}">${_formatPhone(site.att.phone)}</a></div>`
+    html += `
+      <div class="panel-section">
+        <div class="panel-section-title"><i class="fa-regular fa-user"></i> Référent Cabinet</div>
+        <div class="panel-contact-block">${inner}</div>
+      </div>`
+  }
+
   if (site.typeSite) {
     html += `
       <div class="panel-section">
-        <div class="panel-section-title">
-          <i class="fa-solid fa-tag"></i> Type
-        </div>
+        <div class="panel-section-title"><i class="fa-solid fa-tag"></i> Type</div>
         <div class="panel-info-block">${site.typeSite}</div>
       </div>`
   }
 
-  // Contact
-  const hasContact = site.contact?.name || site.contact?.mail || site.contact?.phone
-  if (hasContact) {
-    html += `<div class="panel-section">
-      <div class="panel-section-title"><i class="fa-solid fa-user"></i> Contact</div>
-      <div class="panel-contact-block">`
-    if (site.contact.name)  html += `<div class="panel-contact-line"><i class="fa-regular fa-user"></i>${site.contact.name}</div>`
-    if (site.contact.phone) html += `<div class="panel-contact-line"><i class="fa-solid fa-phone"></i><a class="panel-link" href="tel:${site.contact.phone}">${_formatPhone(site.contact.phone)}</a></div>`
-    if (site.contact.mail)  html += `<div class="panel-contact-line"><i class="fa-regular fa-envelope"></i><a class="panel-link" href="mailto:${site.contact.mail}">${site.contact.mail}</a></div>`
-    html += `</div></div>`
-  }
-
-  // MSS
-  if (site.mss) {
+  if (site.contact?.phone) {
     html += `
       <div class="panel-section">
-        <div class="panel-section-title">
-          <i class="fa-solid fa-shield-halved"></i> MSS
+        <div class="panel-section-title"><i class="fa-solid fa-phone"></i> Contact</div>
+        <div class="panel-contact-block">
+          <div class="panel-contact-line">
+            <i class="fa-solid fa-phone"></i>
+            <a class="panel-link" href="tel:${site.contact.phone}">${_formatPhone(site.contact.phone)}</a>
+          </div>
         </div>
-        <div class="panel-info-block panel-mss">${site.mss}</div>
       </div>`
   }
 
@@ -154,34 +152,28 @@ function _renderDetails(site) {
       .map(l => `<div class="panel-schedule-line">${l}</div>`).join("")
     html += `
       <div class="panel-section">
-        <div class="panel-section-title">
-          <i class="fa-regular fa-clock"></i> Horaires
-        </div>
+        <div class="panel-section-title"><i class="fa-regular fa-clock"></i> Horaires</div>
         <div class="panel-schedule">${lines}</div>
       </div>`
   }
 
   if (site.equipements?.length) {
-    const items = site.equipements.map(e => `
-      <div class="panel-equip-item">
-        <i class="fa-solid fa-circle-check"></i><span>${e}</span>
-      </div>`).join("")
+    const items = site.equipements
+      .map(e => `<div class="panel-equip-item"><i class="fa-solid fa-circle-check"></i><span>${e}</span></div>`).join("")
     html += `
       <div class="panel-section">
-        <div class="panel-section-title">
-          <i class="fa-solid fa-stethoscope"></i> Équipements
-        </div>
+        <div class="panel-section-title"><i class="fa-solid fa-stethoscope"></i> Équipements</div>
         <div class="panel-equip-list">${items}</div>
       </div>`
   }
 
   if (site.notes) {
+    const lines = site.notes.split("\n")
+      .map(l => `<div class="panel-schedule-line">${l}</div>`).join("")
     html += `
       <div class="panel-section">
-        <div class="panel-section-title">
-          <i class="fa-regular fa-note-sticky"></i> Notes
-        </div>
-        <div class="panel-notes">${site.notes}</div>
+        <div class="panel-section-title"><i class="fa-regular fa-note-sticky"></i> Notes</div>
+        <div class="panel-notes">${lines}</div>
       </div>`
   }
 
@@ -213,11 +205,9 @@ function _renderActions(site) {
 
 // ── Swipe to close (mobile) ───────────────────────────────────
 function _initSwipe(panel) {
-  let startY = 0
-  let isDragging = false
+  let startY = 0, isDragging = false
 
   panel.addEventListener("touchstart", e => {
-    // Seulement si on touche le handle ou le header
     if (!e.target.closest(".panel-handle, .panel-header, .panel-title-row")) return
     startY = e.touches[0].clientY
     isDragging = true
@@ -235,24 +225,19 @@ function _initSwipe(panel) {
     isDragging = false
     panel.style.transition = ""
     const dy = e.changedTouches[0].clientY - startY
-    if (dy > 100) {
-      panel.style.transform = ""
-      closePanel()
-    } else {
-      panel.style.transform = ""
-    }
+    if (dy > 100) { panel.style.transform = ""; closePanel() }
+    else panel.style.transform = ""
   })
 }
 
 // ── Utils ─────────────────────────────────────────────────────
-
-// Exposé sur window pour le onclick inline du bouton Copier
 window._panelCopy = function(text) {
-  navigator.clipboard.writeText(text).then(() => _showToast("Adresse copiée !"))
+  navigator.clipboard.writeText(text)
+    .then(() => _showToast("Adresse copiée !"))
+    .catch(() => _showToast("Copie impossible"))
 }
 
 function _showToast(msg) {
-  // Réutiliser un toast existant s'il est encore visible
   let toast = document.getElementById("panel-toast")
   if (!toast) {
     toast = document.createElement("div")
@@ -262,7 +247,6 @@ function _showToast(msg) {
   toast.textContent = msg
   toast.classList.remove("panel-toast--out")
   toast.classList.add("panel-toast--in")
-
   clearTimeout(toast._timer)
   toast._timer = setTimeout(() => {
     toast.classList.replace("panel-toast--in", "panel-toast--out")

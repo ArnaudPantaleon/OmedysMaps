@@ -24,7 +24,7 @@ export function parseCabinet(row) {
     status:  row.Statut || "",
     mss:     row.MSS    || "",
 
-    contact: {
+    att: {
       name:  row.ATT_Name  || "",
       mail:  row.ATT_Mail  || "",
       phone: row.ATT_Phone || ""

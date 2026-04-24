@@ -5,6 +5,7 @@ let _debounce   = null
 let _inputEl    = null
 let _suggestEl  = null
 let _tileEl     = null
+let _locationPin = null   // marker temporaire posé lors d'une recherche
 
 export function initSearch(map) {
 
@@ -58,9 +59,6 @@ export function initSearch(map) {
 }
 
 // ── Positionnement dynamique ──────────────────────────────────
-// Calcule la position exacte sous le slot à chaque affichage,
-// fonctionne que le wrapper soit à gauche (app) ou centré (embed)
-
 function _reposition() {
   if (!_tileEl || !_suggestEl) return
   const rect = _tileEl.getBoundingClientRect()
@@ -72,7 +70,6 @@ function _reposition() {
 }
 
 // ── Recherche ─────────────────────────────────────────────────
-
 async function _search(q) {
 
   const results = []
@@ -113,11 +110,9 @@ async function _search(q) {
   } catch {}
 
   _renderSuggestions(results, q)
-
 }
 
-// ── Rendu ─────────────────────────────────────────────────────
-
+// ── Rendu suggestions ─────────────────────────────────────────
 function _renderSuggestions(results, q) {
 
   _suggestEl.innerHTML = ""
@@ -157,28 +152,72 @@ function _renderSuggestions(results, q) {
     })
 
   _suggestEl.style.display = "block"
-
 }
 
 // ── Sélection ─────────────────────────────────────────────────
-
 function _select(r) {
   if (r.lat && r.lng) _map.flyTo(r.lat, r.lng, r.local ? 14 : 12)
   _inputEl.value = r.label
   _hideSug()
+
+  // Stocker le centre dans le store
+  store.filters.radiusCenter = (r.lat && r.lng)
+    ? { lat: r.lat, lng: r.lng, name: r.label }
+    : null
+
+  // Poser un pin temporaire sur la carte
+  if (r.lat && r.lng) _placePin(r.lat, r.lng, r.label)
+
+  // Émettre l'event — ui.filters.js l'écoute pour activer le sélecteur périmètre
+  window.dispatchEvent(new CustomEvent("city-selected", {
+    detail: { lat: r.lat, lng: r.lng, name: r.label }
+  }))
+}
+
+// ── Pin temporaire ────────────────────────────────────────────
+function _placePin(lat, lng, label) {
+  _removePin()
+
+  const icon = L.divIcon({
+    className: "",
+    html: `<div class="search-pin">
+             <div class="search-pin-dot"></div>
+             <div class="search-pin-label">${label}</div>
+           </div>`,
+    iconSize: [0, 0],
+    iconAnchor: [0, 0]
+  })
+
+  _locationPin = L.marker([lat, lng], { icon, zIndexOffset: 2000, interactive: false })
+  _locationPin.addTo(_map.map)
+}
+
+function _removePin() {
+  if (_locationPin) {
+    _locationPin.remove()
+    _locationPin = null
+  }
 }
 
 // ── Utils ─────────────────────────────────────────────────────
-
 function _clear() {
   _inputEl.value = ""
   _hideSug()
   document.querySelector(".inner-search-btn").style.display = "none"
+
+  // Retirer le pin temporaire
+  _removePin()
+
+  // Réinitialiser le filtre périmètre
+  store.filters.radiusCenter = null
+  store.filters.radius       = null
+
+  window.dispatchEvent(new CustomEvent("city-selected", { detail: null }))
 }
 
 function _hideSug() {
   if (_suggestEl) {
-    _suggestEl.innerHTML = ""
+    _suggestEl.innerHTML    = ""
     _suggestEl.style.display = "none"
   }
 }

@@ -30,6 +30,8 @@ export function parseSalle(row) {
         equipements = rawEquip.split(',').map(s => s.trim()).filter(Boolean);
       }
     }
+  console.log(equipements);
+  
   return {
     id:       row.id,
     name:     row.Name,

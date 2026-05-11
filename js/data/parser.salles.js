@@ -27,7 +27,7 @@ export function parseSalle(row) {
         const parsed = JSON.parse(rawEquip);
         equipements = Array.isArray(parsed) ? parsed : [String(parsed)];
       } catch {
-        equipements = rawEquip.split(',').map(s => s.trim()).filter(Boolean);
+        equipements = rawEquip.split('-').map(s => s.trim()).filter(Boolean);
       }
     }
   console.log(equipements);

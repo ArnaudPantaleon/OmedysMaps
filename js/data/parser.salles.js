@@ -56,7 +56,7 @@ export function parseSalle(row) {
 
     // enrichissement
     horaires:    row.Opening_hours || '',
-    equipements: row.Equipments || '',
+    equipements: equipements || '',
     lien:        row.Link  || '',
     notes:       row.Notes || '',
   }

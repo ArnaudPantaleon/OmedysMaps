@@ -4,6 +4,7 @@ import { updateStats } from "../ui/ui.stats.js"
 import { openSitePanel } from "../ui/ui.panel.js"
 
 import { getTheme }    from "../core/theme.js"
+import * as maplibregl from 'https://unpkg.com/maplibre-gl@^6.0.0/dist/maplibre-gl.mjs';
 
 export class MapEngine {
 

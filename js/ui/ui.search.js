@@ -1,4 +1,5 @@
 import { store } from "../core/store.js"
+import { MapEngine }        from "./map/map.engine.js"
 
 let _map        = null
 let _debounce   = null

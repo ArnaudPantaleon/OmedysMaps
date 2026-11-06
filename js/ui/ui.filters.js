@@ -43,18 +43,25 @@ function countBy(key, val, type = null) {
 function makeColorFilter(label, color, count, active, onToggle) {
   const el = document.createElement("div")
   el.className = "filter-item color-filter" + (active ? " active" : "")
+
   el.innerHTML = `
-    <div class="filter-dot" style="background:${color}"></div>
+    <div class="filter-dot"></div>
     <div class="filter-content">
-      <span class="filter-label">${label}</span>
-      <span class="filter-description">${count} site(s)</span>
+      <span class="filter-label"></span>
+      <span class="filter-description"></span>
     </div>
     <div class="filter-checkbox"></div>
   `
+
+  el.querySelector(".filter-dot").style.background = color
+  el.querySelector(".filter-label").textContent = label
+  el.querySelector(".filter-description").textContent = `${count} site(s)`
+
   el.addEventListener("click", () => {
     const next = onToggle()
     el.classList.toggle("active", next)
   })
+
   return el
 }
 

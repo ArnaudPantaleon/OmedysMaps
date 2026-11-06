@@ -43,6 +43,11 @@ export function initSitePanel() {
   document.getElementById("panel-close-btn")
     .addEventListener("click", closePanel)
 
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.panel-copy');
+    if (btn) window._panelCopy(btn.dataset.addr);
+  });
+
   _initSwipe(panel)
 }
 

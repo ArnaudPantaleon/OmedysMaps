@@ -190,8 +190,7 @@ function _renderActions(site) {
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${site.lat},${site.lng}`
 
   let html = `
-    <button class="panel-action-btn panel-action--copy"
-      onclick="window._panelCopy('${addr.replace(/'/g, "\\'")}')">
+    <button class="panel-action-btn panel-action--copy">
       <i class="fa-regular fa-copy"></i><span>Copier</span>
     </button>
     <a class="panel-action-btn panel-action--maps" href="${mapsUrl}" target="_blank" rel="noopener">

@@ -128,7 +128,7 @@ function makeThemeSection() {
 
   section.innerHTML = `
     <div class="section-title">
-      <i class="fa-solid fa-palette" style="font-size:11px;color:var(--primary);opacity:.8"></i>
+      <i class="fa-solid fa-palette icon-palette"></i>
       Apparence
     </div>
   `

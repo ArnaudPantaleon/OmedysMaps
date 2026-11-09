@@ -1,6 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
 // ui.panel.js — Panel latéral (desktop) / bottom sheet (mobile)
 // Scroll géré entièrement en CSS — aucune mesure JS
+// Clic sur un .panel-info-block (Adresse, Type) = copie du contenu
 // ═══════════════════════════════════════════════════════════════
 
 // ── Init DOM ──────────────────────────────────────────────────
@@ -43,11 +44,7 @@ export function initSitePanel() {
   document.getElementById("panel-close-btn")
     .addEventListener("click", closePanel)
 
-  document.addEventListener('click', (e) => {
-    const btn = e.target.closest('.panel-copy');
-    if (btn) window._panelCopy(btn.dataset.addr);
-  });
-
+  _initCopy(panel)
   _initSwipe(panel)
 }
 
@@ -70,8 +67,8 @@ export function openSitePanel(site, color) {
   panel.querySelector(".panel-badge").textContent          = site.dataset === "salle" ? "Salle télémédecine" : "Cabinet TMS"
   panel.querySelector(".panel-statut-pill").className      = `panel-statut-pill ${pillClass}`
   panel.querySelector(".panel-statut-label").textContent   = site.status || ""
-  panel.querySelector(".panel-accent-dot").style.background  = color
-  panel.querySelector(".panel-accent-dot").style.boxShadow   = `0 0 8px ${color}`
+  panel.querySelector(".panel-accent-dot").style.background = color
+  panel.querySelector(".panel-accent-dot").style.boxShadow  = `0 0 8px ${color}`
   panel.querySelector(".panel-title").textContent          = site.name
   panel.style.setProperty("--panel-accent", color)
 
@@ -92,6 +89,15 @@ export function closePanel() {
 
 // ── Rendu HTML ────────────────────────────────────────────────
 
+// Bloc d'info cliquable : un clic copie son contenu
+function _copyBlock(text) {
+  return `
+    <div class="panel-info-block" role="button" tabindex="0" title="Cliquer pour copier">
+      <span class="panel-copy-text">${text}</span>
+      <i class="fa-regular fa-copy panel-copy-icon"></i>
+    </div>`
+}
+
 function _renderBase(site) {
   let html = ""
 
@@ -99,7 +105,7 @@ function _renderBase(site) {
     html += `
       <div class="panel-section">
         <div class="panel-section-title"><i class="fa-solid fa-location-dot"></i> Adresse</div>
-        <div class="panel-info-block">${site.address || site.city}</div>
+        ${_copyBlock(site.address || site.city)}
       </div>`
   }
 
@@ -129,7 +135,7 @@ function _renderBase(site) {
     html += `
       <div class="panel-section">
         <div class="panel-section-title"><i class="fa-solid fa-tag"></i> Type</div>
-        <div class="panel-info-block">${site.typeSite}</div>
+        ${_copyBlock(site.typeSite)}
       </div>`
   }
 
@@ -186,13 +192,9 @@ function _renderDetails(site) {
 }
 
 function _renderActions(site) {
-  const addr    = site.address || site.city || ""
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${site.lat},${site.lng}`
 
   let html = `
-    <button class="panel-action-btn panel-action--copy">
-      <i class="fa-regular fa-copy"></i><span>Copier</span>
-    </button>
     <a class="panel-action-btn panel-action--maps" href="${mapsUrl}" target="_blank" rel="noopener">
       <i class="fa-regular fa-map"></i><span>Maps</span>
     </a>`
@@ -205,6 +207,51 @@ function _renderActions(site) {
   }
 
   return html
+}
+
+// ── Copie au clic / clavier ───────────────────────────────────
+// Listeners posés sur le panneau (pas sur document) : seuls les
+// .panel-info-block du panneau sont concernés.
+function _initCopy(panel) {
+
+  const copyFrom = (block) => {
+    const text = block.querySelector(".panel-copy-text")?.textContent.trim()
+    if (text) _copyText(text)
+  }
+
+  panel.addEventListener("click", (e) => {
+    const block = e.target.closest(".panel-info-block")
+    if (block) copyFrom(block)
+  })
+
+  panel.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" && e.key !== " ") return
+    const block = e.target.closest(".panel-info-block")
+    if (!block) return
+    e.preventDefault()
+    copyFrom(block)
+  })
+}
+
+async function _copyText(text) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text)
+    } else {
+      // Fallback (contexte non sécurisé / anciens navigateurs)
+      const ta = document.createElement("textarea")
+      ta.value = text
+      ta.style.cssText = "position:fixed;opacity:0;pointer-events:none"
+      document.body.appendChild(ta)
+      ta.select()
+      const ok = document.execCommand("copy")
+      ta.remove()
+      if (!ok) throw new Error("execCommand failed")
+    }
+    _showToast("Copié !")
+  } catch {
+    _showToast("Copie impossible")
+  }
 }
 
 // ── Swipe to close (mobile) ───────────────────────────────────
@@ -229,18 +276,12 @@ function _initSwipe(panel) {
     isDragging = false
     panel.style.transition = ""
     const dy = e.changedTouches[0].clientY - startY
-    if (dy > 100) { panel.style.transform = ""; closePanel() }
-    else panel.style.transform = ""
+    panel.style.transform = ""
+    if (dy > 100) closePanel()
   })
 }
 
 // ── Utils ─────────────────────────────────────────────────────
-window._panelCopy = function(text) {
-  navigator.clipboard.writeText(text)
-    .then(() => _showToast("Adresse copiée !"))
-    .catch(() => _showToast("Copie impossible"))
-}
-
 function _showToast(msg) {
   let toast = document.getElementById("panel-toast")
   if (!toast) {
